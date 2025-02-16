@@ -1,0 +1,16 @@
+{
+    "name": "Campus Eats",
+    "short_name": "CEats",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ff6600",
+    "icons": [
+      {
+        "src": "/test/campus-eats-logo.png",
+        "sizes": "1080x1080",
+        "type": "image/png"
+      }
+    ]
+  }
+  
