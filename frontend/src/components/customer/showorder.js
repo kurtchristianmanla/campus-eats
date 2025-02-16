@@ -8,11 +8,14 @@ import RateProduct from '../utils/rateproduct';
 import { FaStore } from 'react-icons/fa';
 import CancelOrderForm from '../utils/cancelorderform';
 
-const protocol = process.env.REACT_APP_PROTOCOL || "http";
-const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
-const backend_port = process.env.REACT_APP_BACKEND_PORT || "3000";
+// const protocol = process.env.REACT_APP_PROTOCOL || "http";
+// const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
+// const backend_port = process.env.REACT_APP_BACKEND_PORT || "3000";
 
-const address = `${protocol}://${host_ip}:${backend_port}`;
+// const address = `${protocol}://${host_ip}:${backend_port}`;
+
+const backend_url = process.env.REACT_APP_BACKEND_URL;
+const address = `${backend_url}`;
 
 const ShowOrder = ({ orderSelected, seller }) => {
     const [name, setName] = useState('');

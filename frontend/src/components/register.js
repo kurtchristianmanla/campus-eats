@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
-const protocol = process.env.REACT_APP_PROTOCOL || "http";
-const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
-const backend_port = process.env.REACT_APP_BACKEND_PORT || "3000";
+// const protocol = process.env.REACT_APP_PROTOCOL || "http";
+// const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
+// const backend_port = process.env.REACT_APP_BACKEND_PORT || "3000";
 
-const address = `${protocol}://${host_ip}:${backend_port}`;
+// const address = `${protocol}://${host_ip}:${backend_port}`;
+
+const backend_url = process.env.REACT_APP_BACKEND_URL;
+const address = `${backend_url}`;
 
 const Register = () => {
   const [formData, setFormData] = useState({
