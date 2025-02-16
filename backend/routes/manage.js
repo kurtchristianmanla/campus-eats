@@ -71,8 +71,8 @@ router.post('/login', async (req, res) => {
         // Store refresh token in HTTP-only cookie
         res.cookie('refreshToken', refresh_token, {
             httpOnly: true,  // Prevent XSS
-            secure: false, // Set to true if using HTTPS
-            sameSite: 'Lax',  // Use 'Lax' for development
+            secure: true, // Set to true if using HTTPS
+            sameSite: 'None',  // Use 'Lax' for development
             path: '/',
             maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days expiration
         }); 
