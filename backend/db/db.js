@@ -8,7 +8,9 @@ const database = "campus_eats_db";
 
 console.log('MongoDB Credentials:', username, password);
 
-const mongoURI = `mongodb://${username}:${password}@${host}:${port}/${database}?authSource=admin`;
+// const mongoURI = `mongodb://${username}:${password}@${host}:${port}/${database}?authSource=admin`;
+
+const mongoURI = process.env.MONGODB_URI;
 
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
