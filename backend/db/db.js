@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
-const username = process.env.MONGO_USERNAME;
-const password = process.env.MONGO_PASSWORD;
-const host = 'localhost';
-const port = 27017;
-const database = "campus_eats_db";
+// const username = process.env.MONGO_USERNAME;
+// const password = process.env.MONGO_PASSWORD;
+// const host = 'localhost';
+// const port = 27017;
+// const database = "campus_eats_db";
 
-console.log('MongoDB Credentials:', username, password);
+// console.log('MongoDB Credentials:', username, password);
 
 // const mongoURI = `mongodb://${username}:${password}@${host}:${port}/${database}?authSource=admin`;
 
