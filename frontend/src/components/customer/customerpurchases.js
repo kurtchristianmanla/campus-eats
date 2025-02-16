@@ -285,7 +285,7 @@ const CustomerPurchases = () => {
                                                 </div>
                                             </> )}
                                             {order.items[0].imageUrl ? (<img
-                                                src={`${address}${order.items[0].imageUrl}`}
+                                                src={order.items[0].imageUrl}
                                                 alt={order.orderNumber}
                                                 className="w-20 h-20 object-cover rounded-md"
                                             />) : (

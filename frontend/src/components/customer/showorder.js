@@ -198,7 +198,7 @@ const ShowOrder = ({ orderSelected, seller }) => {
                         <div key={index} className="flex flex-row items-center justify-start gap-4">
                             <div className="relative w-24 h-24 flex justify-start items-start text-center">
                                 {item.imageUrl ? (<img
-                                    src={`${address}${item.imageUrl}`}
+                                    src={item.imageUrl}
                                     alt={item.name}
                                     className="w-24 h-24 object-cover rounded-md"
                                 />) : (

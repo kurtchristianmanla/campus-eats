@@ -30,7 +30,7 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
     useEffect(() => {
         if (menuItemId) {
             console.log('Menu Item ID:', menuItemId);
-            api.get(`${address}/menu/item/${menuItemId}`)
+            api.get(`/menu/item/${menuItemId}`)
                 .then((response) => {
                     const menuItem = response.data.menuItem;
                     console.log(response.data);
@@ -84,7 +84,7 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
                                 mb-4 overflow-hidden bg-indigo-500 text-white text-6xl font-bold`}>
                         {imageUrl ? (
                             <img
-                                src={`${address}${imageUrl}`}
+                                src={imageUrl}
                                 alt={name}
                                 className={`w-52 h-52 object-cover rounded-xl w-full h-full absolute inset-0`}
                             />

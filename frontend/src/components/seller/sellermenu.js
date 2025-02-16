@@ -215,7 +215,7 @@ const SellerMenu = () => {
                                              rounded-lg overflow-hidden flex items-center justify-center relative">
                                         {item.imageUrl ? (
                                             <img
-                                                src={`${address}${item.imageUrl}`}
+                                                src={item.imageUrl}
                                                 alt={`${item.name}`}
                                                 className="object-cover w-full h-full"
                                                 />

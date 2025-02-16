@@ -291,7 +291,7 @@ const CustomerPage = () => {
                                     onClick={toggleSidebar}>
                                         {profilePicture ? (
                                             <img
-                                            src={`${address}${profilePicture}`}
+                                            src={profilePicture}
                                             alt="Profile"
                                             className="object-cover w-full h-full"
                                             />
@@ -347,7 +347,7 @@ const CustomerPage = () => {
                             onClick={toggleSidebar}>
                                 {profilePicture ? (
                                     <img
-                                    src={`${address}${profilePicture}`}
+                                    src={profilePicture}
                                     alt="Profile"
                                     className="object-cover w-full h-full"
                                     />
@@ -478,7 +478,7 @@ const CustomerPage = () => {
                                                         rounded-lg overflow-hidden flex items-center justify-center relative">
                                                 {item.imageUrl ? (
                                                     <img
-                                                        src={`${address}${item.imageUrl}`}
+                                                        src={item.imageUrl}
                                                         alt={`${item.name}`}
                                                         className="object-cover w-full h-full"
                                                         />
@@ -547,7 +547,7 @@ const CustomerPage = () => {
                                 
                                 <div className="flex justify-center items-center h-full">
                                     {store.profile_picture ? (<img
-                                        src={`${address}${store.profile_picture}`}
+                                        src={store.profile_picture}
                                         alt={store.store_name}
                                         className="absolute inset-0 w-full h-full object-cover opacity-20 rounded-xl"
                                     />) : (
@@ -600,7 +600,7 @@ const CustomerPage = () => {
                                 )}
                                 <div className="relative flex justify-center mb-2">
                                     {store.profile_picture ? (<img
-                                        src={`${address}${store.profile_picture}`}
+                                        src={store.profile_picture}
                                         alt={store.store_name}
                                         className="w-44 h-44 object-cover rounded-md"
                                     />) : (
@@ -677,7 +677,7 @@ const CustomerPage = () => {
                                 )}
                                 <div className="relative flex justify-center mb-2">
                                     {store.profile_picture ? (<img
-                                        src={`${address}${store.profile_picture}`}
+                                        src={store.profile_picture}
                                         alt={store.store_name}
                                         className="w-44 h-44 object-cover rounded-md"
                                     />) : (
@@ -752,7 +752,7 @@ const CustomerPage = () => {
                                 )}
                                 <div className="relative flex justify-center mb-2">
                                     {item.imageUrl ? (<img
-                                        src={`${address}${item.imageUrl}`}
+                                        src={item.imageUrl}
                                         alt={item.name}
                                         className="w-44 h-44 object-cover rounded-md"
                                     />) : (

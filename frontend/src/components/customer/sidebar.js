@@ -26,7 +26,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture,
                                             items-center rounded-full overflow-hidden mb-1">
                                     {profilePicture ? (
                                         <img
-                                            src={`${address}${profilePicture}`}
+                                            src={profilePicture}
                                             alt="Profile"
                                             className="object-cover w-full h-full"
                                         />

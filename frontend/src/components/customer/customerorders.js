@@ -291,7 +291,7 @@ const CustomerOrders = () => {
                                 onClick={toggleSidebar}>
                                     {profilePicture ? (
                                         <img
-                                        src={`${address}${profilePicture}`}
+                                        src={profilePicture}
                                         alt="Profile"
                                         className="object-cover w-full h-full"
                                         />
@@ -521,7 +521,7 @@ const CustomerOrders = () => {
                                                 </label>
                                                 <div className="relative flex justify-center items-center text-center">
                                                     {item.imageUrl ? (<img
-                                                        src={`${address}${item.imageUrl}`}
+                                                        src={item.imageUrl}
                                                         alt={item.name}
                                                         className="w-20 h-20 object-cover rounded-md"
                                                     />) : (

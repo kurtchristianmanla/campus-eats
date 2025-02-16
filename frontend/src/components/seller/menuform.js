@@ -37,7 +37,7 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
     useEffect(() => {
         if (menuItemId) {
             console.log('Menu Item ID:', menuItemId);
-            api.get(`${address}/menu/item/${menuItemId}`)
+            api.get(`/menu/item/${menuItemId}`)
                 .then((response) => {
                     const menuItem = response.data.menuItem;
                     console.log(response.data);
@@ -50,7 +50,7 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
                     setPrice(menuItem.price);
                     setDescription(menuItem.description);
                     setImageUrl(menuItem.imageUrl);
-                    setShowImage(`${address}${imageUrl}`);
+                    setShowImage(imageUrl);
                     setIsAvailable(menuItem.isAvailable);
                     setSelectedFile(null);
                 })

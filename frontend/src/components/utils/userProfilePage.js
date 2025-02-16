@@ -293,7 +293,7 @@ const ProfileUser = (user_type_route) => {
                                         items-center rounded-full overflow-hidden mb-4 sm:mb-0 sm:mr-4">
                                 {profilePicture ? (
                                     <img
-                                    src={`${address}${profilePicture}`}
+                                    src={profilePicture}
                                     alt="Profile"
                                     className="object-cover w-full h-full"
                                     />

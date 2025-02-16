@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 const isRightRole = require('../middleware/auth');
+const cloudinary = require('cloudinary').v2;
 
 // Add a new menu item
 router.post('/add', upload.single('imageUrl'), isRightRole(['seller']), async (req, res) => {
@@ -29,36 +30,62 @@ router.post('/add', upload.single('imageUrl'), isRightRole(['seller']), async (r
         });
 
         // Handle image upload and resizing
+        // if (req.file) {
+        //     try {
+        //         const outputDir = path.join(__dirname, '../uploads/products');
+        //         if (!fs.existsSync(outputDir)) {
+        //             fs.mkdirSync(outputDir, { recursive: true });
+        //         }
+
+        //         const newImagePath = path.join(outputDir, req.file.filename);
+        //         console.log('Resizing image to:', newImagePath);
+
+        //         // Get image metadata (width, height)
+        //         const metadata = await sharp(req.file.path).metadata();
+
+        //         // Calculate 95% dimensions
+        //         const cropWidth = Math.round(metadata.width * 0.95);
+        //         const cropHeight = Math.round(metadata.height * 0.95);
+
+        //         await sharp(req.file.path)
+        //             .extract({
+        //                 left: Math.round((metadata.width - cropWidth) / 2), // Center crop horizontally
+        //                 top: Math.round((metadata.height - cropHeight) / 2), // Center crop vertically
+        //                 width: cropWidth,
+        //                 height: cropHeight,
+        //             })
+        //             .toFile(newImagePath);
+        //         console.log('Image cropped successfully');
+        //         newItem.imageUrl = `/uploads/products/${req.file.filename}`; // Save image URL (relative path)
+        //     } catch (err) {
+        //         console.error('Error processing image with sharp:', err);
+        //         return res.status(500).json({ message: 'Error processing image' });
+        //     }
+        // }
+
+        // Handle image upload to Cloudinary
         if (req.file) {
             try {
-                const outputDir = path.join(__dirname, '../uploads/products');
-                if (!fs.existsSync(outputDir)) {
-                    fs.mkdirSync(outputDir, { recursive: true });
-                }
+                // Resize and crop the image using sharp
+                const resizedImageBuffer = await sharp(req.file.buffer)
+                    .resize(800, 800, { fit: 'inside' }) // Resize to fit within 800x800
+                    .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
+                    .toBuffer();
 
-                const newImagePath = path.join(outputDir, req.file.filename);
-                console.log('Resizing image to:', newImagePath);
+                // Upload the resized image to Cloudinary
+                const cloudinaryResponse = await cloudinary.uploader.upload(
+                    `data:image/jpeg;base64,${resizedImageBuffer.toString('base64')}`,
+                    {
+                        folder: 'menu_items', // Optional: Organize images in a folder
+                        resource_type: 'image',
+                    }
+                );
 
-                // Get image metadata (width, height)
-                const metadata = await sharp(req.file.path).metadata();
-
-                // Calculate 95% dimensions
-                const cropWidth = Math.round(metadata.width * 0.95);
-                const cropHeight = Math.round(metadata.height * 0.95);
-
-                await sharp(req.file.path)
-                    .extract({
-                        left: Math.round((metadata.width - cropWidth) / 2), // Center crop horizontally
-                        top: Math.round((metadata.height - cropHeight) / 2), // Center crop vertically
-                        width: cropWidth,
-                        height: cropHeight,
-                    })
-                    .toFile(newImagePath);
-                console.log('Image cropped successfully');
-                newItem.imageUrl = `/uploads/products/${req.file.filename}`; // Save image URL (relative path)
+                // Save the Cloudinary image URL to the new menu item
+                newItem.imageUrl = cloudinaryResponse.secure_url;
             } catch (err) {
-                console.error('Error processing image with sharp:', err);
-                return res.status(500).json({ message: 'Error processing image' });
+                console.error('Error uploading image to Cloudinary:', err);
+                return res.status(500).json({ message: 'Error uploading image' });
             }
         }
 
@@ -92,51 +119,83 @@ router.put('/update/:id', upload.single('imageUrl'), isRightRole(['seller']), as
         const oldImagePath = item.imageUrl;
         // If a profile picture is uploaded, update it
 
+        // if (req.file) {
+        //     try {
+        //         const outputDir = path.join(__dirname, '../uploads/products');
+        //         if (!fs.existsSync(outputDir)) {
+        //             fs.mkdirSync(outputDir, { recursive: true });
+        //         }
+
+        //         const newImagePath = path.join(outputDir, req.file.filename);
+        //         console.log('Resizing image to:', newImagePath);
+
+        //         // Get image metadata (width, height)
+        //         const metadata = await sharp(req.file.path).metadata();
+
+        //         // Calculate 95% dimensions
+        //         const cropWidth = Math.round(metadata.width * 0.95);
+        //         const cropHeight = Math.round(metadata.height * 0.95);
+
+        //         await sharp(req.file.path)
+        //             .extract({
+        //                 left: Math.round((metadata.width - cropWidth) / 2), // Center crop horizontally
+        //                 top: Math.round((metadata.height - cropHeight) / 2), // Center crop vertically
+        //                 width: cropWidth,
+        //                 height: cropHeight,
+        //             })
+        //             .toFile(newImagePath);
+        //         console.log('Image cropped successfully');
+        //         item.imageUrl = `/uploads/products/${req.file.filename}`; // Save image URL (relative path)
+        //     } catch (err) {
+        //         console.error('Error processing image with sharp:', err);
+        //         return res.status(500).json({ message: 'Error processing image' });
+        //     }
+        // }
+
+        // if (oldImagePath && req.file) {
+        //     try {
+        //         const oldImageFullPath = path.join(__dirname, '../', oldImagePath); // Use relative path to build the full path
+        //         fs.unlink(oldImageFullPath, (err) => {
+        //             if (err) {
+        //                 console.error('Error deleting old image:', err);
+        //             } else {
+        //                 console.log('Old image deleted');
+        //             }
+        //         });
+        //     } catch (err) {
+        //         console.error('Error resolving old image path:', err);
+        //     }
+        // }
+
+        // Handle image upload to Cloudinary
         if (req.file) {
             try {
-                const outputDir = path.join(__dirname, '../uploads/products');
-                if (!fs.existsSync(outputDir)) {
-                    fs.mkdirSync(outputDir, { recursive: true });
+                // Resize and crop the image using sharp
+                const resizedImageBuffer = await sharp(req.file.buffer)
+                    .resize(800, 800, { fit: 'inside' }) // Resize to fit within 800x800
+                    .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
+                    .toBuffer();
+
+                // Upload the resized image to Cloudinary
+                const cloudinaryResponse = await cloudinary.uploader.upload(
+                    `data:image/jpeg;base64,${resizedImageBuffer.toString('base64')}`,
+                    {
+                        folder: 'menu_items', // Optional: Organize images in a folder
+                        resource_type: 'image',
+                    }
+                );
+
+                // Delete the old image from Cloudinary if it exists
+                if (item.imageUrl) {
+                    const publicId = item.imageUrl.split('/').pop().split('.')[0]; // Extract public ID from URL
+                    await cloudinary.uploader.destroy(`menu_items/${publicId}`);
                 }
 
-                const newImagePath = path.join(outputDir, req.file.filename);
-                console.log('Resizing image to:', newImagePath);
-
-                // Get image metadata (width, height)
-                const metadata = await sharp(req.file.path).metadata();
-
-                // Calculate 95% dimensions
-                const cropWidth = Math.round(metadata.width * 0.95);
-                const cropHeight = Math.round(metadata.height * 0.95);
-
-                await sharp(req.file.path)
-                    .extract({
-                        left: Math.round((metadata.width - cropWidth) / 2), // Center crop horizontally
-                        top: Math.round((metadata.height - cropHeight) / 2), // Center crop vertically
-                        width: cropWidth,
-                        height: cropHeight,
-                    })
-                    .toFile(newImagePath);
-                console.log('Image cropped successfully');
-                item.imageUrl = `/uploads/products/${req.file.filename}`; // Save image URL (relative path)
+                // Save the new Cloudinary image URL
+                item.imageUrl = cloudinaryResponse.secure_url;
             } catch (err) {
-                console.error('Error processing image with sharp:', err);
-                return res.status(500).json({ message: 'Error processing image' });
-            }
-        }
-
-        if (oldImagePath && req.file) {
-            try {
-                const oldImageFullPath = path.join(__dirname, '../', oldImagePath); // Use relative path to build the full path
-                fs.unlink(oldImageFullPath, (err) => {
-                    if (err) {
-                        console.error('Error deleting old image:', err);
-                    } else {
-                        console.log('Old image deleted');
-                    }
-                });
-            } catch (err) {
-                console.error('Error resolving old image path:', err);
+                console.error('Error uploading image to Cloudinary:', err);
+                return res.status(500).json({ message: 'Error uploading image' });
             }
         }
 

@@ -5,6 +5,7 @@ const path = require('path');
 const sharp = require('sharp');
 
 const upload = require('../middleware/upload');
+const cloudinary = require('cloudinary').v2;
 const User = require('../models/user');
 
 const router = express.Router();
@@ -69,39 +70,71 @@ router.put('/profile', upload.single('profile_picture'), async (req, res) => {
         const oldImagePath = user.profile_picture;
         // If a profile picture is uploaded, update it
 
+        // if (req.file) {
+        //     try {
+        //         const outputDir = path.join(__dirname, '../uploads/profiles');
+        //         if (!fs.existsSync(outputDir)) {
+        //             fs.mkdirSync(outputDir, { recursive: true });
+        //         }
+
+        //         const newImagePath = path.join(outputDir, req.file.filename);
+        //         console.log('Resizing image to:', newImagePath);
+
+        //         await sharp(req.file.path)
+        //             .resize(1000, 1000)
+        //             .toFile(newImagePath);
+        //         console.log('Image resized successfully');
+        //         user.profile_picture = `/uploads/profiles/${req.file.filename}`; // Save image URL (relative path)
+        //     } catch (err) {
+        //         console.error('Error processing image with sharp:', err);
+        //         return res.status(500).json({ message: 'Error processing image' });
+        //     }
+        // }
+
+        // if (oldImagePath && req.file) {
+        //     try {
+        //         const oldImageFullPath = path.join(__dirname, '../', oldImagePath); // Use relative path to build the full path
+        //         fs.unlink(oldImageFullPath, (err) => {
+        //             if (err) {
+        //                 console.error('Error deleting old image:', err);
+        //             } else {
+        //                 console.log('Old image deleted');
+        //             }
+        //         });
+        //     } catch (err) {
+        //         console.error('Error resolving old image path:', err);
+        //     }
+        // }
+
+        // Handle profile picture upload to Cloudinary
         if (req.file) {
             try {
-                const outputDir = path.join(__dirname, '../uploads/profiles');
-                if (!fs.existsSync(outputDir)) {
-                    fs.mkdirSync(outputDir, { recursive: true });
+                // Resize the image using sharp
+                const resizedImageBuffer = await sharp(req.file.buffer)
+                    .resize(1000, 1000) // Resize to 1000x1000
+                    .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
+                    .toBuffer();
+
+                // Upload the resized image to Cloudinary
+                const cloudinaryResponse = await cloudinary.uploader.upload(
+                    `data:image/jpeg;base64,${resizedImageBuffer.toString('base64')}`,
+                    {
+                        folder: 'profile_pictures', // Optional: Organize images in a folder
+                        resource_type: 'image',
+                    }
+                );
+
+                // Delete the old image from Cloudinary if it exists
+                if (user.profile_picture) {
+                    const publicId = user.profile_picture.split('/').pop().split('.')[0]; // Extract public ID from URL
+                    await cloudinary.uploader.destroy(`profile_pictures/${publicId}`);
                 }
 
-                const newImagePath = path.join(outputDir, req.file.filename);
-                console.log('Resizing image to:', newImagePath);
-
-                await sharp(req.file.path)
-                    .resize(1000, 1000)
-                    .toFile(newImagePath);
-                console.log('Image resized successfully');
-                user.profile_picture = `/uploads/profiles/${req.file.filename}`; // Save image URL (relative path)
+                // Save the new Cloudinary image URL
+                user.profile_picture = cloudinaryResponse.secure_url;
             } catch (err) {
-                console.error('Error processing image with sharp:', err);
-                return res.status(500).json({ message: 'Error processing image' });
-            }
-        }
-
-        if (oldImagePath && req.file) {
-            try {
-                const oldImageFullPath = path.join(__dirname, '../', oldImagePath); // Use relative path to build the full path
-                fs.unlink(oldImageFullPath, (err) => {
-                    if (err) {
-                        console.error('Error deleting old image:', err);
-                    } else {
-                        console.log('Old image deleted');
-                    }
-                });
-            } catch (err) {
-                console.error('Error resolving old image path:', err);
+                console.error('Error uploading image to Cloudinary:', err);
+                return res.status(500).json({ message: 'Error uploading image' });
             }
         }
 

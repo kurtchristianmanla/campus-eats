@@ -113,7 +113,7 @@ const Accounts = () => {
                                             justify-center items-center overflow-hidden rounded-full">
                                 {account.profile_picture ? (
                                     <img
-                                    src={`${address}${account.profile_picture}`}
+                                    src={account.profile_picture}
                                     alt="Profile"
                                     className="object-cover w-full h-full"
                                     />

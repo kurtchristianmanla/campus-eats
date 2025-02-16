@@ -1,14 +1,23 @@
 // middlewares/upload.js
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-;
-// Set up Multer storage configuration
-const storage = multer.diskStorage({
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Unique file name
-  },
-});
+
+// // Set up Multer storage configuration
+// const storage = multer.diskStorage({
+//   filename: (req, file, cb) => {
+//     cb(null, Date.now() + '-' + file.originalname); // Unique file name
+//   },
+// });
+
+// // Set up Cloudinary storage for Multer
+// const storage = new CloudinaryStorage({
+//   cloudinary: cloudinary,
+//   params: {
+//       folder: 'uploads', // Folder name in Cloudinary
+//       allowed_formats: ['jpg', 'jpeg', 'png']
+//   }
+// });
+
+const storage = multer.memoryStorage(); 
 
 // Multer upload middleware
 const upload = multer({ 
