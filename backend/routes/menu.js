@@ -7,7 +7,8 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 const isRightRole = require('../middleware/auth');
-const cloudinary = require('cloudinary').v2;
+// const cloudinary = require('cloudinary').v2;
+const cloudinary = require('../middleware/cloudinary');
 
 // Add a new menu item
 router.post('/add', upload.single('imageUrl'), isRightRole(['seller']), async (req, res) => {

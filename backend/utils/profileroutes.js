@@ -5,7 +5,8 @@ const path = require('path');
 const sharp = require('sharp');
 
 const upload = require('../middleware/upload');
-const cloudinary = require('cloudinary').v2;
+// const cloudinary = require('cloudinary').v2;
+const cloudinary = require('../middleware/cloudinary');
 const User = require('../models/user');
 
 const router = express.Router();
