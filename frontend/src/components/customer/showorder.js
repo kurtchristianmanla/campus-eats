@@ -197,7 +197,8 @@ const ShowOrder = ({ orderSelected, seller }) => {
                     
                     {(order?.orderType === "pre-order") && (
                         <h4 className="font-light text-orange-500 text-xs -mt-4">
-                            ({order?.orderType})
+                            {order?.status === "pre-order" || order?.status === "pending" ? 
+                            `Scheduled at ${formatTimestamp(order?.scheduledTime)}` : order?.orderType}
                         </h4>
                     )}
 
