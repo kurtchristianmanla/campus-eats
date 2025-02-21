@@ -252,7 +252,7 @@ const CustomerPurchases = () => {
                         <div className="flex flex-col gap-4">
                             {orders
                                 .filter(order => {
-                                    if (activeTab === "pending") return ["pending", "preparing", "ready"].includes(order.status);
+                                    if (activeTab === "pending") return ["pending", "pre-order", "preparing", "ready"].includes(order.status);
                                     return order.status === activeTab;
                                 })
                                 .map((order) => (
@@ -272,10 +272,17 @@ const CustomerPurchases = () => {
                                     transition={{ hover: { duration: 0.3, ease: "easeOut" },
                                                     x: { duration: 2, ease: "easeOut" }}}
                                 >
-                                    <h2 className="font-semibold border-b flex flex-row items-center gap-1 text-gray-800 text-md mb-1">
-                                        <FaStore className="text-gray-600 font-normal text-sm" />
-                                        {sellers.find(s => s._id === order.sellerId)?.store_name || "Unknown Store"}
-                                    </h2>
+                                    <div className='flex flex-row justify between border-b mb-1 gap-1'>
+                                        <h2 className="font-semibold flex flex-row items-center gap-1 text-gray-800 text-md">
+                                            <FaStore className="text-gray-600 font-normal text-sm" />
+                                            {sellers.find(s => s._id === order.sellerId)?.store_name || "Unknown Store"}
+                                        </h2>
+                                        {(order?.orderType === "pre-order") && (
+                                            <h4 className="font-light italic flex flex-row items-center gap-1 text-orange-500 text-xs">
+                                                ({order?.orderType})
+                                            </h4>
+                                        )}
+                                    </div>
                                     
                                     <div className="flex flex-row items-center justify-start gap-4">
                                         <div className="relative w-20 h-20 flex justify-start items-center text-center">

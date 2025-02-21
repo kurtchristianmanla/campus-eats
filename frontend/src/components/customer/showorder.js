@@ -186,12 +186,17 @@ const ShowOrder = ({ orderSelected, seller }) => {
                 </div>
                 <div className="p-4 bg-white rounded-xl w-full max-h-[36rem] lg:max-h-[26rem] md:max-h-[26rem] overflow-y-auto 
                             scrollbar-hide flex flex-col gap-4">
-                    <div className="relative flex justify-start items-start text-center">
+                    <div className="relative flex justify-start items-center text-center">
                         <h2 className="font-semibold flex flex-row items-center gap-1 text-gray-800 text-md">
                             <FaStore className="text-gray-600 font-normal text-sm" />
                             {seller || "Unknown Store"}
                             <span>- Order #{order?.orderNumber || "N/A"}</span>
                         </h2>
+                        {(order?.orderType === "pre-order") && (
+                            <h4 className="font-light italic flex flex-row items-center gap-1 text-orange-500 text-[10px] ml-1">
+                                ({order?.orderType})
+                            </h4>
+                        )}
                     </div>
 
                     {order?.items.map((item, index) => (
@@ -216,7 +221,6 @@ const ShowOrder = ({ orderSelected, seller }) => {
                             </div>
 
                             <div className="flex flex-col items-end">
-                                
                                 <div className="">
                                     <div className="flex justify-between gap-1 font-semibold">
                                         {/* <span>Amount</span> */}
@@ -232,7 +236,7 @@ const ShowOrder = ({ orderSelected, seller }) => {
                         <span className="text-xs font-bold text-gray-400">Payment {order?.paymentStatus}</span>
                         <span className="text-[10px] font-normal italic text-gray-400">{order?.paymentTransactionId}</span>
                     </div>
-
+                    
                     <div className="border-b" />
 
                     <div className="relative" ref={containerRef}>
