@@ -543,10 +543,10 @@ const CustomerOrders = () => {
                                                         onClick={() => handleDecreaseQuantity(item._id)}
                                                         disabled={item.quantity === 1}>-</button>
                                                     <span className="w-6 text-center text-sm font-semibold text-gray-800">{item.quantity}</span>
-                                                    <button className="w-5 h-5 bg-orange-400 text-white rounded-full flex items-center justify-center text-xl 
-                                                        hover:bg-orange-500 transition"
+                                                    <button className={`w-5 h-5 rounded-full flex items-center justify-center text-xl 
+                                                        transition ${item.quantity === 20 ? 'bg-gray-300 text-gray-500' : 'bg-orange-400 text-white hover:bg-orange-500'}`}
                                                         onClick={() => handleIncreaseQuantity(item._id)}
-                                                        disabled={item.quantity === 99}>+</button>
+                                                        disabled={item.quantity === 20}>+</button>
                                                 </div>
                                             </motion.div>
                                         </div>

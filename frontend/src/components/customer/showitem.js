@@ -107,7 +107,7 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
                         <span className="text-md font-semibold text-white">{quantity}</span>
                         <button
                             type="button"
-                            onClick={() => setQuantity((prev) => Math.min(prev + 1, 99))}
+                            onClick={() => setQuantity((prev) => Math.min(prev + 1, 20))}
                             className="text-white text-md p-2"
                             >
                             <FaPlus />
