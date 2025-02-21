@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { addToCart, getCart, removeFromCart, clearCart, addToPay } from '../utils/cart';
+import { addToCart, getCart, removeFromCart, clearCart, addToPay, getCartKey } from '../utils/cart';
 import { motion, AnimatePresence } from 'framer-motion';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ import useHandleLogout from '../utils/logout';
 import { io } from 'socket.io-client';
 import { FaTrash } from 'react-icons/fa';
 import Sidebar from './sidebar';
+import { toast } from 'react-toastify';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -19,6 +20,7 @@ const backend_url = process.env.REACT_APP_BACKEND_URL;
 const address = `${backend_url}`;
 
 const CustomerOrders = () => {
+    const [sellers, setSellers] = useState([]);
     const [cartItems, setCartItems] = useState([]);
     const [selectedItems, setSelectedItems] = useState([]);
     const [revealedItems, setRevealedItems] = useState({});
@@ -70,6 +72,26 @@ const CustomerOrders = () => {
         }
     }, [navigate]);
 
+    const fetchSellers = useCallback(async () => {
+        const token = localStorage.getItem('token');
+
+        try {
+            // Using Axios to make the GET request
+            const response = await api.get('/customer/find-sellers', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            setSellers(response.data); // Update state with user data
+            // console.log(sellers);
+            setLoading(false); // Set loading to false
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setLoading(false);
+        }
+    }, []);
+
 
     useEffect(() => {
         document.title = "Campus Eats | Orders";
@@ -81,6 +103,7 @@ const CustomerOrders = () => {
         const storedCart = getCart(userId)
         setCartItems(storedCart);
 
+        fetchSellers();
         checkCustomerAccess();
 
         // Initialize the Socket.IO connection
@@ -96,16 +119,50 @@ const CustomerOrders = () => {
             }
         };
 
+        const updateShowSeller = (data) => {
+            setSellers((prevSellers) => {
+                // Find the seller by their ID and update the is_selling status
+                const updatedSellers = prevSellers.map((seller) =>
+                    seller._id === data.sellerId
+                        ? { ...seller, is_selling: data.isSelling } // Update the is_selling status
+                        : seller
+                );
+                return updatedSellers;
+            });
+        };
+
+        const handleMenuUpdated = (data) => {
+            console.log('Menu item updated:', data.updatedItem);
+        
+            const cart = getCart(userId);
+        
+            const updatedCart = cart.map(item => 
+                item._id === data.updatedItem._id 
+                    ? { ...item, ...data.updatedItem }  // Merge updated data
+                    : item
+            );
+        
+            // Save the updated cart in localStorage
+            localStorage.setItem(`cart_${userId}`, JSON.stringify(updatedCart));
+        
+            // Update state if you're using useState for cart
+            setCartItems(updatedCart);
+        };
+
         socketConnection.on('updateBalance', updateBalance);
+        socketConnection.on('sellerStatusChanged', updateShowSeller);
+        socketConnection.on('menuUpdated', handleMenuUpdated);
         
         // Clean up the styles on component unmount
         return () => {
-            socketConnection.off('balanceAdded', updateBalance);
+            socketConnection.off('updateBalance', updateBalance);
+            socketConnection.off('sellerStatusChanged', updateShowSeller);
+            socketConnection.off('menuUpdated', handleMenuUpdated);
             socketConnection.disconnect();
             // document.body.style.overflow = 'auto';
             // document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
         };
-    }, [checkCustomerAccess, userId]);
+    }, [checkCustomerAccess, fetchSellers, userId]);
 
 
     const filteredItems = useMemo(() => {
@@ -167,7 +224,12 @@ const CustomerOrders = () => {
             setSelectedItems([]);
         } else {
             // Otherwise, select all items
-            setSelectedItems(filteredItems.map(item => item._id));
+            // setSelectedItems(filteredItems.map(item => item._id));
+            setSelectedItems(
+                filteredItems
+                    .filter(item => item.isAvailable && sellers.find(s => s._id === item.sellerId)?.is_selling)
+                    .map(item => item._id)
+            );
         }
     };
 
@@ -222,16 +284,27 @@ const CustomerOrders = () => {
             const totalPrice = filteredItems
                     .filter(item => selectedItems.includes(item._id))
                     .reduce((total, item) => total + item.price * item.quantity, 0);
+            const selectedItemsToPay = filteredItems
+                .filter(item => selectedItems.includes(item._id));
 
             console.log("Balance:", balance);
             console.log("Total Price:", totalPrice);
+
+            // Check if any selected item is unavailable or the seller is offline
+            const unavailableItems = selectedItemsToPay.filter(
+                item => !item.isAvailable || !sellers.find(s => s._id === item.sellerId)?.is_selling
+            );
+
+            if (unavailableItems.length > 0) {
+                console.log("Some items are unavailable or the seller is offline.");
+                toast.error("Some selected items are unavailable or the seller is offline. Please update your selection.");
+                return; // Stop the order process
+            }
 
             if (balance < totalPrice) {
                 console.log("Insufficient balance");
                 setIsInsufficient(true);
             } else {
-                const selectedItemsToPay = filteredItems
-                    .filter(item => selectedItems.includes(item._id))
                 addToPay(userId, selectedItemsToPay);
 
                 console.log("This is the selected:", selectedItemsToPay);
@@ -492,6 +565,14 @@ const CustomerOrders = () => {
                                                     transition={{ type: "spring", duration: 1, stiffness: 300, damping: 80, 
                                                         mass: 1, scale:{ ease: "easeOut", stiffness: 800 }}}
                                                 >
+                                                {(!item.isAvailable || !sellers.find(s => s._id === item.sellerId)?.is_selling) && (
+                                                    <>
+                                                        <p className="absolute inset-0 flex items-center justify-center text-white z-30 text-xs">
+                                                            Unavailable
+                                                        </p>
+                                                        <div className="absolute inset-0 bg-black opacity-50 rounded-xl z-20"></div>
+                                                    </>
+                                                )}
 
                                                 {/* Toggle to select/deselect the item */}
                                                 <label className="inline-flex items-center cursor-pointer">
