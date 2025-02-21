@@ -94,7 +94,8 @@ router.post('/addseller', isRightRole(['admin']), async (req, res) => {
             email,
             balance: 0, // Assuming balance starts at 0
             created_at: new Date(),
-            last_login: null
+            last_login: null,
+            seller_rating: null
         });
 
         // Save the new user to the database
