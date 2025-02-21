@@ -211,10 +211,9 @@ const ShowOrder = ({ orderSelected, seller }) => {
                                     className="w-24 h-24 object-cover rounded-md"
                                 />) : (
                                     <>
-                                        <p className="absolute inset-0 flex items-center justify-center text-white z-10 text-xs">
+                                        <p className="absolute inset-0 flex items-center bg-gray-400 rounded-md justify-center text-white z-10 text-xs">
                                             No image uploaded
                                         </p>
-                                        <div className="bg-gray-400 rounded-md" />
                                     </>
                                 )}
                             </div>

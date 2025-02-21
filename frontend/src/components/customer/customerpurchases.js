@@ -297,10 +297,9 @@ const CustomerPurchases = () => {
                                                 className="w-20 h-20 object-cover rounded-md"
                                             />) : (
                                                 <>
-                                                    <p className="absolute inset-0 flex items-center justify-center text-white z-10 text-xs">
+                                                    <p className="absolute inset-0 flex items-center justify-center bg-gray-400 rounded-md text-white z-10 text-xs">
                                                         No image uploaded
                                                     </p>
-                                                    <div className="bg-gray-400 rounded-md" />
                                                 </>
                                             )}
                                         </div>
