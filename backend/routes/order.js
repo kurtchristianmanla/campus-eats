@@ -163,7 +163,11 @@ router.put('/prepare/:orderId', isRightRole(['seller']), async (req, res) => {
 
         const nextQueueNumber = lastOrder ? lastOrder.queueNumber + 1 : 1;
 
-        order.queueNumber = nextQueueNumber;
+        if (order.orderType === 'pre-order') {
+            order.queueNumber = null;
+        } else {
+            order.queueNumber = nextQueueNumber;
+        }
 
         // // Update the related transaction's status
         // if (order.paymentTransactionId) {

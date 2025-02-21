@@ -38,7 +38,7 @@ async function autoPrepareOrders(io) {
                     }
                 }
 
-                const lastOrder = await Order.findOne({ status: "preparing" })
+                const lastOrder = await Order.findOne({ sellerId: order.sellerId, status: "preparing" })
                     .sort({ queueNumber: -1 })
                     .select("queueNumber");
 
