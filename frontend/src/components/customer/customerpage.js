@@ -212,7 +212,7 @@ const CustomerPage = () => {
             // document.body.style.overflow = 'auto';
             // document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
         };
-    }, [checkCustomerAccess, fetchSellers, viewSeller, fetchMenu, userId]);
+    }, [checkCustomerAccess, fetchSellers, viewSeller, fetchMenu, userId, fetchRatedItems]);
 
     const [sellersWithRatings, setSellersWithRatings] = useState([]);
 
@@ -730,19 +730,23 @@ const CustomerPage = () => {
                                 <motion.div key={index} className="relative bg-white p-4 rounded-xl w-52 h-68 flex-shrink-0 inline-block 
                                             scroll-ml-4 first:ml-0 flex flex-col overflow-hidden"
                                         onClick={() => {
-                                            if (item.isAvailable) {
+                                            // if (item.isAvailable) {
+                                            //     handleOrderItem(item);
+                                            // }
+                                            const sellerInfo = sellers.find(s => s._id === item.sellerId); // Find the seller
+                                            if (item.isAvailable && sellerInfo?.is_selling) {
                                                 handleOrderItem(item);
                                             }
                                         }}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -20  }}
-                                        whileHover={item.isAvailable ? { scale: 1.05 } : { scale: 1 }}
-                                        whileTap={item.isAvailable ? { scale: 0.95 } : { scale: 1 }}
+                                        whileHover={(item.isAvailable && sellers.find(s => s._id === item.sellerId)?.is_selling) ? { scale: 1.05 } : { scale: 1 }}
+                                        whileTap={(item.isAvailable && sellers.find(s => s._id === item.sellerId)?.is_selling) ? { scale: 0.95 } : { scale: 1 }}
                                         transition={{ hover: { duration: 0.3, ease: "easeOut" },
                                                         x: { duration: 2, ease: "easeOut" }}}
                                 >
-                                {!item.isAvailable && (
+                                {(!item.isAvailable || !sellers.find(s => s._id === item.sellerId)?.is_selling) && (
                                     <>
                                         <p className="absolute inset-0 flex items-center justify-center text-white z-30 text-xs">
                                             Unavailable
