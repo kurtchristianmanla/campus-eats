@@ -146,7 +146,7 @@ const CustomerPayment = () => {
             if (userId && listItems.length === 0) {
                 navigate('/customer/cart');
             }
-        }, 1000); 
+        }, 3000); 
     
         return () => clearTimeout(timer); // Cleanup timer
     }, [userId, listItems, navigate]);
