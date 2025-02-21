@@ -17,6 +17,14 @@ body {
   @apply font-sans;
 }
 
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
 /* Tailwind CSS directives */
 @tailwind base;
 @tailwind components;
