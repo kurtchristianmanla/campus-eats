@@ -272,7 +272,9 @@ const ManageOrders = () => {
             <Header headerName={'Manage Orders'} navigateTo={'/seller'} />
 
             <div className="w-full">
-                <h2 className="text-2xl font-bold mb-4">Orders</h2>
+                <h2 className="text-xl font-bold mb-4">{seller?.user.store_name || "Seller"} 
+                    <span className='text-orange-500 ml-1'>Orders</span>
+                </h2>
 
                 {/* Order Tabs */}
                 <div className="grid grid-cols-3 scrollbar-hide gap-1 mb-4">
@@ -283,7 +285,7 @@ const ManageOrders = () => {
                     return (
                         <button
                             key={status}
-                            className={`px-4 py-2 rounded text-sm transition-all duration-200 relative flex items-center justify-center 
+                            className={`px-4 py-2 h-10 rounded text-sm transition-all duration-200 relative flex items-center justify-center 
                             ${
                                 activeTab === status ? 
                                 'bg-orange-500 text-white shadow-md' : 
@@ -291,7 +293,7 @@ const ManageOrders = () => {
                             }`}
                             onClick={() => handleTabClick(status)}
                         >
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                            <span className='text-xs'>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
                             {shouldShowCount && orderCount > 0 && ( 
                                 <span className="ml-1 bg-red-500 text-white text-[10px] text-center font-semibold px-2 rounded-full">
                                     {orderCount}
