@@ -142,9 +142,9 @@ const Accounts = () => {
                             <p>
                                 <span className="font-medium">Email:</span> {account.email}
                             </p>
-                            <p>
+                            {account.user_type !== 'admin' && (<p>
                                 <span className="font-medium">Balance:</span> ₱{account.balance.toFixed(2)}
-                            </p>
+                            </p>)}
                             <p>
                                 <span className="font-medium">Last Login:</span>{" "}
                                 {account.last_login ? new Date(account.last_login).toLocaleString() : "Not logged in yet"}
