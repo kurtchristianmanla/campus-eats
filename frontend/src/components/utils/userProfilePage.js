@@ -315,6 +315,9 @@ const ProfileUser = (user_type_route) => {
                                 {user.first_name || user.last_name ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Name yet to be set'} ● {user.user_type}
                             </p>
                             <p className="text-sm text-gray-600">{user.email}</p>
+                            {user.user_type === "seller" && (
+                                <p className="text-sm text-green-600">Balance: Php {(user.balance || 0).toFixed(2)}</p>
+                            )}
 
                             <div className="mt-4 space-x-2">
                                 <button
