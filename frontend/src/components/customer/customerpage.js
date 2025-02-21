@@ -181,6 +181,12 @@ const CustomerPage = () => {
                     )
                 );
             }
+
+            setRatedItems((prevItems) =>
+                prevItems.map((item) =>
+                    item._id === data.updatedItem._id ? { ...item, ...data.updatedItem } : item
+                )
+            );
         };
 
         const handleMenuDeleted = (data) => {
