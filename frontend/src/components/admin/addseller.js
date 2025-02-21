@@ -39,10 +39,10 @@ const AddSeller = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const validateEmail = (email) => {
-    const emailRegex = /^.+@phinmaed\.com$/;
-    return emailRegex.test(email);
-  };
+  // const validateEmail = (email) => {
+  //   const emailRegex = /^.+@phinmaed\.com$/;
+  //   return emailRegex.test(email);
+  // };
 
   const validatePassword = (password) => {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -56,12 +56,12 @@ const AddSeller = () => {
     setSuccessMessage('');
     setLoading(true);
 
-    // Validate email
-    if (!validateEmail(formData.email)) {
-      setErrorMessage('Email must end with \'@phinmaed.com\', provided by the university');
-      setLoading(false);
-      return;
-    }
+    // // Validate email
+    // if (!validateEmail(formData.email)) {
+    //   setErrorMessage('Email must end with \'@phinmaed.com\', provided by the university');
+    //   setLoading(false);
+    //   return;
+    // }
 
     // Validate password
     if (!validatePassword(formData.password)) {
