@@ -230,6 +230,7 @@ const ShowOrder = ({ orderSelected, seller }) => {
                     <div className="flex flex-col justify-end items-end text-center">
                         <span className="block text-2xl font-bold text-gray-700">Total ₱{order?.totalAmount}</span>
                         <span className="text-xs font-bold text-gray-400">Payment {order?.paymentStatus}</span>
+                        <span className="text-[10px] font-normal italic text-gray-400">{order?.paymentTransactionId}</span>
                     </div>
 
                     <div className="border-b" />
