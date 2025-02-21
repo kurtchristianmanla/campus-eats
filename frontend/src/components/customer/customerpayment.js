@@ -284,9 +284,9 @@ const CustomerPayment = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#f5f5f7] to-gray-100 w-full fixed">
-            <div className="absolute fixed inset-0 w-full h-full bg-gradient-to-b from-[#f5f5f7] via-[#f5f5f7] to-gray-200 z-[60] 
-                        overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-b from-[#f5f5f7] via-[#f5f5f7] to-gray-200 w-full">
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-[#f5f5f7] via-[#f5f5f7] to-gray-200 z-[60] 
+                        overflow-y-auto scrollbar-hide">
 
                 {/* Navigation Bar */}
                 <header
@@ -425,8 +425,8 @@ const CustomerPayment = () => {
                     className="text-3xl font-bold p-4">Payment</motion.h1>
                 </div>
 
-                <div className="overflow-y-auto scrollbar-hide w-full overflow-visible">
-                    <div className="flex flex-col pb-4 md:pb-52 lg:pb-52 mt-2 px-4">
+                <div className="w-full overflow-visible">
+                    <div className="flex flex-col pb-24 mt-2 px-4">
                         {/* Items */}
                         <div className="flex justify-between items-center ">
                             <h3 className="text-md font-bold uppercase text-black">Items</h3>
@@ -493,7 +493,7 @@ const CustomerPayment = () => {
                                     transition={{ duration: 0.3, ease: "easeOut" }}
                                         >
                                     <svg
-                                        className={`w-4 h-4 text-white ${isPreOrder} ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}
+                                        className={`w-4 h-4 text-white ${isPreOrder ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -530,7 +530,7 @@ const CustomerPayment = () => {
                         <div className="w-full">
                             {/* Add Button */}
                             <div className="fixed inset-x-0 bottom-0 flex flex-row justify-center
-                                items-center px-4 py-6 z-20">
+                                items-center px-4 py-6 z-[50]">
                                 <motion.button
                                     onClick={proceedOrder}
                                     className={`w-full h-14 rounded-xl text-white text-sm font-semibold shadow-md flex justify-center items-center transition-color duration-300
