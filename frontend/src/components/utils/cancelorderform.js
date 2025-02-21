@@ -3,7 +3,7 @@ import { cancelOrder } from '../api/orderService'; // Import the function above
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const CancelOrderForm = ({ orderId, token, label, setOrder }) => {
+const CancelOrderForm = ({ orderId, token, label, setOrder = () => {}, setShowAcceptButton = () => {} }) => {
     const [reason, setReason] = useState('');
     const [showForm, setShowForm] = useState(false);
 
@@ -14,10 +14,12 @@ const CancelOrderForm = ({ orderId, token, label, setOrder }) => {
             }
 
             const updatedOrder = await cancelOrder(token, orderId, reason);
+            console.log(updatedOrder);
             toast.success('Order cancelled successfully.');
             setShowForm(false);
             setOrder(updatedOrder);
         } catch (error) {
+            console.log(error);
             toast.error('Failed to cancel order.');
         }
     };
@@ -27,7 +29,10 @@ const CancelOrderForm = ({ orderId, token, label, setOrder }) => {
             {!showForm ? (
                 <div className="flex justify-end">
                     <button
-                        onClick={() => setShowForm(true)}
+                        onClick={() => {
+                            setShowForm(true);
+                            setShowAcceptButton(false);
+                        }}
                         className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-200"
                     >
                         {label}
@@ -57,7 +62,10 @@ const CancelOrderForm = ({ orderId, token, label, setOrder }) => {
                                 Confirm Cancel
                             </button>
                             <button
-                                onClick={() => setShowForm(false)}
+                                onClick={() => {
+                                    setShowForm(false);
+                                    setShowAcceptButton(true);
+                                }}
                                 className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition duration-200"
                             >
                                 Cancel

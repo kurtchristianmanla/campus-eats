@@ -27,10 +27,37 @@ const ManageOrders = () => {
     const [isSelling, setIsSelling] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // const [showAcceptButton, setShowAcceptButton] = useState(true);
+    // const [showReadyButton, setShowReadyButton] = useState(true);
+    const [buttonStates, setButtonStates] = useState({});
+    const [visibleTransactions, setVisibleTransactions] = useState({});
+
 
     // Extract sellerId from the token stored in localStorage
     const token = localStorage.getItem('token');
     const sellerId = token ? jwtDecode(token).user_id : null;
+
+    const toggleButtonState = (orderId, buttonType, value) => {
+        setButtonStates(prev => ({
+            ...prev,
+            [orderId]: {
+                ...prev[orderId],  // Preserve existing states for the order
+                [buttonType]: value // Update only the specified button state
+            }
+        }));
+    };
+
+    const toggleVisibility = (orderId) => {
+        setVisibleTransactions((prevState) => ({
+            ...prevState,
+            [orderId]: !prevState[orderId], // Toggle only the clicked order
+        }));
+    };
+    
+    const handleTabClick = (status) => {
+        setActiveTab(status);
+        setButtonStates({}); // Reset all button states when changing tabs
+    };
 
 //   const navigate = useNavigate();
 
@@ -92,8 +119,12 @@ const ManageOrders = () => {
                 // setOrders(prevOrders => [data.newOrder, ...prevOrders]);
                 setOrders(prevOrders => {
                     const isDuplicate = prevOrders.some(order => order._id === data.newOrder._id);
+                    // if (!isDuplicate) {
+                    //     return [data.newOrder, ...prevOrders];
+                    // }
                     if (!isDuplicate) {
-                        return [data.newOrder, ...prevOrders];
+                        const newOrders = [...prevOrders, data.newOrder]; // Append instead of prepend
+                        return newOrders.sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
                     }
                     return prevOrders; // Skip adding if duplicate
                 });
@@ -123,7 +154,7 @@ const ManageOrders = () => {
             console.log("Received Orders:", data);
             data.orders.forEach(updatedOrder => {  
                 console.log("ID Order:", updatedOrder._id);
-                if (updatedOrder.customerId === sellerId) {  
+                if (updatedOrder.sellerId === sellerId) {  
                     setOrders(prevOrders => {
                         return prevOrders.map(order =>  
                             order._id === updatedOrder._id  
@@ -229,6 +260,12 @@ const ManageOrders = () => {
         );
     }
 
+    const formatTimestamp = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString() + ' ' + 
+            date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    };
+
     return (
         <div className="min-h-screen bg-[#f8f9fd] flex flex-col items-center p-4">
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
@@ -238,24 +275,43 @@ const ManageOrders = () => {
                 <h2 className="text-2xl font-bold mb-4">Orders</h2>
 
                 {/* Order Tabs */}
-                <div className="flex mb-4 overflow-x-hidden">
-                    {['pending', 'preparing', 'ready', 'completed', 'cancelled'].map((status) => (
+                <div className="grid grid-cols-3 scrollbar-hide gap-1 mb-4">
+                    {['pending', 'pre-order', 'preparing', 'ready', 'completed', 'cancelled'].map((status) => {
+                        const orderCount = orders.filter(order => order.status === status).length;
+                        const shouldShowCount = ['pending', 'pre-order', 'preparing', 'ready'].includes(status);
+
+                    return (
                         <button
                             key={status}
-                            className={`px-4 py-2 rounded text-sm ${
-                                activeTab === status ? 'bg-orange-500 text-white' : 'bg-gray-200'
+                            className={`px-4 py-2 rounded text-sm transition-all duration-200 relative flex items-center justify-center 
+                            ${
+                                activeTab === status ? 
+                                'bg-orange-500 text-white shadow-md' : 
+                                'bg-gray-200 text-gray-700 hover:bg-gray-300'
                             }`}
-                            onClick={() => setActiveTab(status)}
+                            onClick={() => handleTabClick(status)}
                         >
                             {status.charAt(0).toUpperCase() + status.slice(1)}
+                            {shouldShowCount && orderCount > 0 && ( 
+                                <span className="ml-1 bg-red-500 text-white text-[10px] text-center font-semibold px-2 rounded-full">
+                                    {orderCount}
+                                </span>
+                            )}
                         </button>
-                    ))}
+                    )})}
                 </div>
 
                 {/* Orders List */}
-                <div className="grid gap-4">
+                <div className="grid gap-4 mb-20">
                     {orders
                         .filter(order => order.status === activeTab)
+                        .sort((a, b) => {
+                            if (activeTab === 'completed' || activeTab === 'cancelled') {
+                                return new Date(b.updatedAt) - new Date(a.updatedAt); // Latest first
+                            } else {
+                                return new Date(a.updatedAt) - new Date(b.updatedAt); // Earliest first
+                            }
+                        })
                         .map((order) => (
                             <motion.div
                                 key={order._id}
@@ -264,31 +320,57 @@ const ManageOrders = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3 }}
                             >
+                                {(order?.orderType === "pre-order" && 
+                                    (order?.status === "pending" || order?.status === "preparing" || order?.status === "pre-order")) 
+                                && (
+                                    <h4 className="font-semibold flex flex-row items-center text-purple-500 text-xs">
+                                        Scheduled at {formatTimestamp(order?.scheduledTime)}
+                                    </h4>
+                                )}
+                                {order?.status === "cancelled" && (() => {
+                                    const cancellation = order?.statusHistory?.find(entry => entry.status === "cancelled");
+                                    return (
+                                        <h4 className="font-semibold flex flex-row items-center text-red-500 text-[10px]">
+                                            {cancellation?.reason ? `Reason: ${cancellation.reason}` : "No reason provided"}
+                                        </h4>
+                                    );
+                                })()}
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <h3 className="font-bold">Order #{order.orderNumber}</h3>
-                                        <p className="text-gray-600">
+                                        <p className="text-gray-600 text-xs">
                                             {new Date(order.updatedAt).toLocaleString()}
                                         </p>
                                     </div>
-                                    <span
-                                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                            order.status === 'preparing' ? 'bg-blue-100 text-blue-800' :
-                                            order.status === 'ready' ? 'bg-green-100 text-green-800' :
-                                            order.status === 'completed' ? 'bg-gray-100 text-gray-800' :
-                                            'bg-red-100 text-red-800'
-                                        }`}
-                                    >
-                                        {order.status}
-                                    </span>
+                                    <div className='flex flex-col items-end'>
+                                        <span
+                                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                                order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                order.status === 'pre-order' ? 'bg-purple-100 text-purple-800' : 
+                                                order.status === 'preparing' ? 'bg-blue-100 text-blue-800' :
+                                                order.status === 'ready' ? 'bg-green-100 text-green-800' :
+                                                order.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                                                'bg-red-100 text-red-800'
+                                            }`}
+                                        >
+                                            {order.status}
+                                        </span>
+                                        {order.status === "preparing" &&(
+                                            <span className='text-xs font-bold p-1'>Queue: {order?.queueNumber}</span>)}
+                                    </div>
                                 </div>
 
                                 {/* Order Items */}
                                 <div className="mt-4">
                                     {order.items.map((item, index) => (
-                                        <div key={index} className="flex justify-between py-2">
-                                            <span>{item.quantity}x {item.name}</span>
+                                        <div key={index} className="flex justify-between items-center py-2">
+                                            <div className='flex flex-row items-center'>
+                                                <span className='text-md max-w-[200px]'>{item.quantity}x {item.name}</span>
+                                                {(order?.status === "pending" || order?.status === "preparing" || order?.status === "pre-order")
+                                                && (
+                                                    <span className='ml-1 text-[12px] text-blue-500'>({item.minPrepTime}-{item.maxPrepTime} min prep)</span>
+                                                )}
+                                            </div>
                                             <span>₱{item.price * item.quantity}</span>
                                         </div>
                                     ))}
@@ -302,30 +384,74 @@ const ManageOrders = () => {
                                     </div>
                                 </div>
 
+                                <div className="flex flex-col items-end font-boldmt-2">
+                                {visibleTransactions[order._id] ? (
+                                    <button
+                                        onClick={() => toggleVisibility(order._id)}
+                                        className="text-[10px] text-blue-500 hover:underline"
+                                    >
+                                        Transaction ID: <span className='italic'>{order?.paymentTransactionId}</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => toggleVisibility(order._id)}
+                                        className="text-[10px] text-blue-500 hover:underline"
+                                    >
+                                        Payment {order.paymentStatus}
+                                    </button>
+                                )}
+                                </div>
+
                                 {/* Action Buttons */}
-                                <div className="mt-4 flex gap-2">
+                                <div className={`${(order.status === 'pending' || order.status === 'preparing') ? 'mt-4' : ''} flex flex-row justify-end gap-2`}>
                                     {order.status === 'pending' && (
                                         <>
-                                            <button
-                                                onClick={() => handlePrepareOrder(order._id)}
-                                                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                                            >
-                                                Accept
-                                            </button>
-                                            <CancelOrderForm orderId={order._id} token={token} label={'Reject'} />
+                                            {buttonStates[order._id]?.accept !== false && (
+                                                <button
+                                                    onClick={() => {
+                                                        handlePrepareOrder(order._id);
+                                                        toggleButtonState(order._id, 'accept', false);
+                                                    }}
+                                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                                                >
+                                                    Accept
+                                                </button>
+                                            )}
+                                            <div className={`${buttonStates[order._id]?.accept === false ? "w-full" : ""}`}>
+                                                <CancelOrderForm 
+                                                    orderId={order._id} 
+                                                    token={token} 
+                                                    label={'Reject'} 
+                                                    setShowAcceptButton={(value) => toggleButtonState(order._id, 'accept', value)}
+                                                />
+                                            </div>
                                         </>
                                     )}
                                     {order.status === 'preparing' && (
                                         <>
-                                            <button
-                                                onClick={() => handleOrderReady(order._id)}
-                                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                                            >
-                                                Mark as Ready
-                                            </button>
-                                            <CancelOrderForm orderId={order._id} token={token} label={'Cancel Preparing'} />
+                                            {buttonStates[order._id]?.ready !== false && (
+                                                <button
+                                                    onClick={() => {
+                                                        handleOrderReady(order._id);
+                                                        toggleButtonState(order._id, 'ready', false);
+                                                    }}
+                                                    className="bg-blue-500 flex-grow text-white px-4 py-2 rounded hover:bg-blue-600"
+                                                >
+                                                    Mark as Ready
+                                                </button>
+                                            )}
+                                            <div className={`${buttonStates[order._id]?.ready === false ? "w-full" : ""}`}>
+                                                <CancelOrderForm 
+                                                    orderId={order._id} 
+                                                    token={token} 
+                                                    label={'Cancel Preparing'} 
+                                                    setOrder={setOrders}
+                                                    setShowAcceptButton={(value) => toggleButtonState(order._id, 'ready', value)}
+                                                />
+                                            </div>
                                         </>
                                     )}
+
                                 </div>
                             </motion.div>
                         ))}
@@ -336,7 +462,7 @@ const ManageOrders = () => {
             <div className="fixed bottom-0 p-4 z-20 w-full max-w-md">
                 <button
                     onClick={toggleIsSelling}
-                    className="w-full px-10 py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md hover:scale-105 transform transition duration-300"
+                    className="w-full px-10 py-3 rounded-lg shadow-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md hover:scale-105 transform transition duration-300"
                 >
                     MAKE STORE {isSelling ? 'OFFLINE' : 'ONLINE'}
                 </button>
