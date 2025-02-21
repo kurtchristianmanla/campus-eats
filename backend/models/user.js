@@ -89,21 +89,21 @@ const userSchema = new mongoose.Schema({
     
     seller_rating: {
         type: Number,
-        required: function () {
-            return this.user_type === 'seller';
-        },
+        // required: function () {
+        //     return this.user_type === 'seller';
+        // },
         min: 1,
         max: 5,
         default: null, // Default to null for non-sellers
-        validate: {
-            validator: function (value) {
-                if (this.user_type === 'seller') {
-                    return value >= 1 && value <= 5; // Rating should be between 0 and 5 for sellers
-                }
-                return value === null; // Ensure it's null for non-sellers
-            },
-            message: 'Seller rating must be between 1 and 5.'
-        }
+        // validate: {
+        //     validator: function (value) {
+        //         if (this.user_type === 'seller') {
+        //             return value >= 1 && value <= 5; // Rating should be between 0 and 5 for sellers
+        //         }
+        //         return value === null; // Ensure it's null for non-sellers
+        //     },
+        //     message: 'Seller rating must be between 1 and 5.'
+        // }
     },
 });
 
