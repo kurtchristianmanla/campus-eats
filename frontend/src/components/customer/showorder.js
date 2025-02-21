@@ -192,12 +192,14 @@ const ShowOrder = ({ orderSelected, seller }) => {
                             {seller || "Unknown Store"}
                             <span>- Order #{order?.orderNumber || "N/A"}</span>
                         </h2>
-                        {(order?.orderType === "pre-order") && (
-                            <h4 className="font-light italic flex flex-row items-center gap-1 text-orange-500 text-[10px] ml-1">
-                                ({order?.orderType})
-                            </h4>
-                        )}
                     </div>
+
+                    
+                    {(order?.orderType === "pre-order") && (
+                        <h4 className="font-light text-orange-500 text-xs -mt-4">
+                            ({order?.orderType})
+                        </h4>
+                    )}
 
                     {order?.items.map((item, index) => (
                         <div key={index} className="flex flex-row items-center justify-start gap-4">
