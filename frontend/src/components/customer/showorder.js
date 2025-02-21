@@ -369,7 +369,12 @@ const ShowOrder = ({ orderSelected, seller }) => {
                     )}
 
                         {order?.status === 'pending' && (
-                            <CancelOrderForm orderId={order._id} token={token} label={'Cancel Order'} setOrder={setOrder} />
+                            <CancelOrderForm 
+                                orderId={order._id} 
+                                token={token} 
+                                label={'Cancel Order'} 
+                                setOrder={setOrder} 
+                                />
                         )}
                 </div>
             </div>
