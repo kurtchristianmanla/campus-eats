@@ -19,8 +19,9 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-serviceWorkerRegistration.register();
-subscribeUser();
+serviceWorkerRegistration.register().then(() => {
+  subscribeUser();
+});
 
 if ("Notification" in window && "serviceWorker" in navigator) {
   Notification.requestPermission().then((permission) => {
