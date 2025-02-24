@@ -4,6 +4,9 @@ import { toast } from 'react-toastify';
 
 // Create order(s) from cart
 export const createOrders = async (token, cartItems, isPreOrder, scheduledTime = null) => {
+
+    console.log(scheduledTime);
+    
     // Group items by seller
     const itemsBySeller = cartItems.reduce((acc, item) => {
         if (!acc[item.sellerId]) {
