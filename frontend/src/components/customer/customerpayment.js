@@ -211,19 +211,21 @@ const CustomerPayment = () => {
         const dd = String(now.getDate()).padStart(2, '0');
 
         const preOrderTimeUTC = `${yyyy}-${mm}-${dd}T${scheduledTime}`;
-        console.log("Selected (Local Time):", preOrderTimeUTC); // 2025-02-25T01:36 (PHT)
+        console.log("Selected (Local Time):", preOrderTimeUTC); // 2025-02-25T01:41 (PHT)
 
-        // Create a Date object from the local time string
-        const localDate = new Date(preOrderTimeUTC);
-        console.log("Convert (Local Date):", localDate); // Tue Feb 25 2025 01:36:00 GMT+0800 (PHT)
+        // Create a Date object from the local time string (assumes local timezone)
+        const localDate = new Date(preOrderTimeUTC + "+08:00"); // Explicitly set the timezone to PHT (UTC+8)
+        console.log("Convert (Local Date):", localDate); // Tue Feb 25 2025 01:41:00 GMT+0800 (PHT)
 
         // Convert the local time to UTC
-        const utcDate = new Date(localDate.getTime() - (localDate.getTimezoneOffset() * 60000));
-        console.log("Converted to UTC:", utcDate); // Mon Feb 24 2025 17:36:00 GMT+0000 (UTC)
+        const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
+        console.log("Converted to UTC:", utcDate); // Mon Feb 24 2025 17:41:00 GMT+0000 (UTC)
 
         // Send the UTC time in ISO format
         const preOrderTime = utcDate.toISOString();
-        console.log("Sent (UTC):", preOrderTime); // 2025-02-24T17:36:00.000Z
+        console.log("Sent (UTC):", preOrderTime); // 2025-02-24T17:41:00.000Z
+
+        console.log("Timezone Offset:", localDate.getTimezoneOffset());
 
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
 
