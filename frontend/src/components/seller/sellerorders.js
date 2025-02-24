@@ -326,7 +326,7 @@ const ManageOrders = () => {
                                     (order?.status === "pending" || order?.status === "preparing" || order?.status === "pre-order")) 
                                 && (
                                     <h4 className="font-semibold flex flex-row items-center text-purple-500 text-xs">
-                                        Scheduled at {formatTimestamp(order?.scheduledTime)}
+                                        Pickup time: {formatTimestamp(order?.scheduledTime)}
                                     </h4>
                                 )}
                                 {order?.status === "cancelled" && (() => {

@@ -5,6 +5,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import { subscribeUser } from "./subscribe";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -18,5 +19,16 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-
 serviceWorkerRegistration.register();
+subscribeUser();
+
+if ("Notification" in window && "serviceWorker" in navigator) {
+  Notification.requestPermission().then((permission) => {
+    if (permission === "granted") {
+      console.log("Notification permission granted.");
+    } else {
+      console.log("Notification permission denied.");
+    }
+  });
+}
+
