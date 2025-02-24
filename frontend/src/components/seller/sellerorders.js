@@ -223,7 +223,7 @@ const ManageOrders = () => {
             console.log('Order status updated:', updatedOrder.status);
     
             // Update UI, show success notification, etc.
-            toast.success(`Order #${orderId} is now in ${updatedOrder.status === 'preparing' ? "preparing" : "pre-order"} status.`);
+            toast.success(`Order #${updatedOrder.orderNumber} is now in ${updatedOrder.status === 'preparing' ? "preparing" : "pre-order"} status.`);
         } catch (error) {
             toast.error('Failed to update the order.');
         }
@@ -235,7 +235,7 @@ const ManageOrders = () => {
             console.log('Order updated:', updatedOrder);
     
             // Update UI, show success notification, etc.
-            toast.success(`Order #${orderId} is now in "Ready" status.`);
+            toast.success(`Order #${updatedOrder.orderNumber} is now in "Ready" status.`);
         } catch (error) {
             toast.error('Failed to update the order.');
         }

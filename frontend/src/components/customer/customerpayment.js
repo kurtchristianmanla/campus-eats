@@ -211,12 +211,6 @@ const CustomerPayment = () => {
 
         console.log("Selected (Local Time):", preOrderTime.toISOString()); // Logs correct local time
 
-        // Convert to UTC properly
-        // const preOrderTime = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000).toISOString();
-
-        // console.log("Sent (UTC):", preOrderTime); // Should now be in proper UTC
-
-
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
 
         try {

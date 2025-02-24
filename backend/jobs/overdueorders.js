@@ -73,7 +73,7 @@ async function autoCancelOverdueOrders(io) {
             // io.emit('overdueOrder', { warningOrders });
             warningOrders.forEach(order => {
                 io.to(`seller_${order.sellerId}`).emit('overdueOrder', { 
-                    message: `Order #${order._id} is overdue!`, 
+                    message: `Order #${order.orderNumber} is overdue!`, 
                     order 
                 });
             });
