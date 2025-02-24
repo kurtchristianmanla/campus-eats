@@ -213,6 +213,8 @@ const CustomerPayment = () => {
         // const preOrderTime = `${yyyy}-${mm}-${dd}T${scheduledTime}`;
         const preOrderTime = new Date(`${yyyy}-${mm}-${dd}T${scheduledTime}:00.000Z`).toISOString();
 
+        console.log(preOrderTime);
+
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
 
         try {
