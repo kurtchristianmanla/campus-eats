@@ -146,7 +146,11 @@ router.put('/set-status', isRightRole(['seller']), async (req, res) => {
 
         if (!is_selling) {
             // Cancel all pending orders
-            const pendingOrders = await Order.find({ sellerId: user._id, status: 'pending' });
+            // const pendingOrders = await Order.find({ sellerId: user._id, status: 'pending' });
+            const pendingOrders = await Order.find({ 
+                sellerId: user._id, 
+                status: { $in: ['pending', 'pre-order'] } 
+            });
 
             for (const order of pendingOrders) {
                 order.paymentStatus = 'released';
