@@ -155,6 +155,16 @@ const CustomerPurchases = () => {
         };
     }, [userId, token, fetchOrders, checkCustomerAccess, fetchSellers]);
 
+    useEffect(() => {
+        // Update `selectedOrder` whenever `orders` change
+        if (selectedOrder) {
+            const updatedOrder = orders.find(o => o._id === selectedOrder._id);
+            if (updatedOrder) {
+                setSelectedOrder(updatedOrder);
+            }
+        }
+    }, [orders, selectedOrder]);
+
     console.log("Selected Order:", selectedOrder);
 
     const tabs = ['pending', 'completed', 'cancelled'];
