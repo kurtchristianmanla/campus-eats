@@ -210,8 +210,9 @@ const CustomerPayment = () => {
         const mm = String(now.getMonth() + 1).padStart(2, '0');
         const dd = String(now.getDate()).padStart(2, '0');
 
-        // const preOrderTime = `${yyyy}-${mm}-${dd}T${scheduledTime}`;
-        const preOrderTime = new Date(`${yyyy}-${mm}-${dd}T${scheduledTime}:00.000Z`).toISOString();
+        const preOrderTimeUTC = `${yyyy}-${mm}-${dd}T${scheduledTime}`;
+        const localDate = new Date(preOrderTimeUTC); // This assumes local timezone (PHT)
+        const preOrderTime = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000).toISOString();
 
         console.log(preOrderTime);
 
