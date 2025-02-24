@@ -211,10 +211,11 @@ const CustomerPayment = () => {
         const dd = String(now.getDate()).padStart(2, '0');
 
         const preOrderTimeUTC = `${yyyy}-${mm}-${dd}T${scheduledTime}`;
+        console.log("Selected:", preOrderTimeUTC);
         const localDate = new Date(preOrderTimeUTC); // This assumes local timezone (PHT)
+        console.log("Convert:", localDate);
         const preOrderTime = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000).toISOString();
-
-        console.log(preOrderTime);
+        console.log("Sent:", preOrderTime);
 
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
 
