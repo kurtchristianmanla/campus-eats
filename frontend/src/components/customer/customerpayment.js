@@ -204,28 +204,18 @@ const CustomerPayment = () => {
             return toast.error('Please select a scheduled time for pre-order.');
         }
 
-        const now = new Date();
+        // Get the current date and apply scheduled time manually
+        const selectedDate = new Date();
+        const [hh, mm] = scheduledTime.split(":");
+        selectedDate.setHours(hh, mm, 0, 0); // Set the hours and minutes in LOCAL TIME (PHT)
 
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now.getDate()).padStart(2, '0');
+        console.log("Selected (Local Time):", selectedDate.toISOString()); // Logs correct local time
 
-        const preOrderTimeUTC = `${yyyy}-${mm}-${dd}T${scheduledTime}`;
-        console.log("Selected (Local Time):", preOrderTimeUTC); // 2025-02-25T01:41 (PHT)
+        // Convert to UTC properly
+        const preOrderTime = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000).toISOString();
 
-        // Create a Date object from the local time string (assumes local timezone)
-        const localDate = new Date(preOrderTimeUTC + "+08:00"); // Explicitly set the timezone to PHT (UTC+8)
-        console.log("Convert (Local Date):", localDate); // Tue Feb 25 2025 01:41:00 GMT+0800 (PHT)
+        console.log("Sent (UTC):", preOrderTime); // Should now be in proper UTC
 
-        // Convert the local time to UTC
-        const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
-        console.log("Converted to UTC:", utcDate); // Mon Feb 24 2025 17:41:00 GMT+0000 (UTC)
-
-        // Send the UTC time in ISO format
-        const preOrderTime = utcDate.toISOString();
-        console.log("Sent (UTC):", preOrderTime); // 2025-02-24T17:41:00.000Z
-
-        console.log("Timezone Offset:", localDate.getTimezoneOffset());
 
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
 
