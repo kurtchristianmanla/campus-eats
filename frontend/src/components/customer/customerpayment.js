@@ -312,7 +312,7 @@ const CustomerPayment = () => {
 
                 <AnimatePresence>
                 {successWindow && (
-                    <motion.div className="min-h-screen lg:mt-[6rem] mt-[8rem] bg-[#f8f9fd] flex flex-col items-center p-4"
+                    <motion.div className="lg:mt-[4rem] md:mt-[5rem] mt-[10rem] bg-gradient-to-b from-[#f5f5f7] via-[#f5f5f7] flex flex-col items-center p-4"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -416,13 +416,14 @@ const CustomerPayment = () => {
                     )}
                 </AnimatePresence>
 
+            {!successWindow && (<>
                 <div className="mt-12 relative overflow-visible lg:px-8">
-                <motion.h1 
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20  }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="text-3xl font-bold p-4">Payment</motion.h1>
+                    <motion.h1 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20  }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="text-3xl font-bold p-4">Payment</motion.h1>
                 </div>
 
                 <div className="w-full overflow-visible">
@@ -508,20 +509,20 @@ const CustomerPayment = () => {
                             {isPreOrder && (
                                 <div className="flex flex-col items-start">
                                 <label htmlFor="time" className="block text-xs text-gray-500 mb-1">
-                                  Schedule Time
+                                    Schedule Time
                                 </label>
                                 <input
-                                  id="time"
-                                  type="time"
-                                  value={scheduledTime}
-                                  onChange={handleTimeChange}
-                                  min={minTime} // Prevents past dates
-                                  max={maxTime}
-                                  className="p-2 border rounded-md text-sm focus:outline-none 
-                                             focus:ring-2 focus:ring-orange-400 transition-shadow 
-                                             duration-200 hover:shadow-md w-40"
+                                    id="time"
+                                    type="time"
+                                    value={scheduledTime}
+                                    onChange={handleTimeChange}
+                                    min={minTime} // Prevents past dates
+                                    max={maxTime}
+                                    className="p-2 border rounded-md text-sm focus:outline-none 
+                                                focus:ring-2 focus:ring-orange-400 transition-shadow 
+                                                duration-200 hover:shadow-md w-40"
                                 />
-                              </div>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -545,6 +546,7 @@ const CustomerPayment = () => {
                         </div>
                     )}
                 </div>
+            </>)}
             </div>
         </div>
     );
