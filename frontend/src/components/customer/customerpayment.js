@@ -205,16 +205,16 @@ const CustomerPayment = () => {
         }
 
         // Get the current date and apply scheduled time manually
-        const selectedDate = new Date();
+        const preOrderTime = new Date();
         const [hh, mm] = scheduledTime.split(":");
-        selectedDate.setHours(hh, mm, 0, 0); // Set the hours and minutes in LOCAL TIME (PHT)
+        preOrderTime.setHours(hh, mm, 0, 0); // Set the hours and minutes in LOCAL TIME (PHT)
 
-        console.log("Selected (Local Time):", selectedDate.toISOString()); // Logs correct local time
+        console.log("Selected (Local Time):", preOrderTime.toISOString()); // Logs correct local time
 
         // Convert to UTC properly
-        const preOrderTime = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000).toISOString();
+        // const preOrderTime = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000).toISOString();
 
-        console.log("Sent (UTC):", preOrderTime); // Should now be in proper UTC
+        // console.log("Sent (UTC):", preOrderTime); // Should now be in proper UTC
 
 
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
