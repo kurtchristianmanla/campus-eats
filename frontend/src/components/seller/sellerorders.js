@@ -263,7 +263,18 @@ const ManageOrders = () => {
     const formatTimestamp = (timestamp) => {
         const date = new Date(timestamp);
         return date.toLocaleDateString() + ' ' + 
-            date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', });
+    };
+
+    const formatTime12Hour = (timestamp) => {
+        return new Date(timestamp).toLocaleString('en-US', {
+            year: 'numeric', // e.g., 2023
+            month: 'short', // e.g., Oct
+            day: 'numeric', // e.g., 12
+            hour: 'numeric', // e.g., 3
+            minute: '2-digit', // e.g., 30
+            hour12: true, // Use 12-hour format (AM/PM)
+        });
     };
 
     return (
@@ -326,7 +337,7 @@ const ManageOrders = () => {
                                     (order?.status === "pending" || order?.status === "preparing" || order?.status === "pre-order")) 
                                 && (
                                     <h4 className="font-semibold flex flex-row items-center text-purple-500 text-xs">
-                                        Pickup time: {formatTimestamp(order?.scheduledTime)}
+                                        Pickup time: {formatTime12Hour(order?.scheduledTime)}
                                     </h4>
                                 )}
                                 {order?.status === "cancelled" && (() => {
@@ -341,7 +352,7 @@ const ManageOrders = () => {
                                     <div>
                                         <h3 className="font-bold">Order #{order.orderNumber}</h3>
                                         <p className="text-gray-600 text-xs">
-                                            {new Date(order.updatedAt).toLocaleString()}
+                                            {formatTime12Hour(order.updatedAt)}
                                         </p>
                                     </div>
                                     <div className='flex flex-col items-end'>
