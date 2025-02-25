@@ -6,6 +6,11 @@ const webPush = require("web-push");
 router.post("/subscribe", async (req, res) => {
     const subscription = req.body;
 
+    // Validate subscription object
+    if (!subscription || !subscription.endpoint) {
+        return res.status(400).json({ error: "Invalid subscription data" });
+    }
+
     try {
         // Check if subscription already exists
         const existingSubscription = await Subscription.findOne({ endpoint: subscription.endpoint });
@@ -25,6 +30,10 @@ router.post("/subscribe", async (req, res) => {
 
 router.post("/notify", async (req, res) => {
     const { title, body } = req.body;
+
+    if (!title || !body) {
+        return res.status(400).json({ error: "Title and body are required" });
+    }
 
     try {
         const subscriptions = await Subscription.find(); // Get all stored subscriptions
