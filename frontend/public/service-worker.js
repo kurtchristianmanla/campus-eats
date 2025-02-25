@@ -14,12 +14,20 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener('push', event => {
-    const data = event.data.json();
+    let data = {};
+    try {
+        data = event.data.json();
+    } catch (e) {
+        data = {
+            title: "Campus Eats",
+            body: "New notification!"
+        };
+    }
+    
     const options = {
         body: data.body || "New notification!",
         icon: '/test/campus-eats-logo.png',
         badge: '/test/campus-eats-logo.png',
-        sound: '/test/notification.wav', // Custom sound path (may vary based on browser support)
         vibrate: [200, 100, 200],
         actions: [
             { action: "open", title: "View Orders" },
@@ -32,6 +40,7 @@ self.addEventListener('push', event => {
     );
 });
 
+
 self.addEventListener("notificationclick", (event) => {
     event.notification.close();
     
@@ -39,6 +48,6 @@ self.addEventListener("notificationclick", (event) => {
       clients.openWindow("/orders"); // Open order page
     }
   
-    const audio = new Audio("/test/notification.wav");
-    audio.play();
+    // const audio = new Audio("/test/notification.wav");
+    // audio.play();
 });

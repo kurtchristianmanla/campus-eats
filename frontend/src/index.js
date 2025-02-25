@@ -19,9 +19,15 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-serviceWorkerRegistration.register().then(() => {
-  subscribeUser();
-});
+serviceWorkerRegistration.register()
+  .then(registration => {
+    if (registration) {
+      subscribeUser();
+    }
+  })
+  .catch(error => {
+    console.error('Service Worker registration error:', error);
+  });
 
 if ("Notification" in window && "serviceWorker" in navigator) {
   Notification.requestPermission().then((permission) => {
