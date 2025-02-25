@@ -1,10 +1,30 @@
 const CACHE_NAME = "campus-eats-cache-v1";
-const urlsToCache = ["/", "/index.html", "/static/js/bundle.js"];
+const urlsToCache = [
+    "/",
+  "/index.html",
+  // Don't use /static/js/bundle.js - this path is for development
+  // Instead, use patterns that match your production files
+  "/static/js/main.*.js",
+  "/static/css/main.*.css",
+  // Add other important assets
+  "/test/campus-eats-logo.png"
+];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
-  );
+    event.waitUntil(
+      caches.open(CACHE_NAME)
+        .then((cache) => {
+          // Try to cache each URL, but don't fail if some can't be cached
+          return Promise.allSettled(
+            urlsToCache.map(url => 
+              cache.add(url).catch(err => {
+                console.warn(`Failed to cache ${url}: ${err.message}`);
+                return null;
+              })
+            )
+          );
+        })
+    );
 });
 
 self.addEventListener("fetch", (event) => {
