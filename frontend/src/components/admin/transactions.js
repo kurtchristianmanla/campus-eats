@@ -83,7 +83,7 @@ const Transactions = () => {
             </button>
             <h1 className="text-lg font-bold text-gray-700">Transactions</h1>
         </header>
-        <div className="container mx-auto p-4 text-sm">
+        <div className="container mx-auto p-4 text-xs">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Transaction List</h2>
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
@@ -96,6 +96,8 @@ const Transactions = () => {
                     <th className="px-4 py-2 border-b">Amount</th>
                     <th className="px-0 py-2 border-b">Transaction Details</th>
                     <th className="px-4 py-2 border-b">Status</th>
+                    <th className="px-4 py-2 border-b">User Balance After</th>
+                    <th className="px-4 py-2 border-b">Seller Balance After</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -154,6 +156,9 @@ const Transactions = () => {
                         </td>
 
                         <td className="px-4 py-2 border-b">{transaction.status}</td>
+                        
+                        <td className="px-4 py-2 border-b">{transaction.userBalanceAfter || 'N/A'}</td>
+                        <td className="px-4 py-2 border-b">{transaction.sellerBalanceAfter || 'N/A'}</td>
                     </tr>
                     ))}
                 </tbody>

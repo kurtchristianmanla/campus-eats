@@ -34,6 +34,15 @@ const transactionSchema = new mongoose.Schema({
         type: Date, 
         default: Date.now 
     },
+    userBalanceAfter: {
+        type: Number,
+        required: true,
+    },
+    sellerBalanceAfter: {
+        type: Number,
+        required: false,
+        default: null,
+    },
 });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);

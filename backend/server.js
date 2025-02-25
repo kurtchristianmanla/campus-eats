@@ -62,7 +62,6 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Import routes
-const paymentRoutes = require('./routes/payment');
 const userRoutes = require('./routes/manage');
 const adminRoutes = require('./routes/admin');
 const sellerRoutes = require('./routes/seller');
@@ -86,7 +85,6 @@ app.use((req, res, next) => {
 });
 
 // Use routes
-app.use('/payment', paymentRoutes);
 app.use('/user', userRoutes);
 app.use('/admin', adminRoutes);
 app.use('/seller', sellerRoutes);

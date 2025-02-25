@@ -163,20 +163,23 @@ router.post('/top-up', isRightRole(['admin']), async (req, res) => {
     if (!query|| !amount) {
       return res.status(400).json({ message: 'Username/email and amount are required.' });
     }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
   
      // Find the user by username or email
     try {
-        const user = await User.findOne({ _id: query });
+        const user = await User.findOne({ _id: query }).session(session);
 
         console.log(user);
 
         if (!user) {
-        return res.status(404).json({ message: 'User not found.' });
+            throw new Error('User not found.');
         }
 
         // Ensure the amount is a positive number
         if (amount <= 0) {
-        return res.status(400).json({ message: 'Amount must be greater than zero.' });
+            throw new Error('Amount must be greater than zero.');
         }
 
         // Update the user's balance
@@ -185,17 +188,22 @@ router.post('/top-up', isRightRole(['admin']), async (req, res) => {
         // Generate transaction ID
         const transactionId = await generateTransactionId();
 
-        // Save the updated user
-        await user.save();
-
         const transaction = new Transaction({
             transactionId,
             user: user._id,
             type: 'top-up',
             amount,
             status: 'completed',
+            userBalanceAfter: user.balance,
         });
-        await transaction.save();
+        
+        // Save the updated user and transaction
+        await user.save({ session });
+        await transaction.save({ session });
+
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
 
         req.io.emit('updateBalance', { balance: user.balance, userId: user._id });
 
@@ -203,12 +211,15 @@ router.post('/top-up', isRightRole(['admin']), async (req, res) => {
 
         // Respond with the updated balance
         res.status(200).json({
-        message: 'Top-up successful!',
-        balance: user.balance.toFixed(2),  // Ensure balance is in decimal format
+            message: 'Top-up successful!',
+            balance: user.balance.toFixed(2),  // Ensure balance is in decimal format
         });
     } catch (error) {
+        // Abort the transaction on error
+        await session.abortTransaction();
+        session.endSession();
         console.error('Error during top-up:', error);
-        res.status(500).json({ message: 'An error occurred while processing the top-up.' });
+        res.status(500).json({ message: error.message || 'An error occurred while processing the top-up.' });
     }
 });
 
@@ -220,28 +231,28 @@ router.post('/cashout', isRightRole(['admin']), async (req, res) => {
     if (!query|| !amount) {
       return res.status(400).json({ message: 'Username/email and amount are required.' });
     }
+    
+    const session = await mongoose.startSession();
+    session.startTransaction();
   
      // Find the user by username or email
     try {
-        const user = await User.findOne({ _id: query });
+        const user = await User.findOne({ _id: query }).session(session);
 
         console.log(user);
 
         if (!user) {
-        return res.status(404).json({ message: 'User not found.' });
+            throw new Error('User not found.');
         }
 
         // Ensure the amount is a positive number
         if (amount <= 0) {
-        return res.status(400).json({ message: 'Amount must be greater than zero.' });
+            throw new Error('Amount must be greater than zero.');
         }
 
         // Check if the user has sufficient balance for the cash out
         if (user.balance < amount) {
-            return res.status(400).json({
-                message: 'Insufficient balance for cash out.',
-                balance: user.balance.toFixed(2) // Ensure balance is in decimal format
-            });
+            throw new Error('Insufficient balance for cash out.');
         }
 
         // Update the user's balance
@@ -250,9 +261,6 @@ router.post('/cashout', isRightRole(['admin']), async (req, res) => {
         // Generate transaction ID
         const transactionId = await generateTransactionId();
 
-        // Save the updated user
-        await user.save();
-
         // Create a new transaction record
         const transaction = new Transaction({
             transactionId,
@@ -260,19 +268,30 @@ router.post('/cashout', isRightRole(['admin']), async (req, res) => {
             type: 'cashout',
             amount,
             status: 'completed',
+            userBalanceAfter: user.balance,
         });
-        await transaction.save();
+
+        // Save the updated user and transaction
+        await user.save({ session });
+        await transaction.save({ session });
+
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
 
         req.io.emit('updateBalance', { balance: user.balance, userId: user._id });
 
         // Respond with the updated balance
         res.status(200).json({
-        message: 'Top-up successful!',
-        balance: user.balance.toFixed(2),  // Ensure balance is in decimal format
+            message: 'Cash out successful!',
+            balance: user.balance.toFixed(2),  // Ensure balance is in decimal format
         });
     } catch (error) {
-        console.error('Error during top-up:', error);
-        res.status(500).json({ message: 'An error occurred while processing the top-up.' });
+        // Abort the transaction on error
+        await session.abortTransaction();
+        session.endSession();
+        console.error('Error during cash out:', error);
+        res.status(500).json({ message: error.message || 'An error occurred while processing the cashout.' });
     }
 });
 

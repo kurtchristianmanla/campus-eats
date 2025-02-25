@@ -172,7 +172,7 @@ const Transactions = () => {
                             <td className="py-2 px-4 border-b">{transaction.transactionId}</td>
                             <td className="py-2 px-4 border-b">{getTransactionLabel(transaction.type)}</td>
                             <td className="py-2 px-4 border-b">Php {transaction.amount.toFixed(2)}</td>
-                            <td className="py-2 px-4 border-b">Php {transaction.balance?.toFixed(2)}</td>
+                            <td className="py-2 px-4 border-b">Php {transaction.sellerBalanceAfter?.toFixed(2) || "N/A"}</td>
                             <td className="py-2 px-1 border-b">
                                 {transaction.details?.orderNumber || 'N/A'}
                             </td>

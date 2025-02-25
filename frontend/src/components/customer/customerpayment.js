@@ -34,6 +34,7 @@ const CustomerPayment = () => {
     const [socket, setSocket] = useState(null); // Track the socket connection
     const [minTime, setMinTime] = useState('');
     const [maxTime, setMaxTime] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
         const now = new Date();
@@ -199,6 +200,8 @@ const CustomerPayment = () => {
     };
 
     const proceedOrder = async () => {
+        if (isProcessing) return; // Prevent multiple clicks
+        setIsProcessing(true); // Disable the button
 
         if (isPreOrder && !scheduledTime) {
             return toast.error('Please select a scheduled time for pre-order.');
@@ -242,9 +245,11 @@ const CustomerPayment = () => {
                     setSuccessWindow(true);
                 } else {
                   toast.error('Failed to place the order.');
+                  setIsProcessing(false);
                 }
             } catch (error) {
                 console.log(`Error: ${error.message}`);
+                setIsProcessing(false);
             }
 
             // const createOrders(token, payItems);
@@ -539,7 +544,7 @@ const CustomerPayment = () => {
                                     whileTap={{ scale: 0.95 }}
                                     transition={{ hover: { duration: 0.3, ease: "easeOut" }}}
                                 >
-                                    Pay and wait for confirmation
+                                    {isProcessing ? 'Processing...' : 'Pay and wait for confirmation'}
                                 </motion.button>
                             </div>
                         </div>
