@@ -8,18 +8,21 @@ const RateProduct = ({ token, productId, productName, orderId, setShowRatingForm
     const [rating, setRating] = useState(5);
     const [review, setReview] = useState("");
     const [hover, setHover] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const result = await rateProduct(token, productId, orderId, rating, review);
         if (result.error) {
             toast.error("Failed to submit rating.");
+            setIsSubmitting(false);
         } else {
             toast.success("Rating submitted successfully!");
             setShowRatingForm((prev) => ({
                 ...prev,
                 [productId]: !prev[productId]
             }));
+            setIsSubmitting(false);
         }
     };
 
@@ -32,7 +35,10 @@ const RateProduct = ({ token, productId, productName, orderId, setShowRatingForm
             transition={{ duration: 0.3, ease: "easeOut" }}
         >
             <form
-                onSubmit={handleSubmit}
+                onSubmit={(e) => {
+                    setIsSubmitting(true);
+                    handleSubmit(e);
+                }}
                 className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md"
             >
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Rate {productName}</h3>
@@ -62,8 +68,9 @@ const RateProduct = ({ token, productId, productName, orderId, setShowRatingForm
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ hover: { duration: 0.3, ease: "easeOut" }}}
+                    disabled={isSubmitting}
                 >
-                    Submit Rating
+                    {isSubmitting ? 'Submitting...' : "Submit Rating"}
                 </motion.button>
             </form>
         </motion.div>
