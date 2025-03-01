@@ -298,16 +298,34 @@ router.post('/cashout', isRightRole(['admin']), async (req, res) => {
 // Route to fetch all transactions
 router.get('/transactions', isRightRole(['admin']), async (req, res) => {
     try {
-      const transactions = await Transaction.find()
-        .populate('user', 'first_name last_name username') // Specify the fields you want from the User model
+        // Fetch transactions and populate the 'user' field
+        const transactions = await Transaction.find()
+        .populate({
+            path: 'user',
+            select: 'first_name last_name username', // Select the fields you want from the User model
+            options: { lean: true } // Use lean for better performance
+        })
         .exec();
 
-      res.json(transactions);  // Send the data to the frontend
+    // Map through transactions and handle missing users
+    const formattedTransactions = transactions.map(transaction => {
+        if (!transaction.user) {
+            // If the user is null or not found, replace with a placeholder
+            transaction.user = {
+                first_name: 'Account',
+                last_name: 'Deleted',
+                username: 'Account Deleted'
+            };
+        }
+        return transaction;
+    });
+
+res.json(formattedTransactions); // Send the formatted data to the frontend
     } catch (err) {
-      console.error("Error fetching transactions:", err);
-      res.status(500).json({ message: "Server error" });
+    console.error("Error fetching transactions:", err);
+    res.status(500).json({ message: "Server error" });
     }
-  });
+});
 
 // Route to fetch user profile
 router.use(isRightRole(['admin']), profileRoutes);

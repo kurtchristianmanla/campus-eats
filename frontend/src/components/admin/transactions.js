@@ -44,8 +44,6 @@ const Transactions = () => {
     return <Loading />;
   }
 
-  console.log(transactions);
-
   if (error) {
     return (
         <div className="min-h-screen bg-[#f8f9fd] flex flex-col items-center p-4">
@@ -105,11 +103,11 @@ const Transactions = () => {
                 <tbody>
                     {transactions.map((transaction) => (
                     <tr key={transaction.transactionId} className="hover:bg-gray-50 text-center">
-                        <td className="px-4 py-2 border-b">{new Date(transaction.createdAt).toLocaleString() || "Missing"}</td>
-                        <td className="px-4 py-2 border-b">{transaction.transactionId || "Missing"}</td>
-                        <td className="px-4 py-2 border-b">{transaction.user.username || "No username"}</td>
-                        <td className="px-4 py-2 border-b">{transaction.type || "Missing"}</td>
-                        <td className="px-4 py-2 border-b">{transaction.amount || "Missing"}</td>
+                        <td className="px-4 py-2 border-b">{new Date(transaction.createdAt).toLocaleString()}</td>
+                        <td className="px-4 py-2 border-b">{transaction.transactionId}</td>
+                        <td className="px-4 py-2 border-b">{transaction.user.username}</td>
+                        <td className="px-4 py-2 border-b">{transaction.type}</td>
+                        <td className="px-4 py-2 border-b">{transaction.amount}</td>
                         
                         {/* Transaction Details */}
                         <td className="px-0 py-2 border-b text-xs w-48">
@@ -157,7 +155,7 @@ const Transactions = () => {
                             )}
                         </td>
 
-                        <td className="px-4 py-2 border-b">{transaction.status || "Missing"}</td>
+                        <td className="px-4 py-2 border-b">{transaction.status}</td>
                         
                         <td className="px-4 py-2 border-b">{transaction.userBalanceAfter || 'N/A'}</td>
                         <td className="px-4 py-2 border-b">{transaction.sellerBalanceAfter || 'N/A'}</td>
