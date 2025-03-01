@@ -44,6 +44,8 @@ const Transactions = () => {
     return <Loading />;
   }
 
+  console.log(transactions);
+
   if (error) {
     return (
         <div className="min-h-screen bg-[#f8f9fd] flex flex-col items-center p-4">
