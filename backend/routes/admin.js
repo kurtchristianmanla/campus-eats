@@ -300,30 +300,26 @@ router.get('/transactions', isRightRole(['admin']), async (req, res) => {
     try {
         // Fetch transactions and populate the 'user' field
         const transactions = await Transaction.find()
-        .populate({
-            path: 'user',
-            select: 'first_name last_name username', // Select the fields you want from the User model
-            options: { lean: true } // Use lean for better performance
-        })
-        .exec();
+            .populate({
+                path: 'user',
+                select: 'first_name last_name username',
+            })
+            .lean(); // Use lean() on the main query for better performance
 
-    // Map through transactions and handle missing users
-    const formattedTransactions = transactions.map(transaction => {
-        if (!transaction.user) {
-            // If the user is null or not found, replace with a placeholder
-            transaction.user = {
+        // Map through transactions and handle missing users
+        const formattedTransactions = transactions.map(transaction => ({
+            ...transaction,
+            user: transaction.user || {
                 first_name: 'Account',
                 last_name: 'Deleted',
                 username: 'Account Deleted'
-            };
-        }
-        return transaction;
-    });
+            }
+        }));
 
-res.json(formattedTransactions); // Send the formatted data to the frontend
+        res.json(formattedTransactions);
     } catch (err) {
-    console.error("Error fetching transactions:", err);
-    res.status(500).json({ message: "Server error" });
+        console.error("Error fetching transactions:", err.message, err.stack);
+        res.status(500).json({ message: "Server error" });
     }
 });
 

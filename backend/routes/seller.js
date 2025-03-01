@@ -22,69 +22,81 @@ const { completeOrReleasePayment } = require('../utils/paymentservice')
 // Route to fetch completed transactions for a specific seller
 router.get('/transactions', isRightRole(['seller']), async (req, res) => {
     try {
-        const sellerId = req.user.user_id; // Assuming the seller's ID is available in the request
+        const sellerId = req.user.user_id; // Seller's ID from the request
 
-        // Step 1: Fetch top-up and cashout transactions for the seller
-        const directTransactions = await Transaction.find({
-            user: sellerId, // Seller is the user in these transactions
-            type: { $in: ['top-up', 'cashout'] }, // Only top-up and cashout types
-            status: 'completed' // Only completed transactions
-        })
-        .populate('user', 'store_name username') // Populate user details (seller)
-        .exec();
+        // Step 1: Fetch direct transactions (top-up and cashout) and orders in parallel
+        const [directTransactions, orders] = await Promise.all([
+            // Fetch direct transactions
+            Transaction.find({
+                user: sellerId,
+                type: { $in: ['top-up', 'cashout'] },
+                status: 'completed'
+            })
+            .populate({
+                path: 'user',
+                select: 'store_name username',
+                options: { lean: true } // Use lean() for better performance
+            })
+            .lean(),
 
-        // console.log("Default:", directTransactions);
+            // Fetch completed orders for the seller
+            Order.find({ 
+                sellerId: sellerId,
+                paymentStatus: 'completed'
+            })
+            .lean()
+        ]);
 
-        // Step 2: Fetch pay transactions indirectly via orders
-        // Find all orders for the seller
-        const orders = await Order.find({ 
-            sellerId: sellerId, // Filter by seller ID
-            paymentStatus: 'completed' // Only completed orders
-        });
-
-        // Extract paymentTransactionIds from the orders
+        // Step 2: Extract paymentTransactionIds from orders
         const paymentTransactionIds = orders.map(order => order.paymentTransactionId);
 
-        // console.log("Pay Transaction IDs:", paymentTransactionIds);
-
-        // Find transactions associated with these paymentTransactionIds
+        // Step 3: Fetch pay transactions associated with the paymentTransactionIds
         const payTransactions = await Transaction.find({
-            transactionId: { $in: paymentTransactionIds }, // Match transaction IDs
-            type: 'pay', // Only pay type
-            status: 'completed' // Only completed transactions
+            transactionId: { $in: paymentTransactionIds },
+            type: 'pay',
+            status: 'completed'
         })
-        .populate('user', 'store_name username') // Populate user details (customer)
-        .exec();
+        .populate({
+            path: 'user',
+            select: 'store_name username',
+            options: { lean: true }
+        })
+        .lean();
 
-        // console.log("Pay Transactions:", payTransactions);
+        // Step 4: Create a map of paymentTransactionId to orderNumber for quick lookup
+        const orderNumberMap = orders.reduce((map, order) => {
+            map[order.paymentTransactionId] = order.orderNumber;
+            return map;
+        }, {});
 
-        // Step 3: Combine both sets of transactions
-        const allTransactions = [...directTransactions, ...payTransactions];
-
-        // console.log("Transaction IDs:", allTransactions);
-
-        // Step 4: Add orderNumber to pay transactions
-        const transactionsWithOrderNumber = await Promise.all(allTransactions.map(async (transaction) => {
-            if (transaction.type === 'pay') {
-                // Find the order associated with the transaction
-                const order = await Order.findOne({ 
-                    paymentTransactionId: transaction.transactionId 
-                });
-
-                // Add order number to the transaction details
-                if (order) {
-                    transaction.details = transaction.details || {};
-                    transaction.details.orderNumber = order.orderNumber;
+        // Step 5: Handle deleted users and add orderNumber to pay transactions
+        const transactionsWithOrderNumber = [
+            // Handle direct transactions
+            ...directTransactions.map(transaction => ({
+                ...transaction,
+                user: transaction.user || {
+                    store_name: 'Account Deleted',
+                    username: 'Account Deleted'
                 }
-            }
-            return transaction;
-        }));
+            })),
+            // Handle pay transactions
+            ...payTransactions.map(transaction => ({
+                ...transaction,
+                user: transaction.user || {
+                    store_name: 'Account Deleted',
+                    username: 'Account Deleted'
+                },
+                details: {
+                    ...transaction.details,
+                    orderNumber: orderNumberMap[transaction.transactionId] || null
+                }
+            }))
+        ];
 
-        // console.log("Transactions:", transactionsWithOrderNumber);
-
-        res.json(transactionsWithOrderNumber);  // Send the modified data to the frontend
+        // Step 6: Send the response
+        res.json(transactionsWithOrderNumber);
     } catch (err) {
-        console.error("Error fetching transactions:", err);
+        console.error("Error fetching transactions:", err.message, err.stack);
         res.status(500).json({ message: "Server error" });
     }
 });
