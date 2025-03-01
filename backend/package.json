@@ -28,7 +28,7 @@
     "mysql": "^2.18.1",
     "mysql2": "^3.11.3",
     "node-cron": "^3.0.3",
-    "nodemailer": "^6.9.15",
+    "nodemailer": "^6.10.0",
     "react-sharp": "^1.0.0",
     "sharp": "^0.33.5",
     "socket.io": "^4.8.1",

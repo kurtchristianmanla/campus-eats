@@ -5,6 +5,8 @@ const router = express.Router();
 // const mongoose = require('../db/db');
 const User = require('../models/user');
 const Counter = require('../models/usercounter');
+const VerificationCode = require('../models/emailverification');
+const { sendVerificationCode } = require('../utils/emailservice');
 require('dotenv').config();
 
 const access_secret = process.env.JWT_ACCESS_SECRET_KEY;
@@ -25,6 +27,86 @@ const generateTokens = (user) => {
 
     return { access_token, refresh_token };
 };
+
+
+// Generate a random 6-digit code
+const generateVerificationCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+// Send verification code
+router.post('/send-verification-code', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+        
+        // Check if email already exists in the users collection
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Email already registered' });
+        }
+        
+        // Generate a new verification code
+        const code = generateVerificationCode();
+        
+        // Delete any existing codes for this email
+        await VerificationCode.deleteMany({ email });
+        
+        // Create new verification code document
+        const verificationCode = new VerificationCode({
+            email,
+            code
+        });
+        
+        // Save the verification code
+        await verificationCode.save();
+        
+        // Send verification code email
+        await sendVerificationCode(email, code);
+        
+        res.status(200).json({ 
+            message: 'Verification code sent to your email',
+            expiresIn: 3600 // 1 hour in seconds
+        });
+        
+    } catch (error) {
+        console.error('Error sending verification code:', error);
+        res.status(500).json({ message: 'Failed to send verification code', error: error.message });
+    }
+});
+
+// Verify email code
+router.post('/verify-email-code', async (req, res) => {
+    try {
+        const { email, code } = req.body;
+        
+        if (!email || !code) {
+            return res.status(400).json({ message: 'Email and verification code are required' });
+        }
+        
+        // Find the verification code
+        const verificationRecord = await VerificationCode.findOne({ email, code });
+        
+        if (!verificationRecord) {
+            return res.status(400).json({ message: 'Invalid or expired verification code' });
+        }
+        
+        // Optional: Delete the verification code after successful verification
+        await VerificationCode.deleteOne({ _id: verificationRecord._id });
+        
+        res.status(200).json({ 
+            message: 'Email verified successfully',
+            verified: true
+        });
+        
+    } catch (error) {
+        console.error('Error verifying code:', error);
+        res.status(500).json({ message: 'Failed to verify code', error: error.message });
+    }
+});
 
 // User Login
 router.post('/login', async (req, res) => {
@@ -48,16 +130,6 @@ router.post('/login', async (req, res) => {
         if (!isMatch) {
             return res.status(401).send('Invalid credentials');
         }
-
-        // // Generate a token
-        // const token = jwt.sign(
-        //     { user_id: user._id,
-        //       user_type: user.user_type, 
-        //       username: user.username
-        //     },
-        //     secret_key, // Replace with an environment variable in production
-        //     { expiresIn: '1h' }
-        // );
 
         const { access_token, refresh_token } = generateTokens(user);
         
@@ -117,10 +189,15 @@ router.post('/refresh', (req, res) => {
 
 // User Registration
 router.post('/register', async (req, res) => {
-    const { first_name, last_name, store_name, username, user_type, email, password } = req.body;
+    const { first_name, last_name, store_name, username, user_type, email, password, isVerified } = req.body;
     console.log('Received data:', { first_name, last_name, store_name, username, user_type, email, password });
 
     try {
+        // Check if email verification was completed
+        if (!isVerified) {
+            return res.status(400).json({ message: 'Email verification is required' });
+        }
+
         // Check if the username or email already exists
         const existingUser = await User.findOne({ email });
 
@@ -128,9 +205,6 @@ router.post('/register', async (req, res) => {
             // return res.status(400).send('Email already exists');
             return res.status(400).json({ success: false, message: 'Email already exists' });
         }
-
-        // // Hash the password before saving
-        // const hashedPassword = await bcrypt.hash(password, 10); // Salt rounds set to 10
 
         // If no username is provided, assign a placeholder username (user 1, user 2, etc.)
         let finalUsername = username; // Default to the provided username
@@ -179,7 +253,12 @@ router.post('/register', async (req, res) => {
             // });
         console.log('User registered successfully:', newUser);
 
-        res.send('User registered successfully');
+        // Return a JSON response
+        res.status(201).json({ 
+            success: true,
+            message: 'User registered successfully',
+            userId: newUser._id 
+        });
     } catch (error) {
         console.error('Error registering user:', error);
 

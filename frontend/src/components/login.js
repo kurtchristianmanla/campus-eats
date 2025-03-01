@@ -112,88 +112,155 @@ const Login = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }} 
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="mt-[-5rem] w-full max-w-sm bg-white p-6 rounded-lg shadow-md"
+                initial={{ opacity: 0, y: 50 }} // Start slightly below and hidden
+                animate={{ opacity: 1, y: 0 }} // Move to original position and fade in
+                transition={{ duration: 0.8, ease: "easeOut" }} // Animation duration and easing
+                className="mt-[-5rem] w-full max-w-sm bg-white p-6 rounded-lg shadow-md relative overflow-hidden"
             >
-                <h2 className="text-2xl font-bold text-left text-gray-800 mb-4">Login to your account</h2>
+                <motion.div
+                    className="absolute -top-10 -right-20 opacity-50"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.5 }}
+                    transition={{ delay: 0.5, duration: 1, ease: "easeInOut" }}
+                >
+                    <img
+                        src="/test/campus-eats-logo.png"
+                        alt="Campus Eats Logo"
+                        className="w-48 h-48 md:w-48 md:h-48 object-contain opacity-50 blur-sm"
+                    />
+                </motion.div>
+                <motion.h2
+                className="text-2xl font-bold text-left text-gray-800 mb-4"
+                initial={{ x: -20, opacity: 0 }} // Start slightly left and hidden
+                animate={{ x: 0, opacity: 1 }} // Move to original position and fade in
+                transition={{ delay: 0.2, duration: 0.5 }} // Delay and duration
+                >
+                Login to your account
+                </motion.h2>
 
-                <h2 className="text-xs text-left text-gray-800 mb-4">{loginMessage_1}</h2>
+                <motion.h2
+                className="text-xs text-left text-gray-800 mb-4"
+                initial={{ x: -20, opacity: 0 }} // Start slightly left and hidden
+                animate={{ x: 0, opacity: 1 }} // Move to original position and fade in
+                transition={{ delay: 0.4, duration: 0.5 }} // Delay and duration
+                >
+                {loginMessage_1}
+                </motion.h2>
 
-                {errorMessage && <p className="text-red-500 text-left text-xs mb-4">{errorMessage}</p>}
+                {errorMessage && (
+                <motion.p
+                    className="text-red-500 text-left text-xs mb-4"
+                    initial={{ scale: 0.8, opacity: 0 }} // Start small and hidden
+                    animate={{ scale: 1, opacity: 1 }} // Scale up and fade in
+                    transition={{ duration: 0.3 }} // Animation duration
+                >
+                    {errorMessage}
+                </motion.p>
+                )}
 
                 <form onSubmit={handleSubmit}>
-                    {/* Email Input */}
-                    <div className="mb-4">
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
-                        <input
-                            type="email"
-                            id="email"
-                            placeholder="Enter email"
-                            className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none 
-                            focus:ring-2 focus:ring-blue-500 leading-tight placeholder-orange-300"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
+                {/* Email Input */}
+                <motion.div
+                    className="mb-4"
+                    initial={{ y: 20, opacity: 0 }} // Start slightly below and hidden
+                    animate={{ y: 0, opacity: 1 }} // Move to original position and fade in
+                    transition={{ delay: 0.6, duration: 0.5 }} // Delay and duration
+                >
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Email Address
+                    </label>
+                    <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter email"
+                    className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none 
+                    focus:ring-2 focus:ring-blue-500 leading-tight placeholder-orange-300"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    />
+                </motion.div>
 
-                    {/* Password Input */}
-                    <div className="mb-6">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                        <div className="relative">
-                            <input
-                                type={showPassword ? 'text' : 'password'} // Toggle between text and password
-                                id="password"
-                                placeholder="Enter password"
-                                className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none 
-                                focus:ring-2 focus:ring-blue-500 leading-tight placeholder-orange-300"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)} // Toggle password visibility
-                                className="absolute right-3 top-1/2 transform -translate-y-1/4 leading-tight 
-                                text-gray-500 hover:text-gray-700"
-                            >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />} {/* Eye icon */}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Submit Button */}
+                {/* Password Input */}
+                <motion.div
+                    className="mb-6"
+                    initial={{ y: 20, opacity: 0 }} // Start slightly below and hidden
+                    animate={{ y: 0, opacity: 1 }} // Move to original position and fade in
+                    transition={{ delay: 0.8, duration: 0.5 }} // Delay and duration
+                >
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    Password
+                    </label>
+                    <div className="relative">
+                    <input
+                        type={showPassword ? 'text' : 'password'} // Toggle between text and password
+                        id="password"
+                        placeholder="Enter password"
+                        className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none 
+                        focus:ring-2 focus:ring-blue-500 leading-tight placeholder-orange-300"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
                     <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 text-white 
-                        font-semibold rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 
-                        hover:from-orange-500 hover:to-orange-600 mb-1"
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)} // Toggle password visibility
+                        className="absolute right-3 top-1/2 transform -translate-y-1/4 leading-tight 
+                        text-gray-500 hover:text-gray-700"
                     >
-                        {loading ? 'Logging in...' : 'Login'}
+                        {showPassword ? <FaEyeSlash /> : <FaEye />} {/* Eye icon */}
                     </button>
+                    </div>
+                </motion.div>
+
+                {/* Submit Button */}
+                <motion.button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 text-white 
+                    font-semibold rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 
+                    hover:from-orange-500 hover:to-orange-600 mb-1"
+                    whileHover={{ scale: 1.05 }} // Scale up on hover
+                    whileTap={{ scale: 0.95 }} // Scale down on tap
+                    initial={{ opacity: 0 }} // Start hidden
+                    animate={{ opacity: 1 }} // Fade in
+                    transition={{ delay: 1, duration: 0.5 }} // Delay and duration
+                >
+                    {loading ? 'Logging in...' : 'Login'}
+                </motion.button>
                 </form>
-                <div className="text-center mt-2">
-                    <a 
-                        href="/forgot-password" 
-                        className="text-sm text-orange-400 hover:underline">
-                        Forgot Password?
-                    </a>
-                </div>
+
+                {/* Forgot Password Link */}
+                <motion.div
+                className="text-center mt-2"
+                initial={{ y: 20, opacity: 0 }} // Start slightly below and hidden
+                animate={{ y: 0, opacity: 1 }} // Move to original position and fade in
+                transition={{ delay: 1.2, duration: 0.5 }} // Delay and duration
+                >
+                <a
+                    href="/forgot-password"
+                    className="text-sm text-orange-400 hover:underline"
+                >
+                    Forgot Password?
+                </a>
+                </motion.div>
 
                 {/* Link to Register */}
-                <div className="mt-4 text-center">
-                    <p className="text-sm text-gray-600">
-                        Don't have an account?{' '}
-                        <a href="/register" className="text-orange-300 hover:underline">
-                            Create an account
-                        </a>
-                    </p>
-                </div>
+                <motion.div
+                className="mt-4 text-center"
+                initial={{ y: 20, opacity: 0 }} // Start slightly below and hidden
+                animate={{ y: 0, opacity: 1 }} // Move to original position and fade in
+                transition={{ delay: 1.4, duration: 0.5 }} // Delay and duration
+                >
+                <p className="text-sm text-gray-600">
+                    Don't have an account?{' '}
+                    <a href="/register" className="text-orange-300 hover:underline">
+                    Create an account
+                    </a>
+                </p>
+                </motion.div>
             </motion.div>
-        </div>
+            </div>
     );
 };
 

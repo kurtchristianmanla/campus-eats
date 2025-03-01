@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+        lowercase: true,
         validate: {
             validator: function(value) {
                 // Apply the email domain validation only for customers
