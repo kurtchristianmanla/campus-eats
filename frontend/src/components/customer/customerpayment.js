@@ -200,9 +200,6 @@ const CustomerPayment = () => {
     };
 
     const proceedOrder = async () => {
-        if (isProcessing) return; // Prevent multiple clicks
-        
-        setIsProcessing(true); // Disable the button
 
         if (isPreOrder && !scheduledTime) {
             return toast.error('Please select a scheduled time for pre-order.');
@@ -538,7 +535,14 @@ const CustomerPayment = () => {
                             <div className="fixed inset-x-0 bottom-0 flex flex-row justify-center
                                 items-center px-4 py-6 z-[50]">
                                 <motion.button
-                                    onClick={proceedOrder}
+                                    onClick={() => {
+                                        if (isProcessing) { 
+                                            return; // Prevent multiple clicks
+                                        } else {
+                                            setIsProcessing(true);
+                                            proceedOrder();
+                                        }
+                                    }}
                                     className={`w-full h-14 rounded-xl text-white text-sm font-semibold shadow-md flex justify-center items-center transition-color duration-300
                                         bg-gradient-to-r from-orange-400 to-red-500`}
                                     whileHover={{ scale: 1.05 }}
