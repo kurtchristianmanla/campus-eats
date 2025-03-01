@@ -31,6 +31,8 @@ const ManageOrders = () => {
     // const [showReadyButton, setShowReadyButton] = useState(true);
     const [buttonStates, setButtonStates] = useState({});
     const [visibleTransactions, setVisibleTransactions] = useState({});
+    const [isAccepting, setIsAccepting] = useState({});
+    const [isMarkingReady, setIsMarkingReady] = useState({});
 
 
     // Extract sellerId from the token stored in localStorage
@@ -129,7 +131,7 @@ const ManageOrders = () => {
                     return prevOrders; // Skip adding if duplicate
                 });
 
-                showNotification('New Order Received!', `Order ID: ${data.newOrder._id}`);
+                showNotification('New Order Received!', `Order #${data.newOrder.orderNumber}`);
                 
                 // Optionally play a sound or show notification
                 // playNotificationSound('New Order Received!');
@@ -138,6 +140,7 @@ const ManageOrders = () => {
 
         const orderStatusChanged = (data) => {
             if (data.order.sellerId === sellerId) {
+                console.log("Received data:", data);
                 setOrders(prevOrders => {
                     return prevOrders.map(order => 
                         order._id === data.order._id 
@@ -146,7 +149,7 @@ const ManageOrders = () => {
                     );
                 });
         
-                showNotification('Order Status Updated!', `Order ID: ${data.order._id}`);
+                showNotification('Order Status Updated!', `Order #${data.order.orderNumber}`);
             }
         };
 
@@ -218,6 +221,8 @@ const ManageOrders = () => {
     };
 
     const handlePrepareOrder = async (orderId) => {
+        setIsAccepting(prev => ({ ...prev, [orderId]: true }));
+
         try {
             const updatedOrder = await startPreparingOrder(token, orderId);
             console.log('Order status updated:', updatedOrder.status);
@@ -226,10 +231,14 @@ const ManageOrders = () => {
             toast.success(`Order #${updatedOrder.orderNumber} is now in ${updatedOrder.status === 'preparing' ? "preparing" : "pre-order"} status.`);
         } catch (error) {
             toast.error('Failed to update the order.');
+        } finally {
+            setIsAccepting(prev => ({ ...prev, [orderId]: false })); // Reset "Accepting..." state
         }
     };
 
     const handleOrderReady = async (orderId) => {
+        setIsMarkingReady(prev => ({ ...prev, [orderId]: true })); // Set "Marking as Ready..." state
+
         try {
             const updatedOrder = await markOrderReady(token, orderId);
             console.log('Order updated:', updatedOrder);
@@ -238,6 +247,8 @@ const ManageOrders = () => {
             toast.success(`Order #${updatedOrder.orderNumber} is now in "Ready" status.`);
         } catch (error) {
             toast.error('Failed to update the order.');
+        } finally {
+            setIsMarkingReady(prev => ({ ...prev, [orderId]: false })); // Reset "Marking as Ready..." state
         }
     };
 
@@ -423,11 +434,12 @@ const ManageOrders = () => {
                                                 <button
                                                     onClick={() => {
                                                         handlePrepareOrder(order._id);
-                                                        toggleButtonState(order._id, 'accept', false);
+                                                        // toggleButtonState(order._id, 'accept', false);
                                                     }}
                                                     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                                                    disabled={isAccepting[order._id]} // Disable the button while accepting
                                                 >
-                                                    Accept
+                                                    {isAccepting[order._id] ? 'Accepting...' : 'Accept'}
                                                 </button>
                                             )}
                                             <div className={`${buttonStates[order._id]?.accept === false ? "w-full" : ""}`}>
@@ -446,11 +458,12 @@ const ManageOrders = () => {
                                                 <button
                                                     onClick={() => {
                                                         handleOrderReady(order._id);
-                                                        toggleButtonState(order._id, 'ready', false);
+                                                        // toggleButtonState(order._id, 'ready', false);
                                                     }}
                                                     className="bg-blue-500 flex-grow text-white px-4 py-2 rounded hover:bg-blue-600"
+                                                    disabled={isMarkingReady[order._id]}
                                                 >
-                                                    Mark as Ready
+                                                    {isMarkingReady[order._id] ? 'Marking as Ready...' : 'Mark as Ready'}
                                                 </button>
                                             )}
                                             <div className={`${buttonStates[order._id]?.ready === false ? "w-full" : ""}`}>
@@ -458,7 +471,6 @@ const ManageOrders = () => {
                                                     orderId={order._id} 
                                                     token={token} 
                                                     label={'Cancel Preparing'} 
-                                                    setOrder={setOrders}
                                                     setShowAcceptButton={(value) => toggleButtonState(order._id, 'ready', value)}
                                                 />
                                             </div>
