@@ -215,9 +215,19 @@ const Cashout = () => {
               />
               {!isConfirming ? (
                 <button
-                  onClick={() => setIsConfirming(true)} // Show confirm/cancel buttons
-                  className={`p-3 mt-4 w-full bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${loadingCashOut ? 'cursor-not-allowed' : ''}`}
-                  disabled={loadingCashOut || !cashOutAmount}
+                  onClick={() => {
+                    if (userBalance < cashOutAmount) {
+                      setErrorMessage("Insufficient Balance");
+                    } else if (cashOutAmount) {
+                      setIsConfirming(true);
+                      setErrorMessage("");
+                      setSuccessMessage("");
+                    } else {
+                      setErrorMessage("Please specify the amount.");
+                      setSuccessMessage('');
+                    }
+                  }}
+                  className={`p-3 mt-4 w-full bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50`}
                 >
                   {loadingCashOut ? 'Processing...' : 'Cash Out'}
                 </button>
@@ -225,13 +235,14 @@ const Cashout = () => {
                 <div className="flex gap-4 mt-4">
                   <button
                     onClick={handleCashOut}
-                    className="p-3 w-2/3 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
+                    className={`p-3 w-2/3 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${loadingCashOut ? 'cursor-not-allowed' : ''}`}
                   >
-                    Confirm
+                    {loadingCashOut ? 'Processing...' : 'Confirm'}
                   </button>
                   <button
                     onClick={handleCancel}
                     className="p-3 w-1/3 bg-gray-400 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
+                    disabled={loadingCashOut || !cashOutAmount}
                   >
                     Cancel
                   </button>

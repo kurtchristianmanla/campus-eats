@@ -213,9 +213,17 @@ const Topup = () => {
               />
               {!isConfirming ? (
                 <button
-                  onClick={() => setIsConfirming(true)} // Show confirm/cancel buttons
-                  className={`p-3 mt-4 w-full bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${loadingTopUp ? 'cursor-not-allowed' : ''}`}
-                  disabled={loadingTopUp || !topUpAmount}
+                  onClick={() => {
+                    if (topUpAmount) {
+                      setIsConfirming(true);
+                      setErrorMessage("");
+                      setSuccessMessage("");
+                    } else {
+                      setErrorMessage("Please specify the amount.");
+                      setSuccessMessage('');
+                    }
+                  }} // Show confirm/cancel buttons
+                  className={`p-3 mt-4 w-full bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50`}
                 >
                   {loadingTopUp ? 'Processing...' : 'Top Up'}
                 </button>
@@ -223,9 +231,10 @@ const Topup = () => {
                 <div className="flex gap-4 mt-4">
                   <button
                     onClick={handleTopUp}
-                    className="p-3 w-2/3 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
+                    className={`p-3 w-2/3 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${loadingTopUp ? 'cursor-not-allowed' : ''}`}
+                    disabled={loadingTopUp || !topUpAmount}
                   >
-                    Confirm
+                    {loadingTopUp ? 'Processing...' : 'Confirm'}
                   </button>
                   <button
                     onClick={handleCancel}
