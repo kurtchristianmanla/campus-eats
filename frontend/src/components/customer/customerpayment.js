@@ -201,6 +201,7 @@ const CustomerPayment = () => {
 
     const proceedOrder = async () => {
         if (isProcessing) return; // Prevent multiple clicks
+        
         setIsProcessing(true); // Disable the button
 
         if (isPreOrder && !scheduledTime) {
@@ -543,6 +544,7 @@ const CustomerPayment = () => {
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     transition={{ hover: { duration: 0.3, ease: "easeOut" }}}
+                                    disabled={isProcessing}
                                 >
                                     {isProcessing ? 'Processing...' : 'Pay and wait for confirmation'}
                                 </motion.button>
