@@ -39,6 +39,7 @@ const ProfileUser = (user_type_route) => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
     const [passwordChangeError, setPasswordChangeError] = useState('');
     const [passwordChangeSuccess, setPasswordChangeSuccess] = useState('');
     const [changeProfileError, setChangeProfileError] = useState('');
@@ -206,6 +207,7 @@ const ProfileUser = (user_type_route) => {
         e.preventDefault();
         setPasswordChangeError('');
         setPasswordChangeSuccess('');
+        setIsPasswordSubmitting(true); // Set loading state to true
 
         if (newPassword !== confirmPassword) {
             setPasswordChangeError('New password and confirm password do not match.');
@@ -241,6 +243,8 @@ const ProfileUser = (user_type_route) => {
             }
 
             setPasswordChangeError(errorMessage);
+        } finally {
+            setIsPasswordSubmitting(false); // Reset loading state
         }
     };
 
@@ -342,7 +346,12 @@ const ProfileUser = (user_type_route) => {
             )}
 
             {view === 'changeProfile' && (    
-            <div className="flex justify-center items-center lg:mt-[-3rem] mt-[-6rem] w-full min-h-screen">
+            <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="flex justify-center items-center lg:mt-[-3rem] mt-[-6rem] w-full min-h-screen"
+            >
                 <div className="flex-1 bg-white shadow-lg rounded-lg p-6 max-w-[400px]">
                     {/* Update Profile Form */}
                     <form
@@ -455,7 +464,7 @@ const ProfileUser = (user_type_route) => {
                                             hover:from-green-500 hover:to-blue-600"
                                 disabled={isSubmitting}
                             >
-                                {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                {isSubmitting ? 'Saving...' : 'Save Profile'}
                             </button>
                             <button
                                 type="button"
@@ -469,11 +478,16 @@ const ProfileUser = (user_type_route) => {
                     {changeProfileError && <p className="text-red-500 text-left text-xs mb-2">{changeProfileError}</p>}
                     {changeProfileSuccess && <p className="text-green-500 text-left text-xs mb-2">{changeProfileSuccess}</p>}
                 </div>
-            </div>
+            </motion.div>
             )}
 
             {view === 'changePassword' && (
-            <div className="flex justify-center items-center lg:mt-[-4rem] mt-[-6rem] w-full min-h-screen">
+            <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="flex justify-center items-center lg:mt-[-4rem] mt-[-6rem] w-full min-h-screen"
+            >
                 <div className="flex-1 bg-white shadow-lg rounded-lg p-6 max-w-[400px]">
                     <form onSubmit={handleChangePassword} className="space-y-4 mb-2">
                         <div>
@@ -546,10 +560,18 @@ const ProfileUser = (user_type_route) => {
                         </div>
 
                         <div className="flex space-x-2">
-                            <button type="submit" className="w-2/3 bg-gradient-to-r from-green-400 to-blue-500 text-white px-4 py-2 rounded hover:from-green-500 hover:to-blue-600">
-                                Save Changes
+                            <button
+                                type="submit"
+                                className="w-2/3 bg-gradient-to-r from-green-400 to-blue-500 text-white px-4 py-2 rounded hover:from-green-500 hover:to-blue-600"
+                                disabled={isPasswordSubmitting} // Disable button while submitting
+                            >
+                                {isPasswordSubmitting ? 'Updating...' : 'Update Password'}
                             </button>
-                            <button type="button" onClick={() => setView("profile")} className="w-1/3 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                            <button
+                                type="button"
+                                onClick={() => setView("profile")}
+                                className="w-1/3 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                            >
                                 Cancel
                             </button>
                         </div>
@@ -557,7 +579,7 @@ const ProfileUser = (user_type_route) => {
                     {passwordChangeError && <p className="text-red-500 text-left text-xs mb-2">{passwordChangeError}</p>}
                     {passwordChangeSuccess && <p className="text-green-500 text-left text-xs mb-2">{passwordChangeSuccess}</p>}
                 </div>
-            </div>
+            </motion.div>
             )}
         </div>
     );
