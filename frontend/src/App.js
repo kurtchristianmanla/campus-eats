@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Login from './components/login.js';
 import Register from './components/register.js';
 import ForgotPassword from './components/forgotpassword.js';
+import ResetPassword from './components/resetpassword.js';
 
 import AdminDashboard from './components/admin/admindashboard.js';
 import Accounts from './components/admin/accounts.js';
@@ -29,7 +30,6 @@ import CustomerOrders from './components/customer/customerorders.js';
 import CustomerPayment from './components/customer/customerpayment.js';
 import CustomerPurchases from './components/customer/customerpurchases.js';
 
-import checkTokenAndRedirect from './components/api/helpers.js';
 import ProtectedRoute from './components/api/protectroute.js';
 import { checkTokenExpiration } from './components/api/tokenutils'; // Import the token utility
 import './App.css';
@@ -59,7 +59,8 @@ function App() {
   useEffect(() => {
     const excludedPaths = [
       '/register', 
-      '/forgot-password'
+      '/forgot-password',
+      '/reset-password'
     ];
     if (!excludedPaths.includes(location.pathname)) {
       const validateToken = async () => {
@@ -109,6 +110,7 @@ function App() {
         <Route path="/login" element={<Login />} /> {/* Route for Login */}
         <Route path="/register" element={<Register />} /> {/* Route for Register */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Customer Route */}
         <Route path="/customer" element={protectedRoute('customer', CustomerPage)} />

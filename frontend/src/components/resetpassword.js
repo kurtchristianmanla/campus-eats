@@ -1,36 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const backend_url = process.env.REACT_APP_BACKEND_URL;
 const address = `${backend_url}`;
 
-const ForgotPassword = () => {
-    const [email, setEmail] = useState('');
+const ResetPassword = () => {
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
-    const [loading, setLoading] = useState(false);
     const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+    const [loading, setLoading] = useState(false);
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get('token'); // Extract token from URL
     const navigate = useNavigate();
-
-    useEffect(() => {
-        document.title = "Campus Eats | Forgot Password";
-
-        // Disable scrolling and zooming
-        document.body.style.overflow = 'hidden';
-        document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-
-        // Clean up the styles on component unmount
-        return () => {
-            document.body.style.overflow = 'auto';
-            document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
-        };
-    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!email) {
-            alert("Please enter your email.");
+        if (!newPassword || !confirmPassword) {
+            setMessage('Please fill in all fields.');
+            setMessageType('error'); // Set message type to error
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setMessage('Passwords do not match.');
+            setMessageType('error'); // Set message type to error
             return;
         }
 
@@ -39,32 +35,31 @@ const ForgotPassword = () => {
         setMessageType(''); // Reset message type
 
         try {
-            const response = await fetch(`${address}/user/forgot-password`, {
+            const response = await fetch(`${address}/user/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ token, newPassword }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                setMessage('Password reset link has been sent to your email.');
+                setMessage('Password reset successfully. Redirecting to login...');
                 setMessageType('success'); // Set message type to success
+                setTimeout(() => {
+                    navigate('/login'); // Redirect to login after success
+                }, 2000);
             } else {
-                setMessage(data.message || 'Failed to send password reset link.');
+                setMessage(data.message || 'Failed to reset password.');
                 setMessageType('error'); // Set message type to error
             }
         } catch (error) {
-            console.error('Error sending reset email:', error);
+            console.error('Error resetting password:', error);
             setMessage('An error occurred. Please try again later.');
             setMessageType('error'); // Set message type to error
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleCancel = () => {
-        navigate('/login'); // Redirect to the login page
     };
 
     return (
@@ -75,7 +70,7 @@ const ForgotPassword = () => {
             transition={{ duration: 0.5 }}
         >
             <motion.div
-                className="mt-[-8rem] w-full max-w-sm bg-white p-6 rounded-lg shadow-md"
+                className="w-full max-w-sm bg-white p-6 rounded-lg shadow-md"
                 initial={{ y: -50, opacity: 0 }} // Slide down animation
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
@@ -86,7 +81,7 @@ const ForgotPassword = () => {
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: 0.4, duration: 0.5 }}
                 >
-                    Forgot Password
+                    Reset Password
                 </motion.h2>
 
                 <motion.p
@@ -95,7 +90,7 @@ const ForgotPassword = () => {
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: 0.6, duration: 0.5 }}
                 >
-                    Enter your email to request a password reset.
+                    Enter a new password for your account.
                 </motion.p>
 
                 {message && (
@@ -113,59 +108,62 @@ const ForgotPassword = () => {
 
                 <form onSubmit={handleSubmit}>
                     <motion.div
-                        className="mb-4"
+                        className=""
                         initial={{ y: 20, opacity: 0 }} // Slide up animation
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.8, duration: 0.5 }}
                     >
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                            Email Address
+                        <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                            New Password
                         </label>
                         <input
-                            type="email"
-                            id="email"
-                            placeholder="Enter email address"
+                            type="password"
+                            id="newPassword"
+                            placeholder="Enter new password"
                             className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none 
                             focus:ring-2 focus:ring-blue-500 leading-tight placeholder-orange-300 mb-4"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
                             required
                         />
                     </motion.div>
 
                     <motion.div
-                        className="flex justify-end gap-2 mt-4"
+                        className="mb-4"
                         initial={{ y: 20, opacity: 0 }} // Slide up animation
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 1, duration: 0.5 }}
                     >
-                        {/* Cancel Button */}
-                        <motion.button
-                            type="button"
-                            onClick={handleCancel}
-                            className="py-2 px-4 bg-gray-300 text-gray-800 font-semibold rounded hover:bg-gray-400"
-                            whileHover={{ scale: 1.05 }} // Scale up on hover
-                            whileTap={{ scale: 0.95 }} // Scale down on tap
-                        >
-                            Cancel
-                        </motion.button>
-
-                        {/* Send Link Button */}
-                        <motion.button
-                            type="submit"
-                            disabled={loading}
-                            className="py-2 px-4 bg-gradient-to-r from-orange-400 to-orange-500 
-                            text-white font-semibold rounded hover:from-orange-500 hover:to-orange-600"
-                            whileHover={{ scale: 1.05 }} // Scale up on hover
-                            whileTap={{ scale: 0.95 }} // Scale down on tap
-                        >
-                            {loading ? 'Sending...' : 'Send Email Link'}
-                        </motion.button>
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                            Confirm Password
+                        </label>
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            placeholder="Confirm new password"
+                            className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none 
+                            focus:ring-2 focus:ring-blue-500 leading-tight placeholder-orange-300 mb-4"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                        />
                     </motion.div>
+
+                    <motion.button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 text-white 
+                        font-semibold rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 
+                        hover:from-orange-500 hover:to-orange-600"
+                        whileHover={{ scale: 1.05 }} // Scale up on hover
+                        whileTap={{ scale: 0.95 }} // Scale down on tap
+                    >
+                        {loading ? 'Resetting...' : 'Reset Password'}
+                    </motion.button>
                 </form>
             </motion.div>
         </motion.div>
     );
 };
 
-export default ForgotPassword;
+export default ResetPassword;

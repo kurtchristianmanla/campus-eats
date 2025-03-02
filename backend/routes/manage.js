@@ -1,17 +1,20 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const router = express.Router();
-// const mongoose = require('../db/db');
 const User = require('../models/user');
 const Counter = require('../models/usercounter');
 const VerificationCode = require('../models/emailverification');
 const { sendVerificationCode } = require('../utils/emailservice');
+const { sendResetEmail } = require('../utils/forgotpassword');
+const ResetToken = require('../models/resettoken');
 const client = require('../middleware/redisclient');
 require('dotenv').config();
 
 const access_secret = process.env.JWT_ACCESS_SECRET_KEY;
 const refresh_secret = process.env.JWT_REFRESH_SECRET_KEY;
+const app_address = process.env.FRONTEND_URL;
 
 const generateTokens = (user) => {
     const access_token = jwt.sign(
@@ -320,6 +323,65 @@ router.post('/logout', async (req, res) => {
     } catch (error) {
         console.error("Logout error:", error);
         res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // Check if the user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Generate a secure token
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiry
+
+        // Save the token in the database
+        await ResetToken.create({ email, token, expiresAt });
+
+        // Send the token as a link in the email
+        const resetLink = `${app_address}/reset-password?token=${token}`;
+        await sendResetEmail(email, resetLink);
+
+        res.status(200).json({ message: 'Password reset link sent to your email' });
+    } catch (error) {
+        console.error('Error sending reset link:', error);
+        res.status(500).json({ message: 'Failed to send reset link', error: error.message });
+    }
+});
+
+router.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    try {
+        // Find the token in the database
+        const resetToken = await ResetToken.findOne({ token });
+
+        if (!resetToken || resetToken.expiresAt < new Date()) {
+            return res.status(400).json({ message: 'Invalid or expired token' });
+        }
+
+        // Find the user by email
+        const user = await User.findOne({ email: resetToken.email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Update the user's password
+        user.password = newPassword;
+        await user.save();
+
+        // Delete the token
+        await ResetToken.deleteOne({ token });
+
+        res.status(200).json({ message: 'Password reset successfully' });
+    } catch (error) {
+        console.error('Error resetting password:', error);
+        res.status(500).json({ message: 'Failed to reset password', error: error.message });
     }
 });
 
