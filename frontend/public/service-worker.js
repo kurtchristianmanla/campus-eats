@@ -1,4 +1,4 @@
-const CACHE_NAME = "campus-eats-cache-v1.3";
+const CACHE_NAME = "campus-eats-cache-v1.4";
 
 // Use a runtime caching strategy instead of a predefined list
 self.addEventListener("install", (event) => {
@@ -64,6 +64,9 @@ self.addEventListener('activate', (event) => {
             }
           })
         );
+      }).then(() => {
+        // Claim clients to take control immediately
+        self.clients.claim();
       })
     );
 });
