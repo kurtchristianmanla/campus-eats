@@ -1,14 +1,13 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const redis = require('redis');
-const client = redis.createClient();
 const router = express.Router();
 // const mongoose = require('../db/db');
 const User = require('../models/user');
 const Counter = require('../models/usercounter');
 const VerificationCode = require('../models/emailverification');
 const { sendVerificationCode } = require('../utils/emailservice');
+const client = require('../middleware/redisclient');
 require('dotenv').config();
 
 const access_secret = process.env.JWT_ACCESS_SECRET_KEY;
