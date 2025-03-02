@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import { FaHeart, FaStar, FaShoppingCart } from 'react-icons/fa';
 import { motion, AnimatePresence } from "framer-motion";
 import api from '../api/interceptor';
-import useHandleLogout from '../utils/logout';
+import useHandleLogout from '../api/logout';
 import { io } from 'socket.io-client';
 import ShowItem from './showitem';
 import Sidebar from './sidebar';

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { handleLogout } from '../utils/logout';
+import { handleLogout } from './logout';
 import { refreshAccessToken } from './interceptor';
 import Loading from '../utils/loading';
 
@@ -25,7 +25,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
                 console.log('You got 1 here');
 
                 // If the token is expired, try to refresh it
-                if (decoded.exp < currentTime) {
+                if (decoded.exp - currentTime < 60) {
                     // localStorage.removeItem('token');
                     // handleLogout(navigate);
                     // setLoading(false);

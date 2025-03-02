@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/interceptor';
-import useHandleLogout from '../utils/logout';
+import useHandleLogout from '../api/logout';
 import { io } from 'socket.io-client';
 import { FaTrash } from 'react-icons/fa';
 import Sidebar from './sidebar';

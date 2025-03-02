@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import { FaSignOutAlt, FaUser } from 'react-icons/fa';
 import { motion, AnimatePresence } from "framer-motion";
 // import { io } from 'socket.io-client';
-import useHandleLogout from '../utils/logout';
+import useHandleLogout from '../api/logout';
 import api from '../api/interceptor';
 import { requestNotificationPermission } from '../utils/notification';
 

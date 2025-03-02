@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import api from '../api/interceptor';
+import api from './interceptor';
 
 export const handleLogout = async (navigate) => {
     try {

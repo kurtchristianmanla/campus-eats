@@ -1,6 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import { refreshAccessToken } from './interceptor';
-import { handleLogout } from '../utils/logout';
+import { handleLogout } from './logout';
 
 const checkTokenAndRedirect = async (navigate) => {
     let token = localStorage.getItem('token'); // Retrieve token from localStorage
@@ -27,7 +27,7 @@ const checkTokenAndRedirect = async (navigate) => {
         const currentTime = Date.now() / 1000; // Current time in seconds
 
         // Check if the token has expired
-        if (decoded.exp < currentTime) {
+        if (decoded.exp - currentTime < 60) {
             const refreshedToken = await refreshAccessToken();  
             console.log(refreshedToken);
             if (!refreshedToken) {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { FaSignOutAlt, FaUser } from 'react-icons/fa';
 import { motion, AnimatePresence } from "framer-motion";
-import useHandleLogout from '../utils/logout';
+import useHandleLogout from '../api/logout';
 import api from '../api/interceptor';
 
 
