@@ -30,6 +30,7 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0",
     "react-sharp": "^1.0.0",
+    "redis": "^4.7.0",
     "sharp": "^0.33.5",
     "socket.io": "^4.8.1",
     "web-push": "^3.6.7",

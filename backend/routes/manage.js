@@ -1,6 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const redis = require('redis');
+const client = redis.createClient();
 const router = express.Router();
 // const mongoose = require('../db/db');
 const User = require('../models/user');
@@ -273,8 +275,20 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-    res.clearCookie('refreshToken');  // Remove refresh token
-    res.json({ message: "Logged out successfully" });
+    const refreshToken = req.cookies.refreshToken;
+
+    if (refreshToken) {
+        addToBlacklist(refreshToken); // Add token to Redis blacklist
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None',
+            path: '/',
+        });
+        res.json({ message: "Logged out successfully" });
+    } else {
+        res.status(400).json({ message: "No refresh token found" });
+    }
 });
 
 
