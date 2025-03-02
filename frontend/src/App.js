@@ -44,17 +44,36 @@ function App() {
     </ProtectedRoute>
   );
 
-  if ('serviceWorker' in navigator && 'PushManager' in window) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-          .then(registration => {
-              console.log('Service Worker registered:', registration);
-          })
-          .catch(error => {
-              console.error('Service Worker registration failed:', error);
-          });
-    });
-  }
+  // if ('serviceWorker' in navigator && 'PushManager' in window) {
+  //   window.addEventListener('load', () => {
+  //     navigator.serviceWorker.register('/service-worker.js')
+  //         .then(registration => {
+  //             console.log('Service Worker registered:', registration);
+  //         })
+  //         .catch(error => {
+  //             console.error('Service Worker registration failed:', error);
+  //         });
+  //   });
+  // }
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js').then((registration) => {
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        // Notify the user to reload the page
+                        alert('A new version of the app is available. Please reload the page.');
+                        window.location.reload(); // Force reload
+                    }
+                });
+            });
+        }).catch((error) => {
+            console.error('Service Worker registration failed:', error);
+        });
+    }
+  }, []);
 
   useEffect(() => {
     const excludedPaths = [
