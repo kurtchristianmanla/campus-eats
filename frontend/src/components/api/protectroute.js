@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { handleLogout } from './logout';
 import { refreshAccessToken } from './interceptor';
+import { checkTokenExpiration } from './tokenutils';
 import Loading from '../utils/loading';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -11,60 +12,33 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const checkToken = async () => {
-            const token = localStorage.getItem('token');
+        const validateToken = async () => {
+            const token = await checkTokenExpiration();
 
             if (!token) {
-                setLoading(false);
+                navigate('/login');
                 return;
             }
 
             try {
                 const decoded = jwtDecode(token);
-                const currentTime = Date.now() / 1000;
-                console.log('You got 1 here');
 
-                // If the token is expired, try to refresh it
-                if (decoded.exp - currentTime < 60) {
-                    // localStorage.removeItem('token');
-                    // handleLogout(navigate);
-                    // setLoading(false);
-                    // return;
-                    const refreshedToken = await refreshAccessToken();  
-                    console.log(refreshedToken);
-                    if (!refreshedToken) {
-                        // localStorage.removeItem('token'); // Remove expired token
-                        // navigate('/login'); // Redirect to login
-                        console.log('You got logged out');
-                        handleLogout(navigate);
-                        return null;
-                    }
-                }
-
-                // Validate the user's role
+                // Check if the user's role is allowed
                 if (!allowedRoles.includes(decoded.user_type)) {
-                    console.log('You got 4 here');
-                    const routeMap = {
-                        admin: '/admin',
-                        seller: '/seller',
-                        customer: '/customer',
-                    };
-                    setLoading(false);
-                    return <Navigate to={routeMap[decoded.user_type] || '/'} replace />;
+                    navigate('/'); // Redirect to a default route
+                    return;
                 }
 
                 setIsAuthenticated(true);
-                console.log('You got 5 here');
             } catch (error) {
                 console.error('Token validation error:', error);
-                // localStorage.removeItem('token');
-                handleLogout(navigate);
+                navigate('/login');
             } finally {
                 setLoading(false);
             }
         };
 
-        checkToken();
+        validateToken();
     }, [allowedRoles, navigate]);
 
     if (loading) {

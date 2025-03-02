@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { checkTokenExpiration } from './tokenutils';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -69,17 +70,15 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Refresh the access token
-        const newAccessToken = await refreshAccessToken();
-
-        // Update the Authorization header with the new token
-        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-
-        // Retry the original request with the new access token
-        return api(originalRequest);
+        const newToken = await checkTokenExpiration();
+        if (newToken) {
+            originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+            return api(originalRequest); // Retry the original request
+        }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-        // Optionally, log the user out if the refresh fails
+          console.error('Token refresh failed:', refreshError);
+          // Redirect to login if token refresh fails
+          window.location.href = '/login';
       }
     }
     return Promise.reject(error);

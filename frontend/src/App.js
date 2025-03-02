@@ -31,6 +31,7 @@ import CustomerPurchases from './components/customer/customerpurchases.js';
 
 import checkTokenAndRedirect from './components/api/helpers.js';
 import ProtectedRoute from './components/api/protectroute.js';
+import { checkTokenExpiration } from './components/api/tokenutils'; // Import the token utility
 import './App.css';
 
 function App() {
@@ -61,7 +62,15 @@ function App() {
       '/forgot-password'
     ];
     if (!excludedPaths.includes(location.pathname)) {
-      checkTokenAndRedirect(navigate);
+      const validateToken = async () => {
+        const token = await checkTokenExpiration();
+
+        if (!token) {
+          navigate('/login'); // Redirect to login if token is invalid or expired
+        }
+      };
+
+      validateToken();
     }
     // document.title = "Campus Eats";
     // Check for the token when the app loads
