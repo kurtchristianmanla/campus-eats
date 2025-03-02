@@ -434,8 +434,7 @@ const ProfileUser = (user_type_route) => {
                         />
                         </div>
 
-                        {/* Email */}
-                        <div>
+                        {/* <div>
                         <label className="block text-sm font-bold mb-1">Email:</label>
                         <input
                             type="email"
@@ -446,7 +445,7 @@ const ProfileUser = (user_type_route) => {
                                     focus:ring-2 focus:ring-blue-500 leading-tight placeholder-gray-300"
                             required
                         />
-                        </div>
+                        </div> */}
 
                         {/* Buttons */}
                         <div className="flex space-x-2">
