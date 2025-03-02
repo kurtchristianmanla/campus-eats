@@ -30,6 +30,18 @@ const generateTokens = (user) => {
     return { access_token, refresh_token };
 };
 
+// Add token to Redis blacklist
+const addToBlacklist = (token) => {
+    client.set(token, 'invalid', 'EX', 7 * 24 * 60 * 60); // Expire after 7 days
+};
+
+// Check if token is in Redis blacklist
+const isTokenBlacklisted = (token, callback) => {
+    client.get(token, (err, reply) => {
+        if (err) throw err;
+        callback(reply === 'invalid');
+    });
+};
 
 // Generate a random 6-digit code
 const generateVerificationCode = () => {
@@ -159,29 +171,35 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/refresh', (req, res) => {
+    console.log('Headers:', req.headers);
+    console.log('Cookies:', req.cookies);
+    console.log('Refresh Token:', req.cookies.refreshToken);
+    const refreshToken = req.cookies.refreshToken;
+
     try {
-        console.log('Headers:', req.headers);
-        console.log('Cookies:', req.cookies);
-        console.log('Refresh Token:', req.cookies.refreshToken);
-        const refreshToken = req.cookies.refreshToken;
         if (!refreshToken) {
             console.log('No refresh token found in cookies');
             return res.status(401).json({ message: 'No refresh token provided' });
         }
 
-        jwt.verify(refreshToken, refresh_secret, (err, user) => {
-            if (err) {
-                console.log('Token verification failed:', err.message);
+        isTokenBlacklisted(refreshToken, (isBlacklisted) => {
+            if (isBlacklisted) {
                 return res.status(403).json({ message: 'Invalid refresh token' });
             }
-
-            const newAccessToken = jwt.sign(
-                { user_id: user.user_id, user_type: user.user_type },
-                access_secret,
-                { expiresIn: "15m" }
-            );
-
-            return res.json({ access_token: newAccessToken });
+    
+            jwt.verify(refreshToken, refresh_secret, (err, user) => {
+                if (err) {
+                    return res.status(403).json({ message: 'Invalid refresh token' });
+                }
+    
+                const newAccessToken = jwt.sign(
+                    { user_id: user.user_id, user_type: user.user_type },
+                    access_secret,
+                    { expiresIn: "15m" }
+                );
+    
+                return res.json({ access_token: newAccessToken });
+            });
         });
     } catch (error) {
         console.error('Refresh token error:', error);
