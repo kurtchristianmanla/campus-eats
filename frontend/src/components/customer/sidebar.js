@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture, address, handleLogout }) => {
     const navigate = useNavigate();
+    const [isLoggingOut, setIsLoggingOut] = useState(false); // State for loading
+
+    const handleLogoutClick = async () => {
+        setIsLoggingOut(true); // Set loading state to true
+        await handleLogout(); // Call the logout function
+        setIsLoggingOut(false); // Reset loading state
+    };
 
     return (
         <AnimatePresence>
@@ -77,14 +84,17 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture,
 
                     <div className="absolute bottom-0 left-0 right-0 flex justify-center p-4 z-20">
                         <motion.button
-                            onClick={handleLogout}
-                            className="w-1/2 px-10 py-3 rounded-2xl bg-gradient-to-r from-orange-400 to-red-500 
-                                text-white text-sm font-semibold shadow-md"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            onClick={handleLogoutClick}
+                            disabled={isLoggingOut} // Disable button while logging out
+                            className={`w-2/3 px-10 py-3 rounded-2xl bg-gradient-to-r from-orange-400 to-red-500 
+                                text-white text-sm font-semibold shadow-md ${
+                                    isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                            whileHover={{ scale: isLoggingOut ? 1 : 1.05 }} // Disable hover effect while logging out
+                            whileTap={{ scale: isLoggingOut ? 1 : 0.95 }} // Disable tap effect while logging out
                             transition={{ hover: { duration: 0.3, ease: "easeOut" }}}
                         >
-                            Log Out
+                            {isLoggingOut ? 'Logging Out...' : 'Log Out'}
                         </motion.button>
                     </div>
                 </motion.div>
