@@ -1,16 +1,22 @@
-// redisClient.js
-const redis = require('redis');
+const Redis = require('ioredis');
 
-const client = redis.createClient();
-
-client.on('error', (err) => {
-  console.error('Redis client error:', err);
+// Load Redis URL from environment variables
+const redis = new Redis(process.env.REDIS_URL, {
+  tls: {
+    rejectUnauthorized: false, // Required for Upstash
+  },
 });
 
-client.connect().then(() => {
-  console.log('Redis client connected');
-}).catch((err) => {
-  console.error('Redis connection failed:', err);
+// Event listeners for better debugging
+redis.on('connect', () => console.log('Connected to Upstash Redis'));
+redis.on('error', (err) => console.error('Redis Error:', err));
+redis.on('close', () => console.log('Redis connection closed'));
+
+// Gracefully close Redis when app stops
+process.on('SIGINT', async () => {
+  await redis.quit();
+  console.log('Redis client disconnected');
+  process.exit(0);
 });
 
-module.exports = client;
+module.exports = redis;

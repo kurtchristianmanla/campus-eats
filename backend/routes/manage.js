@@ -30,27 +30,23 @@ const generateTokens = (user) => {
 };
 
 // Add token to Redis blacklist
-const addToBlacklist = (token) => {
-    if (!client.isOpen) {
-        console.error('Redis client is not open');
-        return;
+const addToBlacklist = async (token) => {
+    try {
+        await client.set(token, 'invalid', 'EX', 7 * 24 * 60 * 60); // Expire after 7 days
+    } catch (error) {
+        console.error("Redis error:", error);
     }
-    client.set(token, 'invalid', 'EX', 7 * 24 * 60 * 60); // Expire after 7 days
 };
 
 // Check if token is in Redis blacklist
-const isTokenBlacklisted = (token, callback) => {
-    if (!client.isOpen) {
-        console.error('Redis client is not open');
-        return callback(false);
-      }
-    client.get(token, (err, reply) => {
-        if (err) {
-        console.error('Redis error:', err);
-        return callback(false);
-        }
-        callback(reply === 'invalid');
-    });
+const isTokenBlacklisted = async (token) => {
+    try {
+        const result = await client.get(token);
+        return result === 'invalid';
+    } catch (error) {
+        console.error("Redis error:", error);
+        return false;
+    }
 };
 
 // Generate a random 6-digit code
@@ -180,7 +176,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.post('/refresh', (req, res) => {
+router.post('/refresh', async (req, res) => {
     console.log('Headers:', req.headers);
     console.log('Cookies:', req.cookies);
     console.log('Refresh Token:', req.cookies.refreshToken);
@@ -192,24 +188,23 @@ router.post('/refresh', (req, res) => {
             return res.status(401).json({ message: 'No refresh token provided' });
         }
 
-        isTokenBlacklisted(refreshToken, (isBlacklisted) => {
-            if (isBlacklisted) {
+        const isBlacklisted = await isTokenBlacklisted(refreshToken);
+        if (isBlacklisted) {
+            return res.status(403).json({ message: 'Invalid refresh token' });
+        }
+    
+        jwt.verify(refreshToken, refresh_secret, (err, user) => {
+            if (err) {
                 return res.status(403).json({ message: 'Invalid refresh token' });
             }
     
-            jwt.verify(refreshToken, refresh_secret, (err, user) => {
-                if (err) {
-                    return res.status(403).json({ message: 'Invalid refresh token' });
-                }
+            const newAccessToken = jwt.sign(
+                { user_id: user.user_id, user_type: user.user_type },
+                access_secret,
+                { expiresIn: "15m" }
+            );
     
-                const newAccessToken = jwt.sign(
-                    { user_id: user.user_id, user_type: user.user_type },
-                    access_secret,
-                    { expiresIn: "15m" }
-                );
-    
-                return res.json({ access_token: newAccessToken });
-            });
+            res.json({ access_token: newAccessToken });
         });
     } catch (error) {
         console.error('Refresh token error:', error);
@@ -302,23 +297,30 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/logout', (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
+router.post('/logout', async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
 
-    if (refreshToken) {
-        addToBlacklist(refreshToken); // Add token to Redis blacklist
+        if (!refreshToken) {
+            return res.status(400).json({ message: "No refresh token found" });
+        }
+
+        await addToBlacklist(refreshToken).catch(err => {
+            console.error("Failed to blacklist token:", err);
+        });
+
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: true,
             sameSite: 'None',
             path: '/',
         });
+
         res.json({ message: "Logged out successfully" });
-    } else {
-        res.status(400).json({ message: "No refresh token found" });
+    } catch (error) {
+        console.error("Logout error:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 });
-
-
 
 module.exports = router;
