@@ -108,6 +108,28 @@ const CustomerPurchases = () => {
 
         fetchSellers();
 
+        // Notification with sound
+        const showNotification = (title, body) => {
+            if (Notification.permission === 'granted') {
+                // Play a sound when the notification is shown
+                const notificationSound = new Audio('/test/notification.wav'); // Replace with your sound file path
+                notificationSound.play();
+        
+                // Show the notification
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.showNotification(title, { body });
+                });
+            } else if (Notification.permission !== 'denied') {
+                // Request permission if not already granted or denied
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        // Retry showing the notification after permission is granted
+                        showNotification(title, body);
+                    }
+                });
+            }
+        };
+
         // Initialize the Socket.IO connection
         const socketConnection = io(address);
         setSocket(socketConnection);
@@ -124,6 +146,26 @@ const CustomerPurchases = () => {
                             : order
                     );
                 });
+
+                // Map status to user-friendly text
+                const statusTextMap = {
+                    'cart': 'Cart',
+                    'pending': 'Pending',
+                    'preparing': 'Preparing',
+                    'ready': 'Ready for Pickup',
+                    'completed': 'Completed',
+                    'cancelled': 'Cancelled',
+                    'pre-order': 'Pre-Order'
+                };
+
+                // Get the user-friendly status text
+                const statusText = statusTextMap[data.order.status] || 'Unknown Status';
+
+                // Show notification with updated status text
+                showNotification(
+                    'Order Status Updated!', 
+                    `Order #${data.order.orderNumber} is now ${statusText}.`
+                );
             }
         };
 
