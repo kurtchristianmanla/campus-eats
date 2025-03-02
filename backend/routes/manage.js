@@ -31,13 +31,24 @@ const generateTokens = (user) => {
 
 // Add token to Redis blacklist
 const addToBlacklist = (token) => {
+    if (!client.isOpen) {
+        console.error('Redis client is not open');
+        return;
+    }
     client.set(token, 'invalid', 'EX', 7 * 24 * 60 * 60); // Expire after 7 days
 };
 
 // Check if token is in Redis blacklist
 const isTokenBlacklisted = (token, callback) => {
+    if (!client.isOpen) {
+        console.error('Redis client is not open');
+        return callback(false);
+      }
     client.get(token, (err, reply) => {
-        if (err) throw err;
+        if (err) {
+        console.error('Redis error:', err);
+        return callback(false);
+        }
         callback(reply === 'invalid');
     });
 };
