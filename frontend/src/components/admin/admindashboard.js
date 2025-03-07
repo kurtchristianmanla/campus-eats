@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { FaBook, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import { motion, AnimatePresence } from "framer-motion";
 import useHandleLogout from '../api/logout';
 import api from '../api/interceptor';
@@ -101,21 +101,28 @@ const AdminDashboard = () => {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
                     <button className="text-2xl text-gray-800" onClick={toggleSidebar}>
-                    &#9776;
+                        &#9776;
                     </button>
                     <button
                     onClick={() => navigate("/admin/profile")}
                     className="relative justify-start items-center w-full mt-4 py-2 text-right bg-gradient-to-r from-white to-white font-semibold hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
                     >
-                    <FaUser className="ml-2 text-xl mr-32" />
-                    Profile
+                        <FaUser className="ml-2 text-xl mr-32" />
+                        Profile
+                    </button>
+                    <button
+                    onClick={() => navigate("/admin/use-policy")}
+                    className="relative justify-start items-center w-full mt-4 py-2 text-right bg-gradient-to-r from-white to-white font-semibold hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
+                    >
+                        <FaBook className="ml-2 text-xl mr-32" />
+                        Use Policy
                     </button>
                     <button
                     onClick={handleLogout}
                     className="relative justify-start items-center w-full mt-2 py-2 text-right bg-gradient-to-r from-white to-white font-semibold hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
                     >
-                    <FaSignOutAlt className="ml-2 text-xl mr-32" />
-                    Logout
+                        <FaSignOutAlt className="ml-2 text-xl mr-32" />
+                        Logout
                     </button>
                 </motion.div>
                 )}

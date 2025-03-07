@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaUser } from 'react-icons/fa';
+import { FaBook, FaShoppingBag, FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture, address, handleLogout }) => {
@@ -78,7 +78,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture,
                         className="h-16 relative flex items-center w-full p-2 text-left bg-gradient-to-r from-white to-white font-semibold 
                                 hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
                     >
-                        <FaUser className="ml-2 text-xl mr-4" />
+                        <FaShoppingBag className="ml-2 text-xl mr-4" />
                         My Orders
                     </motion.button>
 
@@ -97,6 +97,18 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture,
                             {isLoggingOut ? 'Logging Out...' : 'Log Out'}
                         </motion.button>
                     </div>
+
+                    <motion.button
+                        onClick={() => navigate("/customer/use-policy")}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ hover: { duration: 0.3, ease: "easeOut" }}}
+                        className="h-16 relative flex items-center w-full p-2 text-left bg-gradient-to-r from-white to-white font-semibold 
+                                hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
+                    >
+                        <FaBook className="ml-2 text-xl mr-4" />
+                        Use Policy
+                    </motion.button>
                 </motion.div>
             )}
         </AnimatePresence>

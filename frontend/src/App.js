@@ -17,18 +17,21 @@ import Topup from './components/admin/topup.js';
 import Cashout from './components/admin/cashout.js';
 import Transactions from './components/admin/transactions.js';
 import ProfileAdmin from './components/admin/adminprofile.js';
+import AdminPolicy from './components/admin/adminpolicy.js';
 
 import SellerHomepage from './components/seller/sellerpage.js';
 import ProfileSeller from './components/seller/sellerprofile.js';
 import ManageOrders from './components/seller/sellerorders.js';
 import SellerMenu from './components/seller/sellermenu.js';
 import SellerHistory from './components/seller/history.js';
+import SellerPolicy from './components/seller/sellerpolicy.js';
 
 import CustomerPage from './components/customer/customerpage.js';
 import ProfileCustomer from './components/customer/customerprofile.js';
 import CustomerOrders from './components/customer/customerorders.js';
 import CustomerPayment from './components/customer/customerpayment.js';
 import CustomerPurchases from './components/customer/customerpurchases.js';
+import CustomerPolicy from './components/customer/customerpolicy.js';
 
 import ProtectedRoute from './components/api/protectroute.js';
 import { checkTokenExpiration } from './components/api/tokenutils'; // Import the token utility
@@ -137,7 +140,7 @@ function App() {
         <Route path="/customer/cart" element={protectedRoute('customer', CustomerOrders)} />
         <Route path="/customer/payment" element={protectedRoute('customer', CustomerPayment)} />
         <Route path="/customer/my-orders" element={protectedRoute('customer', CustomerPurchases)} />
-        
+        <Route path="/customer/use-policy" element={protectedRoute('customer', CustomerPolicy)} />
 
         {/* Seller Route */}
         <Route path="/seller" element={protectedRoute('seller', SellerHomepage)} />
@@ -145,6 +148,7 @@ function App() {
         <Route path="/seller/manage-orders" element={protectedRoute('seller', ManageOrders)} />
         <Route path="/seller/menu" element={protectedRoute('seller', SellerMenu)} />
         <Route path="/seller/history" element={protectedRoute('seller', SellerHistory)} />
+        <Route path="/seller/use-policy" element={protectedRoute('seller', SellerPolicy)} />
 
         {/* Admin Route */}
         <Route path="/admin" element={protectedRoute('admin', AdminDashboard)} />
@@ -154,6 +158,7 @@ function App() {
         <Route path="/admin/cash-out" element={protectedRoute('admin', Cashout)} />
         <Route path="/admin/transactions" element={protectedRoute('admin', Transactions)} />
         <Route path="/admin/profile" element={protectedRoute('admin', ProfileAdmin)} />
+        <Route path="/admin/use-policy" element={protectedRoute('admin', AdminPolicy)} />
 
         {/* Fallback Route */}
         {/* <Route path="*" element={<Navigate to="/login" />} /> */}
