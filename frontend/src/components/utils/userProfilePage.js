@@ -293,7 +293,7 @@ const ProfileUser = (user_type_route) => {
                     
                     {/* Cover Photo */}
                     <div className="absolute top-0 left-0 w-full h-32 z-0">
-                    <div className="w-full h-full bg-orange-500 text-white text-6xl opacity-25 rounded-t-lg 
+                    <div className="w-full h-full bg-indigo-500 text-white text-6xl opacity-25 rounded-t-lg 
                         font-bold flex justify-center items-center overflow-hidden">
                             {profilePicture && (
                                 <img
