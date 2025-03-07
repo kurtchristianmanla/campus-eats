@@ -21,6 +21,7 @@ const Accounts = () => {
     const navigate = useNavigate();
 
     const [confirmingId, setConfirmingId] = useState(null);
+    const [filter, setFilter] = useState('all');
 
     // Fetch users from the backend
     useEffect(() => {
@@ -82,6 +83,10 @@ const Accounts = () => {
         navigate('/admin/addseller');
     };
 
+    const filteredUsers = filter === 'all' 
+        ? users 
+        : users.filter(user => user.user_type === filter);
+
     if (loading) {
         return <loading />;
     }
@@ -96,14 +101,61 @@ const Accounts = () => {
                 navigateTo={'/admin'}
             />
 
+            {/* Filter Buttons */}
+            <div className="fixed sticky top-8 left-0 right-0 -mt-4 bg-[#f8f9fd] w-full z-10 text-xs">
+                <div className="flex justify-center space-x-4 py-3 text-xs">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-6 py-2 rounded-full font-medium transition-all duration-300 ${
+                            filter === 'all' 
+                                ? 'bg-blue-500 text-white shadow-lg hover:bg-blue-600' 
+                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                    >
+                        All
+                    </button>
+                    <button
+                        onClick={() => setFilter('seller')}
+                        className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                            filter === 'seller' 
+                                ? 'bg-orange-500 text-white shadow-lg hover:bg-orange-600' 
+                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                    >
+                        Sellers
+                    </button>
+                    <button
+                        onClick={() => setFilter('customer')}
+                        className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                            filter === 'customer' 
+                                ? 'bg-green-500 text-white shadow-lg hover:bg-green-600' 
+                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                    >
+                        Customers
+                    </button>
+                    <button
+                        onClick={() => setFilter('admin')}
+                        className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                            filter === 'admin' 
+                                ? 'bg-purple-500 text-white shadow-lg hover:bg-purple-600' 
+                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                    >
+                        Admins
+                    </button>
+                </div>
+            </div>
+
             {/* Account Cards */}
-            <div className="flex-1 space-y-4 w-[22rem] overflow-y-auto mb-20">
-                {users.map((account) => (
+            <div className="flex-1 space-y-4 w-[22rem] overflow-y-auto pb-20 scrollbar-hide">
+                {filteredUsers.map((account) => (
                     <div
                         key={account._id}
                         className={`bg-white rounded-lg shadow-md border p-4 cursor-pointer transition-all duration-300 relative 
-                            ${expandedId === account._id ? "shadow-lg border-indigo-500" : "" }
-                            ${account.user_type === 'admin' && "bg-gradient-to-br from-white via-white to-blue-300/30" }
+                            ${expandedId === account._id ? "shadow-lg border-pink-200" : "" }
+                            ${account.user_type === 'admin' && "bg-gradient-to-br from-white via-white to-purple-300/30" }
+                            ${account.user_type === 'customer' && "bg-gradient-to-br from-white via-white to-green-300/30" }
                             ${account.user_type === 'seller' && "bg-gradient-to-br from-white via-white to-orange-300/30" }
                         `}
                         onClick={() => toggleExpand(account._id)}
@@ -210,7 +262,7 @@ const Accounts = () => {
             <div className="fixed bottom-0 center-0 p-4 z-20">
                 <button
                     onClick={handleAddSeller}
-                    className="w-full px-10 py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 
+                    className="w-full px-10 py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 
                         text-white text-lg font-semibold shadow-md hover:scale-105 transform transition duration-300"
                 >
                     ADD A SELLER
