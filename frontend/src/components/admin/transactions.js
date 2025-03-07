@@ -11,7 +11,7 @@ const Transactions = () => {
   const navigate = useNavigate();
 
   const [openDetails, setOpenDetails] = useState(null); // To track which transaction is open
-  const [activeTab, setActiveTab] = useState('completed'); // Default active tab
+  const [activeTab, setActiveTab] = useState('payment'); // Default active tab
 
   const toggleDetails = (transactionId) => {
     setOpenDetails(openDetails === transactionId ? null : transactionId);
@@ -41,26 +41,32 @@ const Transactions = () => {
     fetchTransactions();
   }, []);
 
-  // Define the tabs
+  // Define the tabs with more formal names for transaction types
   const tabs = [
-    { id: 'completed', label: 'Completed' },
-    { id: 'refunded', label: 'Refunded' },
-    { id: 'hold/released', label: 'Hold/Released' },
+    { id: 'payment', label: 'Purchases', type: 'pay' },
+    { id: 'withdrawal', label: 'Withdrawals', type: 'cashout' },
+    { id: 'deposit', label: 'Deposits', type: 'top-up' },
   ];
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(100); // Default to 100 items per page 
+  const [itemsPerPage, setItemsPerPage] = useState(25); // Default to 100 items per page 
 
   const sortedTransactions = transactions.sort((a, b) => {
     return new Date(b.createdAt) - new Date(a.createdAt); // Sort from latest to oldest
   });
 
   const groupedTransactions = sortedTransactions.reduce((acc, transaction) => {
-    const status = transaction.status.toLowerCase();
-    if (!acc[status]) {
-      acc[status] = [];
+    const type = transaction.type.toLowerCase();
+    let tabType;
+    if (type === 'pay') tabType = 'payment';
+    else if (type === 'cashout') tabType = 'withdrawal';
+    else if (type === 'top-up') tabType = 'deposit';
+    else tabType = 'other'; // Handle any unexpected types
+    
+    if (!acc[tabType]) {
+      acc[tabType] = [];
     }
-    acc[status].push(transaction);
+    acc[tabType].push(transaction);
     return acc;
   }, {});
 
@@ -122,10 +128,10 @@ const Transactions = () => {
         </button>
         <h1 className="text-lg font-bold text-gray-700">Transactions</h1>
       </header>
-      <div className="container mx-auto p-4 text-xs">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Transaction List</h2>
+      <div className="container mx-auto p-4 text-[10px]">
+        <h2 className="text-2xl font-semibold -mt-4 text-gray-800 mb-4">Transaction List</h2>
   
-        {/* Tabs */}
+        {/* Tabs - Now based on transaction type */}
         <div className="flex space-x-4 mb-4 border-b border-gray-200">
           {tabs.map((tab) => (
             <button
@@ -136,7 +142,7 @@ const Transactions = () => {
               }}
               className={`px-4 py-2 text-sm font-medium ${
                 activeTab === tab.id
-                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  ? 'text-orange-600 border-b-2 border-orange-600'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -154,6 +160,7 @@ const Transactions = () => {
             onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
             className="p-1 border border-gray-300 rounded"
           >
+            <option value={25}>25</option>
             <option value={50}>50</option>
             <option value={100}>100</option>
           </select>
@@ -167,12 +174,16 @@ const Transactions = () => {
                 <th className="px-4 py-2 border-b">Time</th>
                 <th className="px-4 py-2 border-b">Transaction ID</th>
                 <th className="px-4 py-2 border-b">User</th>
-                <th className="px-4 py-2 border-b">Transaction Type</th>
+                {/* <th className="px-0 py-2 border-b">Transaction Type</th> */}
                 <th className="px-4 py-2 border-b">Amount</th>
-                <th className="px-0 py-2 border-b">Transaction Details</th>
+                {activeTab === 'payment' && (
+                    <th className="px-0 py-2 border-b">Transaction Details</th>
+                )}
                 <th className="px-4 py-2 border-b">Status</th>
-                <th className="px-4 py-2 border-b">User Balance After</th>
-                <th className="px-4 py-2 border-b">Seller Balance After</th>
+                <th className="px-4 py-2 border-b">Customer Balance</th>
+                {activeTab === 'payment' && (
+                    <th className="px-4 py-2 border-b">Seller Balance</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -181,55 +192,60 @@ const Transactions = () => {
                   <td className="px-4 py-2 border-b">{new Date(transaction.createdAt).toLocaleString()}</td>
                   <td className="px-4 py-2 border-b">{transaction.transactionId}</td>
                   <td className="px-4 py-2 border-b">{transaction.user.username}</td>
-                  <td className="px-4 py-2 border-b">{transaction.type}</td>
+                  {/* <td className="px-0 py-2 border-b">{transaction.type}</td> */}
                   <td className="px-4 py-2 border-b">{transaction.amount}</td>
-                  <td className="px-0 py-2 border-b text-xs w-48">
+                  {activeTab === 'payment' && (
+                    <td className="px-0 py-2 border-b w-48">
                     {/* Transaction Details */}
                     {transaction.details ? (
-                      <>
+                        <>
                         <button
-                          onClick={() => toggleDetails(transaction.transactionId)}
-                          className="text-blue-500 hover:underline focus:outline-none"
+                            onClick={() => toggleDetails(transaction.transactionId)}
+                            className="text-orange-500 hover:underline focus:outline-none"
                         >
-                          {openDetails === transaction.transactionId ? 'Hide Details' : 'Show Details'}
+                            {openDetails === transaction.transactionId ? 'Hide Details' : 'Show Details'}
                         </button>
                         {(openDetails === transaction.transactionId) && (
-                          <div className="flex justify-center flex-col">
+                            <div className="flex justify-center flex-col">
                             <h1 className="text-left">
-                              <span>Store:</span>
-                              <span className="ml-1">{transaction.details.store_name || 'N/A'}</span>
+                                <span>Store:</span>
+                                <span className="ml-1">{transaction.details.store_name || 'N/A'}</span>
                             </h1>
                             <h1 className="text-left">Items:
-                              {Array.isArray(transaction.details.items) && transaction.details.items.length > 0 ? (
+                                {Array.isArray(transaction.details.items) && transaction.details.items.length > 0 ? (
                                 <ul className="ml-4 list-none list-inside text-left">
-                                  {transaction.details.items.map((item, index) => (
+                                    {transaction.details.items.map((item, index) => (
                                     <li key={index}>
-                                      x{item.quantity} {item.name}
+                                        x{item.quantity} {item.name}
                                     </li>
-                                  ))}
+                                    ))}
                                 </ul>
-                              ) : (
+                                ) : (
                                 <ul className="list-none ml-4">No items found</ul>
-                              )}
+                                )}
                             </h1>
                             {transaction.details.cancelledReason && (
-                              <>
+                                <>
                                 <h1 className="text-left">
-                                  <span>Reason: </span>
-                                  <span className="">{transaction.details.cancelledReason}</span>
+                                    <span>Reason: </span>
+                                    <span className="">{transaction.details.cancelledReason}</span>
                                 </h1>
-                              </>
+                                </>
                             )}
-                          </div>
+                            </div>
                         )}
-                      </>
+                        </>
                     ) : (
-                      <span className="text-center">No details</span>
+                        <span className="text-center">No details</span>
                     )}
-                  </td>
+                    </td>
+                )}
                   <td className="px-4 py-2 border-b">{transaction.status}</td>
                   <td className="px-4 py-2 border-b">{transaction.userBalanceAfter || 'N/A'}</td>
-                  <td className="px-4 py-2 border-b">{transaction.sellerBalanceAfter || 'N/A'}</td>
+
+                  {activeTab === "payment" && (
+                    <td className="px-4 py-2 border-b">{transaction.sellerBalanceAfter || 'N/A'}</td>
+                )}
                 </tr>
               ))}
             </tbody>
@@ -241,7 +257,7 @@ const Transactions = () => {
           <button
             onClick={handlePreviousPage}
             disabled={currentPage === 1}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+            className="px-4 py-2 bg-orange-500 text-white rounded disabled:bg-gray-300"
           >
             Previous
           </button>
@@ -249,7 +265,7 @@ const Transactions = () => {
           <button
             onClick={handleNextPage}
             disabled={indexOfLastItem >= groupedTransactions[activeTab]?.length}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+            className="px-4 py-2 bg-orange-500 text-white rounded disabled:bg-gray-300"
           >
             Next
           </button>
