@@ -386,7 +386,7 @@ const CustomerPurchases = () => {
                                             <div className="pt-2 text-xs">
                                                 <div className="flex justify-between gap-1 font-semibold">
                                                     {/* <span>Amount</span> */}
-                                                    <span>₱{order.totalAmount}</span>
+                                                    <span>UC {order.totalAmount}</span>
                                                 </div>
                                             </div>
 

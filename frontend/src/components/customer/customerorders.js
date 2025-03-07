@@ -620,7 +620,7 @@ const CustomerOrders = () => {
                                                 </div>
                                                 <div className="relative flex-1">
                                                     <h3 className="text-sm">{item.name}</h3>
-                                                    <p className="text-sm text-orange-500">Php {formatAmount(item.price)}</p>
+                                                    <p className="text-sm text-orange-500">UC {formatAmount(item.price)}</p>
                                                 </div>
                                                 <div className="flex items-center">
                                                     <button className={`w-5 h-5 rounded-full flex items-center justify-center text-xl 
@@ -645,7 +645,7 @@ const CustomerOrders = () => {
                                     items-center px-4 py-6 z-20 bg-white gap-4">
                                     <div className="flex flex-col justify-start min-w-[100px] max-w-[150px] overflow-hidden">
                                         <span className="text-sm">Total</span>
-                                        <span className="text-2xl font-bold">Php {getTotalSelectedPrice()}</span>
+                                        <span className="text-2xl font-bold">UC {getTotalSelectedPrice()}</span>
                                     </div>
                                     <motion.button
                                         onClick={handleOrder}

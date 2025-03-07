@@ -395,7 +395,7 @@ const ManageOrders = () => {
                                                     <span className='ml-1 text-[12px] text-blue-500'>({item.minPrepTime}-{item.maxPrepTime} min prep)</span>
                                                 )}
                                             </div>
-                                            <span>₱{item.price * item.quantity}</span>
+                                            <span>UC {item.price * item.quantity}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -404,7 +404,7 @@ const ManageOrders = () => {
                                 <div className="mt-4 pt-4 border-t">
                                     <div className="flex justify-between font-bold">
                                         <span>Total</span>
-                                        <span>₱{order.totalAmount}</span>
+                                        <span>UC {order.totalAmount}</span>
                                     </div>
                                 </div>
 

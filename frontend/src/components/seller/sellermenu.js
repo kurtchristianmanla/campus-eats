@@ -231,7 +231,7 @@ const SellerMenu = () => {
                                 </div>
                                 <h1 className="font-semibold text-2xl text-center">{item.name}</h1>
                                 <div className="flex justify-between items-center gap-4 text-sm text-gray-600">
-                                    <p>{item.price} Php</p>
+                                    <p>{item.price} UC</p>
                                     <p>{item.minPrepTime}-{item.maxPrepTime} Min</p>
                                 </div>
                             </motion.div>

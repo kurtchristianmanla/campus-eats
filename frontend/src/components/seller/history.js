@@ -171,8 +171,8 @@ const Transactions = () => {
                         >
                             <td className="py-2 px-4 border-b">{transaction.transactionId}</td>
                             <td className="py-2 px-4 border-b">{getTransactionLabel(transaction.type)}</td>
-                            <td className="py-2 px-4 border-b">Php {transaction.amount.toFixed(2)}</td>
-                            <td className="py-2 px-4 border-b">Php {(transaction.type !== 'pay' ? transaction.userBalanceAfter?.toFixed(2) : transaction.sellerBalanceAfter?.toFixed(2)) || "N/A"}</td>
+                            <td className="py-2 px-4 border-b">UC {transaction.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
+                            <td className="py-2 px-4 border-b">UC {(transaction.type !== 'pay' ? transaction.userBalanceAfter?.toLocaleString("en-US", { minimumFractionDigits: 2 }) : transaction.sellerBalanceAfter?.toLocaleString("en-US", { minimumFractionDigits: 2 })) || "N/A"}</td>
                             <td className="py-2 px-1 border-b">
                                 {transaction.details?.orderNumber || 'N/A'}
                             </td>

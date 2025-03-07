@@ -265,7 +265,7 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
                     />
                 </div>
                 <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price (Php)</label>
+                    <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price (UC)</label>
                     <input
                         type="number"
                         id="price"

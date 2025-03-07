@@ -447,27 +447,27 @@ const CustomerPayment = () => {
                                         <span className="mr-1">x{quantity}</span>
                                         <span className="uppercase text-md font-semibold">{item.name}</span>
                                     </div>
-                                    <p className="text-md text-orange-500">Php {formatAmount(item.price * quantity)}</p>
+                                    <p className="text-md text-orange-500">UC {formatAmount(item.price * quantity)}</p>
                                 </motion.div>
                             );
                         })}
                         {/* Total */}
                         <div className="mt-4 flex justify-between items-center ">
                             <h3 className="text-sm font-semibold uppercase text-black">Total Amount</h3>
-                            <p className="text-2xl font-bold">Php {formatAmount(getTotalSelectedPrice())}</p>
+                            <p className="text-2xl font-bold">UC {formatAmount(getTotalSelectedPrice())}</p>
                         </div>
 
                         </AnimatePresence>
                         {/* Wallet Balance */}
                         <div className="mt-20 flex justify-between items-center ">
                             <h3 className="text-sm font-semibold uppercase text-black">WALLET BALANCE</h3>
-                            <p className="text-2xl font-semibold">Php {formatAmount(balance)}</p>
+                            <p className="text-2xl font-semibold">UC {formatAmount(balance)}</p>
                         </div>
 
                         {/* Remaining Balance */}
                         <div className="mt-2 flex justify-between items-center ">
                             <p className="text-xs w-40 font-normal uppercase text-black">REMAINING BALANCE AFTER PAYMENT</p>
-                            <p className="text-xl font-bold text-orange-500">Php {formatAmount(remainingBalance)}</p>
+                            <p className="text-xl font-bold text-orange-500">UC {formatAmount(remainingBalance)}</p>
                         </div>
 
                         {/* <label className="flex items-center gap-2">

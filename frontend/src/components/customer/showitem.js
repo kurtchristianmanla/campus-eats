@@ -126,7 +126,7 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
                 </div>
                 <div className="flex justify-center gap-2 items-center">
                     <div className="flex justify-between gap-8 w-auto items-center">
-                        <span className="block text-sm font-medium text-gray-700">{price} Php</span>
+                        <span className="block text-sm font-medium text-gray-700">{price} UC</span>
                         <span className="text-sm font-medium text-gray-700">{minPrepTime}-{maxPrepTime} min</span>
                     </div>
                 </div>

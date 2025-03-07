@@ -514,7 +514,7 @@ const CustomerPage = () => {
                                         </div>
                                         <h1 className="font-semibold text-2xl text-center">{item.name}</h1>
                                         <div className="flex justify-between items-center gap-4 text-sm text-gray-600">
-                                            <p>{item.price} Php</p>
+                                            <p>{item.price} UC</p>
                                             <p>{item.minPrepTime}-{item.maxPrepTime} Min</p>
                                         </div>
                                     </motion.div>
@@ -790,7 +790,7 @@ const CustomerPage = () => {
                                 </div>
                                 <div className="text-left mb-auto">
                                     <h3 className="font-medium text-sm">{item.name}</h3>
-                                    <p className="text-[0.7rem] text-gray-500 mb-6">{item.price} Php</p>
+                                    <p className="text-[0.7rem] text-gray-500 mb-6">{item.price} UC</p>
                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center">
                                             {item.averageRating  && (<FaStar className="w-4 h-4 text-yellow-500" />)}

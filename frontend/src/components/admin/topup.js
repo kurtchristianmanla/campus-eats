@@ -152,7 +152,7 @@ const Topup = () => {
                     Recipient: <span className="font-semibold">{searchedUsername}</span>
                     </p>
                     <p className="text-sm text-gray-600 text-center mb-6">
-                    Amount: <span className="font-semibold">₱{amountCredited.toFixed(2)}</span>
+                    Amount: <span className="font-semibold">UC {amountCredited.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
                     </p>
 
                     <button
@@ -198,7 +198,7 @@ const Topup = () => {
             <div className="mb-4 bg-gray-100 rounded-lg shadow-inner p-3">
               <p className="text-sm font-medium text-gray-700">Username: <span className="font-bold">{searchedUsername}</span></p>
               <p className="text-sm font-medium text-gray-700">Email: <span className="font-bold">{searchedEmail}</span></p>
-              <p className="text-sm font-medium text-gray-700">Current Balance: <span className="font-bold">₱{userBalance.toFixed(2)}</span></p>
+              <p className="text-sm font-medium text-gray-700">Current Balance: <span className="font-bold">UC {userBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span></p>
             </div>
 
             <div className="mb-4">

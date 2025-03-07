@@ -320,7 +320,7 @@ const ProfileUser = (user_type_route) => {
                             </p>
                             <p className="text-sm text-gray-600">{user.email}</p>
                             {user.user_type === "seller" && (
-                                <p className="text-sm text-green-600">Balance: Php {(user.balance || 0).toFixed(2)}</p>
+                                <p className="text-sm text-green-600">Balance: UC {(user.balance || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
                             )}
 
                             <div className="mt-4 space-x-2">

@@ -195,7 +195,7 @@ const Accounts = () => {
                                 <span className="font-medium">Email:</span> {account.email}
                             </p>
                             {account.user_type !== 'admin' && (<p>
-                                <span className="font-medium">Balance:</span> ₱{account.balance.toFixed(2)}
+                                <span className="font-medium">Balance:</span> UC {account.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                             </p>)}
                             <p>
                                 <span className="font-medium">Last Login:</span>{" "}
