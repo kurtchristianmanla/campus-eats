@@ -46,13 +46,13 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture,
                             <div className="flex-1 mt-1">
                                 <div className="flex items-end">
                                     <h1 className="text-lg mr-1 font-bold">
-                                        {user.first_name || user.last_name
-                                            ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                                        {user?.first_name || user?.last_name
+                                            ? `${user?.first_name || ''} ${user?.last_name || ''}`.trim()
                                             : 'Name yet to be set'}
                                     </h1>
                                 </div>
                                 <p className="text-sm text-gray-600">
-                                    {user.email}
+                                    {user?.email}
                                 </p>
                             </div>
                         </div>

@@ -259,6 +259,20 @@ const CustomerPage = () => {
         setViewItem(true);
     };
 
+    // Disable scrolling when sidebar is open
+    useEffect(() => {
+        if (isSidebarOpen) {
+            document.body.classList.add('overflow-hidden');
+        } else {
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Cleanup function to remove the class when the component unmounts
+        return () => {
+            document.body.classList.remove('overflow-hidden');
+        };
+    }, [isSidebarOpen]);
+
     return (
         <div className={`min-h-screen bg-gradient-to-br from-[#f5f5f7] to-gray-100 w-full ${viewItem ? 'fixed' : ''}`}>
             {viewItem && (
