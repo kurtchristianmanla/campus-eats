@@ -358,8 +358,8 @@ const CustomerOrders = () => {
                     <div className='flex justify-between items-center'
                     >
                         <h1 className="border border-orange-400 rounded-full py-0.5 px-2 inline-flex justify-center text-md mr-3">
-                            <span className="text-orange-500 mr-1">Bal:</span>
-                            <span className="text-orange-500">{balance.toFixed(2)}</span>
+                            <span className="text-orange-500 mr-1">UC </span>
+                            <span className="text-orange-500">{balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
                         </h1>
                         {/* <img className='w-8 h-8 rounded-full bg-blue-400' alt='Profile' onClick={toggleSidebar}
                             src={`${address}${profilePicture}`} /> */}
