@@ -11,6 +11,7 @@ const mongoose = require('../db/db');
 
 const User = require('../models/user');
 const Counter = require('../models/usercounter');
+const MenuItem = require('../models/menuitem');
 const Transaction = require('../models/transaction');
 
 const { generateTransactionId } = require('../utils/transacutils');
@@ -34,14 +35,23 @@ router.delete('/accounts/:userId', isRightRole(['admin']), async (req, res) => {
     const { userId } = req.params; // Access the userId from the URL parameter
 
     try {
-        // Find the user by ID and delete
-        const user = await User.findByIdAndDelete(userId);
+        // Find the user by ID
+        const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        res.status(200).json({ message: 'User deleted successfully' });
+        // Check if the user is a seller
+        if (user.user_type === 'seller') {
+            // Delete all menu items associated with the seller
+            await MenuItem.deleteMany({ sellerId: userId });
+        }
+
+        // Delete the user
+        await User.findByIdAndDelete(userId);
+
+        res.status(200).json({ message: 'User and associated menu items (if any) deleted successfully' });
     } catch (error) {
         console.error('Error deleting user:', error);
         res.status(500).json({ message: 'Failed to delete the user' });
