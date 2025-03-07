@@ -561,7 +561,9 @@ const CustomerPage = () => {
                                     </div>
                                     <div className="flex items-center gap-1 ml-20">
                                         {store.seller_rating  && (<FaStar className="w-4 h-4 text-yellow-500" />)}
-                                        <span className="text-xs">{store.seller_rating || "No ratings"}</span>
+                                        <span className="text-xs">
+                                            {store.seller_rating ? store.seller_rating.toFixed(1) : "No ratings"}
+                                        </span>
                                     </div>
                                 </div>
                                 
@@ -638,7 +640,7 @@ const CustomerPage = () => {
                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center">
                                             {store.seller_rating  && (<FaStar className="w-4 h-4 text-yellow-500" />)}
-                                            <span className="text-xs">
+                                            <span className="text-xs ml-1">
                                                 {store.sellerRating}</span>
                                         </div>
                                         <FaHeart className="w-4 h-4 text-gray-400" />
@@ -714,8 +716,8 @@ const CustomerPage = () => {
                                     <p className="text-[0.7rem] text-gray-500 mb-6">{store.location || 'PHINMA UPANG'}</p>
                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center">
-                                            {store.seller_rating  && (<FaStar className="w-4 h-4 text-yellow-500" />)}
-                                            <span className="text-xs">
+                                            {store.seller_rating && (<FaStar className="w-4 h-4 text-yellow-500" />)}
+                                            <span className={`text-xs ${store.seller_rating ? "ml-1" : ""}`}>
                                                 {store.sellerRating}</span>
                                         </div>
                                         <FaHeart className="w-4 h-4 text-gray-400" />
