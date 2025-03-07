@@ -24,7 +24,9 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
     const [price, setPrice] = useState('');
     const [imageUrl, setImageUrl] = useState('');
     const [description, setDescription] = useState('');
+
     const [showAdded, setShowAdded] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
 
     // Fetch data for editing a menu item if menuItemId is provided
     useEffect(() => {
@@ -58,6 +60,8 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
     }, [menuItemId, imageUrl]);
 
     const handleAddToCart = (itemId, quantity) => {
+        setIsAdding(true);
+
         api.get(`/menu/item/${itemId}`)
             .then((response) => {
                 const menuItem = response.data.menuItem;
@@ -66,6 +70,9 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
             })
             .catch((error) => {
                 console.error('Error fetching menu item:', error);
+            })
+            .finally(() => {
+                setIsAdding(false);
             });
     };
 
@@ -130,14 +137,18 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
                 <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4 z-20">
                     <motion.button
                         type="button"
-                        className="w-full max-w-xs w-full px-10 py-3 rounded-2xl bg-gradient-to-r from-orange-400 to-red-500 
-                            text-white text-lg font-semibold shadow-md"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        className={`w-full max-w-xs px-10 py-3 rounded-2xl text-white text-lg font-semibold shadow-md ${
+                            isAdding
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-gradient-to-r from-orange-400 to-red-500'
+                        }`}
+                        whileHover={{ scale: isAdding ? 1 : 1.05 }}
+                        whileTap={{ scale: isAdding ? 1 : 0.95 }}
                         transition={{ hover: { duration: 0.3, ease: "easeOut" }}}
                         onClick={() => handleAddToCart(menuItemId, quantity)}
+                        disabled={isAdding}
                     >
-                        Add to cart
+                        {isAdding ? 'Adding...' : 'Add to cart'}
                     </motion.button>
                 </div>
             </form>

@@ -39,6 +39,7 @@ const CustomerOrders = () => {
     const [socket, setSocket] = useState(null); // Track the socket connection
 
     const [activeTab, setActiveTab] = useState('cart');
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // Function to check if the user is an admin
     const checkCustomerAccess = useCallback(async () => {
@@ -273,6 +274,7 @@ const CustomerOrders = () => {
 
     const handleOrder = async () => {
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
+        setIsProcessing(true);
 
         try {
             const response = await api.get(`${address}/customer/profile`, {
@@ -324,6 +326,8 @@ const CustomerOrders = () => {
 
         } catch (error) {
             console.error('Error:', error.response.data.message);
+        } finally {
+            setIsProcessing(false); // Re-enable the button after the operation is complete
         }
     };
 
@@ -645,14 +649,17 @@ const CustomerOrders = () => {
                                     </div>
                                     <motion.button
                                         onClick={handleOrder}
-                                        className={`w-1/2 h-14 rounded-xl text-white text-sm font-semibold shadow-md flex justify-center items-center transition-color duration-300
-                                            ${selectedItems.length === 0 ? "bg-gradient-to-r from-gray-400 to-gray-500" : "bg-gradient-to-r from-orange-400 to-red-500"}`}
-                                        whileHover={ selectedItems.length === 0 ? { scale: 1 } : { scale: 1.05 }}
-                                        whileTap={ selectedItems.length === 0 ? { scale: 1 } : { scale: 0.95 }}
+                                        className={`w-1/2 h-14 rounded-xl text-white text-sm font-semibold shadow-md flex justify-center items-center transition-color duration-300 ${
+                                            selectedItems.length === 0 || isProcessing
+                                                ? 'bg-gradient-to-r from-gray-400 to-gray-500 cursor-not-allowed'
+                                                : 'bg-gradient-to-r from-orange-400 to-red-500'
+                                        }`}
+                                        whileHover={ selectedItems.length === 0 || isProcessing ? { scale: 1 } : { scale: 1.05 }}
+                                        whileTap={ selectedItems.length === 0 || isProcessing ? { scale: 1 } : { scale: 0.95 }}
                                         transition={{ hover: { duration: 0.3, ease: "easeOut" }}}
-                                        disabled={selectedItems.length === 0}
+                                        disabled={selectedItems.length === 0 || isProcessing}
                                     >
-                                        Process to payment
+                                        {isProcessing ? 'Processing...' : 'Proceed to payment'}
                                     </motion.button>
                                 </div>
                             </div>

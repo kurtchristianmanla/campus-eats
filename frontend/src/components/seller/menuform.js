@@ -33,6 +33,9 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
     const token = localStorage.getItem('token');
     const sellerId = token ? jwtDecode(token).user_id : null;
 
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     // Fetch data for editing a menu item if menuItemId is provided
     useEffect(() => {
         if (menuItemId) {
@@ -73,6 +76,7 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
 
         // const menuData = { name, minPrepTime, maxPrepTime, price, selectedFile, isAvailable, sellerId };
         const menuData = new FormData();
@@ -111,6 +115,9 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
                 .catch((error) => {
                     console.error('Error updating menu item:', error);
                     alert('Failed to update menu item');
+                })
+                .finally(() => {
+                    setIsSubmitting(false);
                 });
         } else {
             // Add new menu item
@@ -126,11 +133,16 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
                 .catch((error) => {
                     console.error('Error adding menu item:', error);
                     alert('Failed to add menu item');
+                })
+                .finally(() => {
+                    setIsSubmitting(false);
                 });
         }
     };
 
     const handleDelete = () => {
+        setIsDeleting(true);
+
         api.delete(`/menu/delete/${menuItemId}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -145,6 +157,10 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
             .catch((error) => {
                 console.error('Error deleting menu item:', error);
                 alert('Failed to delete menu item');
+            })
+            .finally(() => {
+                // This will run whether the request succeeds or fails
+                setIsDeleting(false); // Re-enable the delete button
             });
     };
 
@@ -326,16 +342,21 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
                                     e.stopPropagation(); // Prevent card expansion
                                     handleDelete(); // Confirm delete
                                 }}
-                                className="px-4 py-2 bg-gradient-to-r from-red-400 to-red-600 
-                                    text-white rounded hover:from-red-500 hover:to-red-700 w-2/3"
+                                className={`px-4 py-2 text-white rounded w-2/3 ${
+                                    isDeleting
+                                        ? 'bg-gray-400 cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-red-400 to-red-600 hover:from-red-500 hover:to-red-700'
+                                }`}
+                                disabled={isDeleting}
                             >
-                                Confirm Deletion
+                                {isDeleting ? 'Deleting...' : 'Confirm Deletion'}
                             </motion.button>
                             <motion.button type="button"
                                 onClick={(e) => {
                                     e.stopPropagation(); // Prevent card expansion
                                     setConfirmDelete(null); // Cancel delete
                                 }}
+                                disabled={isDeleting}
                                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 w-1/3"
                             >
                                 Cancel
@@ -343,17 +364,31 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
                         </>
                     ) : (
                         <>
-                            <motion.button type="submit" className={`py-2 px-4 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md
-                                        ${menuItemId ? 'w-2/3' : 'w-full'}`}
+                            <motion.button type="submit" className={`py-2 px-4 text-white rounded-md
+                                        ${menuItemId ? 'w-2/3' : 'w-full'}
+                                        ${
+                                            isSubmitting
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : 'bg-gradient-to-r from-orange-400 to-orange-500'
+                                        }
+                                        `}
+                                        disabled={isSubmitting}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         transition={{ hover: { duration: 0.3, ease: "easeOut" }}}
                             >
-                                {menuItemId ? 'Update Item' : 'Add Item'}
+                                {isSubmitting
+                                    ? menuItemId
+                                        ? 'Updating...'
+                                        : 'Adding...'
+                                    : menuItemId
+                                    ? 'Update Item'
+                                    : 'Add Item'}
                             </motion.button>
                             {menuItemId && (
                                 <motion.button type="button" className='py-2 px-4 bg-gray-400 text-white rounded-md
                                         w-1/3' onClick={() => setIsFormVisible(false)}
+                                        disabled={isSubmitting}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         transition={{ hover: { duration: 0.3, ease: "easeOut" }}}>
