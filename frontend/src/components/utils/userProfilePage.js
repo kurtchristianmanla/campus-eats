@@ -288,13 +288,28 @@ const ProfileUser = (user_type_route) => {
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 className="flex justify-center items-center mt-[-8rem] min-h-screen"
             >
-                <div className="bg-gradient-to-br from-white via-white to-blue-200/50 shadow-lg rounded-lg p-6 w-full max-w-3xl 
-                                hover:scale-105 transition-transform duration-300">
-                    <div className="lg:flex flex-col sm:flex-row items-center sm:items-start">
+                <div className="bg-gradient-to-br from-white via-white to-blue-200/50 shadow-lg rounded-lg w-full max-w-3xl 
+                                hover:scale-105 transition-transform duration-300 relative">
+                    
+                    {/* Cover Photo */}
+                    <div className="absolute top-0 left-0 w-full h-32 z-0">
+                    <div className="w-full h-full bg-orange-500 text-white text-6xl opacity-25 rounded-t-lg 
+                        font-bold flex justify-center items-center overflow-hidden">
+                            {profilePicture && (
+                                <img
+                                src={profilePicture}
+                                alt="Profile"
+                                className="object-cover w-full h-full"
+                                />
+                            )}
+                        </div>
+                    </div>
+                    <div className="lg:flex flex-col sm:flex-row items-center sm:items-start relative z-10 p-6">
+
                         {/* Profile Picture */}
                         <div className="flex-shrink-0">
                             <div className="w-32 h-32 bg-indigo-500 text-white text-6xl font-bold flex justify-center 
-                                        items-center rounded-full overflow-hidden mb-4 sm:mb-0 sm:mr-4">
+                                        items-center rounded-full overflow-hidden mb-4 sm:mb-0 sm:mr-4 border-4 border-white">
                                 {profilePicture ? (
                                     <img
                                     src={profilePicture}
