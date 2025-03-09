@@ -25,6 +25,7 @@ const holdPayment = async (io, userId, orderId, orderAmount) => {
         // Prepare transaction details
         const transactionDetails = {
             orderId: order._id,
+            orderNumber: order.orderNumber,
             store_name: order.sellerId.store_name,
             items: order.items.map(item => ({
                 name: item.name,

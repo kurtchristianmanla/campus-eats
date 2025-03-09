@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format, toZonedTime } from 'date-fns-tz';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { Tooltip } from 'react-tooltip';
 import Header from '../utils/header';
 import api from '../api/interceptor';
 import Loading from '../utils/loading';
@@ -47,9 +51,18 @@ const Transactions = () => {
     { id: 'withdrawal', label: 'Withdrawals', type: 'cashout' },
     { id: 'deposit', label: 'Deposits', type: 'top-up' },
   ];
+  
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // Format: YYYY-MM-DD
+  };
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25); // Default to 100 items per page 
+  const [selectedDate, setSelectedDate] = useState(getTodayDate());
 
   const sortedTransactions = transactions.sort((a, b) => {
     return new Date(b.createdAt) - new Date(a.createdAt); // Sort from latest to oldest
@@ -70,9 +83,28 @@ const Transactions = () => {
     return acc;
   }, {});
 
+  const convertToLocalTime = (utcDate) => {
+    const timeZone = 'Asia/Manila'; // Philippine timezone
+    return toZonedTime(utcDate, timeZone);
+  };
+
+  const filteredTransactions = groupedTransactions[activeTab]?.filter((transaction) => {
+        
+    if (!selectedDate) return true; // Show all transactions if no date is selected
+
+    // Convert the transaction's createdAt to local time (Philippines)
+    const localTransactionDate = convertToLocalTime(new Date(transaction.createdAt));
+
+    // Format the local date as YYYY-MM-DD for comparison
+    const formattedTransactionDate = format(localTransactionDate, 'yyyy-MM-dd');
+
+    // Compare with the selected date
+    return formattedTransactionDate === selectedDate;
+  });
+  
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTransactions = groupedTransactions[activeTab]?.slice(indexOfFirstItem, indexOfLastItem) || [];
+  const currentTransactions = filteredTransactions?.slice(indexOfFirstItem, indexOfLastItem);
 
   const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1);
@@ -85,6 +117,131 @@ const Transactions = () => {
   const handleItemsPerPageChange = (value) => {
     setItemsPerPage(value);
     setCurrentPage(1); // Reset to the first page when changing items per page
+  };
+
+  const statusTooltips = {
+    refunded: "Refunded means the money was successfully deducted but returned to the customer.",
+    pending: "Pending means the transaction is still being processed.",
+    released: "Released means the money was returned to the customer by the system.",
+    hold: "Hold means the money is deducted from the customer and is on hold by the system."
+  };
+
+  const handleDownloadPDF = () => {
+    // Filter transactions based on date range (if applicable)
+    const filteredTransactions = transactions.filter((transaction) => {
+        const localTransactionDate = convertToLocalTime(new Date(transaction.createdAt));
+        const formattedTransactionDate = format(localTransactionDate, 'yyyy-MM-dd');
+        return formattedTransactionDate === selectedDate;
+    });
+
+     // Group transactions by type
+    const groupedTransactions = filteredTransactions.reduce((acc, transaction) => {
+        const type = transaction.type.toLowerCase();
+        let tabType;
+        if (type === 'pay') tabType = 'Purchases';
+        else if (type === 'cashout') tabType = 'Withdrawals';
+        else if (type === 'top-up') tabType = 'Deposits';
+        else tabType = 'Other'; // Handle any unexpected types
+
+        if (!acc[tabType]) {
+        acc[tabType] = [];
+        }
+        acc[tabType].push(transaction);
+        return acc;
+    }, {});
+
+    // Create a new PDF instance
+    const doc = new jsPDF();
+
+    // Add header to the PDF
+    doc.setFontSize(18);
+    doc.setTextColor(255, 165, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Campus Eats - Transaction History", 14, 20); // Title
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    doc.text(
+        `Selected Date: ${
+          selectedDate
+            ? format(convertToLocalTime(new Date(selectedDate)), 'MMMM d, yyyy')
+            : 'No Date Selected'
+        }`,
+        14,
+        30
+    ); // Date selected
+
+    let startY = 40;
+  
+    // Iterate over each group and add a section to the PDF
+    Object.entries(groupedTransactions).forEach(([type, transactions]) => {
+        const columns =
+            type === 'Purchases'
+                ? [
+                    { title: "Time", dataKey: "time" },
+                    { title: "Transaction ID", dataKey: "transactionId" },
+                    { title: "User", dataKey: "user" },
+                    { title: "Amount", dataKey: "amount" },
+                    { title: "Status", dataKey: "status" },
+                    { title: "Customer Balance", dataKey: "customerBalance" },
+                    { title: "Seller Balance", dataKey: "sellerBalance" },
+                ]
+                : [
+                    { title: "Time", dataKey: "time" },
+                    { title: "Transaction ID", dataKey: "transactionId" },
+                    { title: "User", dataKey: "user" },
+                    { title: "Amount", dataKey: "amount" },
+                    { title: "Status", dataKey: "status" },
+                    { title: "User Balance", dataKey: "customerBalance" },
+                ];
+
+        // Add section header
+        doc.setFontSize(14);
+        doc.text(`${type}`, 14, startY);
+        startY += 4; // Move down for the table
+
+        // Map the transactions to the table rows
+        const rows = transactions.map((transaction) => [
+        format(convertToLocalTime(new Date(transaction.createdAt)), 'MM/dd/yyyy, h:mm:ss a'),
+        transaction.transactionId,
+        transaction.user.username,
+        transaction.amount,
+        transaction.status,
+        transaction.userBalanceAfter || 'N/A',
+        transaction.sellerBalanceAfter || 'N/A',
+        ]);
+
+        // Add the table to the PDF
+        autoTable(doc, {
+        head: [columns.map((col) => col.title)],
+        body: rows,
+        headStyles: {
+            fillColor: [62, 115, 230], // RGB values for a green color
+            textColor: [255, 255, 255], // White text
+            fontStyle: 'bold', // Bold text
+            fontSize: 12,
+        },
+        bodyStyles: {
+          fontSize: 9, // Smaller font size for the body
+          textColor: [0, 0, 0], // Black text
+          fontStyle: 'normal', // Normal font style
+        },
+        startY: startY,
+        styles: {
+            halign: 'center', // Center align text horizontally
+            valign: 'middle', // Center align text vertically
+        },
+        });
+
+        // Update startY for the next section
+        startY = doc.lastAutoTable.finalY + 10;
+    });
+
+    const currentDate = format(new Date(), 'yyyy-MM-dd'); // Format: YYYY-MM-DD
+    const fileName = `transaction_history_${currentDate}.pdf`;
+
+    // Save the PDF with the new file name
+    doc.save(fileName);
   };
 
   if (loading) {
@@ -152,18 +309,34 @@ const Transactions = () => {
         </div>
   
         {/* Items Per Page Dropdown */}
-        <div className="mb-4">
-          <label htmlFor="itemsPerPage" className="mr-2">Items per page:</label>
-          <select
-            id="itemsPerPage"
-            value={itemsPerPage}
-            onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-            className="p-1 border border-gray-300 rounded"
-          >
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
+        <div className="mb-4 flex flex-row items-center">
+            <label htmlFor="dateFilter" className="mr-2">Filter by date:</label>
+            <input
+                type="date"
+                id="dateFilter"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="p-1 border border-gray-300 rounded"
+            />
+
+            <label htmlFor="itemsPerPage" className="mx-2">Items per page:</label>
+            <select
+                id="itemsPerPage"
+                value={itemsPerPage}
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                className="p-1 border border-gray-300 rounded"
+            >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+            </select>
+
+            <button
+                onClick={handleDownloadPDF}
+                className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+                Download (PDF)
+            </button>
         </div>
   
         {/* Render transactions for the active tab */}
@@ -180,7 +353,7 @@ const Transactions = () => {
                     <th className="px-0 py-2 border-b">Transaction Details</th>
                 )}
                 <th className="px-4 py-2 border-b">Status</th>
-                <th className="px-4 py-2 border-b">Customer Balance</th>
+                <th className="px-4 py-2 border-b">{activeTab === 'payment' ? "Customer Balance" : "User Balance"}</th>
                 {activeTab === 'payment' && (
                     <th className="px-4 py-2 border-b">Seller Balance</th>
                 )}
@@ -189,13 +362,19 @@ const Transactions = () => {
             <tbody>
               {currentTransactions.map((transaction) => (
                 <tr key={transaction.transactionId} className="hover:bg-gray-50 text-center">
-                  <td className="px-4 py-2 border-b">{new Date(transaction.createdAt).toLocaleString()}</td>
+                  <td className="px-4 py-2 border-b">
+                    {format(convertToLocalTime(new Date(transaction.createdAt)), 'MM/dd/yyyy, h:mm:ss a')}
+                  </td>
                   <td className="px-4 py-2 border-b">{transaction.transactionId}</td>
                   <td className="px-4 py-2 border-b">{transaction.user.username}</td>
                   {/* <td className="px-0 py-2 border-b">{transaction.type}</td> */}
                   <td className="px-4 py-2 border-b">{transaction.amount}</td>
                   {activeTab === 'payment' && (
-                    <td className="px-0 py-2 border-b w-48">
+                    <td
+                        className={`px-0 py-2 border-b ${
+                        openDetails === transaction.transactionId ? 'min-w-48' : 'min-w-24'
+                        }`}
+                    >
                     {/* Transaction Details */}
                     {transaction.details ? (
                         <>
@@ -210,6 +389,10 @@ const Transactions = () => {
                             <h1 className="text-left">
                                 <span>Store:</span>
                                 <span className="ml-1">{transaction.details.store_name || 'N/A'}</span>
+                            </h1>
+                            <h1 className="text-left">
+                                <span>Order Number:</span>
+                                <span className="ml-1">{transaction.details.orderNumber || 'N/A'}</span>
                             </h1>
                             <h1 className="text-left">Items:
                                 {Array.isArray(transaction.details.items) && transaction.details.items.length > 0 ? (
@@ -240,7 +423,34 @@ const Transactions = () => {
                     )}
                     </td>
                 )}
-                  <td className="px-4 py-2 border-b">{transaction.status}</td>
+                  <td className="px-4 py-2 border-b">
+                    <div className="flex items-center justify-center">
+                        {transaction.status}
+                        {statusTooltips[transaction.status] && transaction.status !== "completed" && (
+                            <button
+                                data-tooltip-id={`${transaction.status}-tooltip`}
+                                data-tooltip-content={statusTooltips[transaction.status]}
+                                className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                            >
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                className="w-4 h-4"
+                                >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                                />
+                                </svg>
+                            </button>
+                        )}
+                        <Tooltip id={`${transaction.status}-tooltip`} place="top" type="dark" effect="solid" />
+                    </div>
+                  </td>
                   <td className="px-4 py-2 border-b">{transaction.userBalanceAfter || 'N/A'}</td>
 
                   {activeTab === "payment" && (
@@ -264,7 +474,7 @@ const Transactions = () => {
           <span>Page {currentPage}</span>
           <button
             onClick={handleNextPage}
-            disabled={indexOfLastItem >= groupedTransactions[activeTab]?.length}
+            disabled={indexOfLastItem >= filteredTransactions.length}
             className="px-4 py-2 bg-orange-500 text-white rounded disabled:bg-gray-300"
           >
             Next
