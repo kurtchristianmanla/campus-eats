@@ -381,7 +381,14 @@ router.post('/reset-password', async (req, res) => {
         res.status(200).json({ message: 'Password reset successfully' });
     } catch (error) {
         console.error('Error resetting password:', error);
-        res.status(500).json({ message: 'Failed to reset password', error: error.message });
+
+        // If the error is a Mongoose ValidationError (password validation error)
+        if (error.name === 'ValidationError') {
+            const validationErrors = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({ success: false, message: validationErrors.join(', ') });
+        }
+
+        res.status(500).json({ message: 'Failed to reset password' });
     }
 });
 
