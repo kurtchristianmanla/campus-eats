@@ -237,7 +237,7 @@ const Transactions = () => {
         startY = doc.lastAutoTable.finalY + 10;
     });
 
-    const currentDate = format(new Date(), 'yyyy-MM-dd'); // Format: YYYY-MM-DD
+    const currentDate = format(convertToLocalTime(new Date(selectedDate)), 'yyyy-MM-dd'); // Format: YYYY-MM-DD
     const fileName = `transaction_history_${currentDate}.pdf`;
 
     // Save the PDF with the new file name
