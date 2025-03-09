@@ -87,7 +87,7 @@ const SellerReviews = () => {
             }
         }, [navigate]);
 
-    const fetchReviews = useCallback(async (sellerId) => {
+    const fetchReviews = useCallback(async () => {
         api.get(`/seller/reviews`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -104,7 +104,7 @@ const SellerReviews = () => {
             }, {});
 
             setGroupedReviews(grouped);
-            setReviews(response.data.reviewsWithCompletionTime);
+            setReviews(response.data);
         }).catch((error) => {
             console.error('Error fetching menu items:', error);
         });
@@ -129,7 +129,6 @@ const SellerReviews = () => {
     const handleItemClick = (item) => {
         setSelectedItem(item);
         setIsFormVisible(true);
-        fetchReviews(item._id); // Fetch reviews for the selected item
     };
 
     return (

@@ -60,8 +60,8 @@ const ItemReviews = ({ item, reviews }) => {
                                 ))}
                                 </span>
                                 <p className="text-xs ml-2">
-                                    {format(new Date(review.completedAt), "MM/dd/yyyy hh:mm a", { timeZone: "Asia/Manila" })}
-                                    </p>
+                                    {format(new Date(review.createdAt), "MM/dd/yyyy hh:mm a", { timeZone: "Asia/Manila" })}
+                                </p>
                             </div>
                             <p className="text-gray-700">{review.review}</p>
                         </div>

@@ -235,22 +235,8 @@ router.get('/reviews', isRightRole(['seller']), async (req, res) => {
             return res.status(404).json({ message: 'No reviews found for these items.' });
         }
 
-        // Step 4: Fetch the completion time for each review's order
-        const reviewsWithCompletionTime = await Promise.all(reviews.map(async (review) => {
-            const order = await Order.findById(review.orderId._id);
-
-            if (order) {
-                // Find the timestamp when the order status became 'completed'
-                const completedStatus = order.statusHistory.find(history => history.status === 'completed');
-                review = review.toObject(); // Convert Mongoose document to plain object
-                review.completedAt = completedStatus ? completedStatus.timestamp : null;
-            }
-
-            return review;
-        }));
-
         // Step 5: Return the reviews with completion time
-        res.status(200).json(reviewsWithCompletionTime);
+        res.status(200).json(reviews);
 
     } catch (error) {
         console.error('Error fetching reviews:', error);
