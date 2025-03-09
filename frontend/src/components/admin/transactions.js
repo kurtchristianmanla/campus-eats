@@ -7,6 +7,7 @@ import { Tooltip } from 'react-tooltip';
 import Header from '../utils/header';
 import api from '../api/interceptor';
 import Loading from '../utils/loading';
+import { FaDownload } from 'react-icons/fa';
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
@@ -333,9 +334,10 @@ const Transactions = () => {
 
             <button
                 onClick={handleDownloadPDF}
-                className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 flex items-center gap-1"
             >
-                Download (PDF)
+                <span>PDF</span> 
+                <span><FaDownload /></span>
             </button>
         </div>
   
