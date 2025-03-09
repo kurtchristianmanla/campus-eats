@@ -309,7 +309,7 @@ const ProfileUser = (user_type_route) => {
                         {/* Profile Picture */}
                         <div className="flex-shrink-0">
                             <div className="w-32 h-32 bg-indigo-500 text-white text-6xl font-bold flex justify-center 
-                                        items-center rounded-full overflow-hidden mb-4 sm:mb-0 sm:mr-4 border-4 border-white">
+                                        items-center rounded-full overflow-hidden mb-1 sm:mr-4 border-4 border-white">
                                 {profilePicture ? (
                                     <img
                                     src={profilePicture}
