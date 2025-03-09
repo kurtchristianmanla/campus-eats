@@ -9,8 +9,10 @@ const upload = require('../middleware/upload');
 const isRightRole = require('../middleware/auth'); 
 const mongoose = require('../db/db');
 const User = require('../models/user');
+const MenuItem = require('../models/menuitem');
 const Transaction = require('../models/transaction');
 const Order = require('../models/order');
+const Rating = require('../models/rating');
 const profileRoutes = require('../utils/profileroutes'); 
 
 const jwt = require('jsonwebtoken');
@@ -206,6 +208,53 @@ router.put('/set-status', isRightRole(['seller']), async (req, res) => {
         res.json({ status: user.is_selling });
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Route to get reviews for all items of a specific seller
+router.get('/reviews', isRightRole(['seller']), async (req, res) => {
+    try {
+        const sellerId = req.user.user_id;
+
+        // Step 1: Find all menu items for the seller
+        const menuItems = await MenuItem.find({ sellerId });
+
+        if (menuItems.length === 0) {
+            return res.status(404).json({ message: 'No items found for this seller.' });
+        }
+
+        // Step 2: Extract the item IDs
+        const itemIds = menuItems.map(item => item._id);
+
+        // Step 3: Find all reviews for these items
+        const reviews = await Rating.find({ productId: { $in: itemIds } })
+                                    .populate('customerId', 'username profile_picture') // Optionally populate customer details
+                                    .populate('orderId', 'orderNumber'); // Populate order details
+
+        if (reviews.length === 0) {
+            return res.status(404).json({ message: 'No reviews found for these items.' });
+        }
+
+        // Step 4: Fetch the completion time for each review's order
+        const reviewsWithCompletionTime = await Promise.all(reviews.map(async (review) => {
+            const order = await Order.findById(review.orderId._id);
+
+            if (order) {
+                // Find the timestamp when the order status became 'completed'
+                const completedStatus = order.statusHistory.find(history => history.status === 'completed');
+                review = review.toObject(); // Convert Mongoose document to plain object
+                review.completedAt = completedStatus ? completedStatus.timestamp : null;
+            }
+
+            return review;
+        }));
+
+        // Step 5: Return the reviews with completion time
+        res.status(200).json(reviewsWithCompletionTime);
+
+    } catch (error) {
+        console.error('Error fetching reviews:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 

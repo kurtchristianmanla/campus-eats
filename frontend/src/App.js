@@ -25,6 +25,7 @@ import ManageOrders from './components/seller/sellerorders.js';
 import SellerMenu from './components/seller/sellermenu.js';
 import SellerHistory from './components/seller/history.js';
 import SellerPolicy from './components/seller/sellerpolicy.js';
+import SellerReviews from './components/seller/sellerreviews.js';
 
 import CustomerPage from './components/customer/customerpage.js';
 import ProfileCustomer from './components/customer/customerprofile.js';
@@ -149,6 +150,7 @@ function App() {
         <Route path="/seller/menu" element={protectedRoute('seller', SellerMenu)} />
         <Route path="/seller/history" element={protectedRoute('seller', SellerHistory)} />
         <Route path="/seller/use-policy" element={protectedRoute('seller', SellerPolicy)} />
+        <Route path="/seller/reviews" element={protectedRoute('seller', SellerReviews)} />
 
         {/* Admin Route */}
         <Route path="/admin" element={protectedRoute('admin', AdminDashboard)} />

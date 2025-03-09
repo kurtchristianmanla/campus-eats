@@ -163,7 +163,7 @@ const SellerHomepage = () => {
 
             {/* Buttons Section */}
             <motion.div
-                className="flex flex-col space-y-4 -mt-[4rem] items-center w-[20rem] z-10"
+                className="flex flex-col space-y-4 -mt-[3rem] items-center w-[20rem] z-10"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.5, ease: "easeInOut" }}
@@ -210,6 +210,22 @@ const SellerHomepage = () => {
                     }}
                 >
                     CUSTOMIZE MENU
+                </motion.button>
+
+                {/* HISTORY Button */}
+                <motion.button
+                    onClick={() => navigate("/seller/reviews")}
+                    className="w-full py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{
+                        animate: { duration: 0.4, ease: "easeInOut" },
+                        hover: { duration: 0.3, ease: "easeOut" },
+                    }}
+                >
+                    REVIEWS
                 </motion.button>
 
                 {/* HISTORY Button */}
