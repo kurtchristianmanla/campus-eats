@@ -70,24 +70,37 @@ router.get('/recommendations', isRightRole(['customer']), async (req, res) => {
     try {
         const userId = req.user.user_id;
 
-        const lastOrder = await Order
-            .findOne({ customerId: userId, status: { $ne: 'cancelled' } })
-            .sort({ createdAt: -1 })
-            .populate('items.productId', '_id name price imageUrl')
+        // Fetch the user's most recent orders (excluding cancelled orders)
+        const recentOrders = await Order
+            .find({ customerId: userId, status: { $ne: 'cancelled' } }) // Exclude cancelled orders
+            .sort({ createdAt: -1 }) // Sort by most recent
+            .populate('items.productId', '_id name price imageUrl') // Populate productId
+            .limit(5) // Fetch the last 5 orders
             .lean();
 
-        if (!lastOrder) {
+        if (!recentOrders || recentOrders.length === 0) {
             return res.status(404).json({ message: 'No orders found' });
         }
 
-        console.log(lastOrder);
-        
-        // Get the first item's productId
-        const itemId = lastOrder.items[0].productId?._id;
+        console.log('Recent Orders:', recentOrders);
 
-        if (!itemId) {
-            return res.status(404).json({ message: 'No valid product ID found in the last order' });
+        // Find the first order with at least one valid productId
+        let validOrder = null;
+        let validItem = null;
+
+        for (const order of recentOrders) {
+            validItem = order.items.find(item => item.productId && item.productId._id);
+            if (validItem) {
+                validOrder = order;
+                break; // Exit the loop once a valid order is found
+            }
         }
+
+        if (!validOrder || !validItem) {
+            return res.status(404).json({ message: 'No valid product ID found in any recent orders' });
+        }
+
+        const itemId = validItem.productId._id;
 
         // Fetch necessary data
         const orders = await Order.find({});
