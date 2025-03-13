@@ -24,8 +24,6 @@ const address = `${backend_url}`;
 const CustomerPurchases = () => {
     const [activeTab, setActiveTab] = useState('pending');
     const [orders, setOrders] = useState([]);
-    const [showRatingForm, setShowRatingForm] = useState({});
-    const [orderToRate, setOrderToRate] = useState(null);
     const [socket, setSocket] = useState(null);
     const navigate = useNavigate();
 
