@@ -71,7 +71,7 @@ router.get('/recommendations', isRightRole(['customer']), async (req, res) => {
         const userId = req.user.user_id;
 
         const lastOrder = await Order
-            .findOne({ customerId: userId, status: 'completed' })
+            .findOne({ customerId: userId, status: { $ne: 'cancelled' } })
             .sort({ createdAt: -1 })
             .populate('items.productId', '_id name price imageUrl')
             .lean();
@@ -79,7 +79,10 @@ router.get('/recommendations', isRightRole(['customer']), async (req, res) => {
         if (!lastOrder) {
             return res.status(404).json({ message: 'No orders found' });
         }
+
+        console.log(lastOrder);
         
+        // Get the first item's productId
         const itemId = lastOrder.items[0].productId?._id;
 
         if (!itemId) {
