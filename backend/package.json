@@ -10,6 +10,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google-cloud/language": "^6.5.0",
+    "@huggingface/transformers": "^3.4.0",
+    "axios": "^1.8.3",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "cloudinary": "^1.41.3",
@@ -31,6 +34,7 @@
     "mysql2": "^3.11.3",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0",
+    "openai": "^4.87.3",
     "react-sharp": "^1.0.0",
     "redis": "^4.7.0",
     "sharp": "^0.33.5",

@@ -36,6 +36,8 @@ const CustomerPage = () => {
     const [viewSeller, setViewSeller] = useState(null);
     const [viewStoreName, setViewStoreName] = useState('');
     const [menuItems, setMenuItems] = useState([]);
+    const [recommendation, setRecommendation] = useState([]);
+    const [lastOrder, setLastOrder] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
     const [viewItem, setViewItem] = useState(false);
 
@@ -122,6 +124,27 @@ const CustomerPage = () => {
             });
     }, []);
 
+    const fetchRecommendations = useCallback(async () => {
+        const token = localStorage.getItem('token');
+        try {
+            // Using Axios to make the GET request
+            const response = await api.get('/customer/recommendations', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            console.log(response.data);
+            setRecommendation(response.data.recommendedItems); // Update state with user data
+            setLastOrder(response.data.lastOrder);
+            // console.log(sellers);
+            setLoading(false); // Set loading to false
+        } catch (error) {
+            console.error('Error fetching items:', error);
+            setLoading(false);
+        }
+    }, []);
+
     // Run the check when the component mounts
     useEffect(() => {
         document.title = "Campus Eats | Customer";
@@ -134,6 +157,7 @@ const CustomerPage = () => {
         
         fetchSellers();
         fetchRatedItems();
+        fetchRecommendations();
 
         if (viewSeller) {
             fetchMenu(viewSeller);
@@ -218,7 +242,7 @@ const CustomerPage = () => {
             // document.body.style.overflow = 'auto';
             // document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
         };
-    }, [checkCustomerAccess, fetchSellers, viewSeller, fetchMenu, userId, fetchRatedItems]);
+    }, [checkCustomerAccess, fetchSellers, viewSeller, fetchMenu, userId, fetchRatedItems, fetchRecommendations]);
 
     const [sellersWithRatings, setSellersWithRatings] = useState([]);
 
@@ -428,6 +452,84 @@ const CustomerPage = () => {
                     transition={{ duration: 1, ease: "easeOut" }}
                     className="text-3xl font-bold p-4">Enjoy Delicious Food</motion.h1>
                 
+                {(lastOrder !== null && viewState === 'selectStores') && (
+                    <>
+                        {/* Popular Foods */}
+                        <motion.div 
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10  }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className="flex justify-between items-center mt-2 px-4">
+                            <p className="text-sm font-semibold text-gray-800">
+                                <span>Since you last ordered</span>
+                                <span className="ml-1 text-orange-500">{lastOrder?.items[0].name}</span>
+                                <span>, you might be interested in</span>
+                            </p>
+                        </motion.div>
+
+                        <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
+                            <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
+                            {recommendation.length === 0 ? (
+                                <div className="text-center text-xl text-gray-500 mb-4">No popular foods available</div>
+                            ) : (
+                                recommendation
+                                    .sort((a, b) => b.averageRating - a.averageRating)
+                                    .map((item, index) => (
+                                    <motion.div key={index} className="relative bg-white p-4 rounded-xl w-52 h-68 flex-shrink-0 inline-block 
+                                                scroll-ml-4 first:ml-0 flex flex-col overflow-hidden"
+                                            onClick={() => {
+                                                if (item.isAvailable && item.sellerId.is_selling) {
+                                                    handleOrderItem(item);
+                                                }
+                                            }}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20  }}
+                                            whileHover={(item.isAvailable && item.sellerId.is_selling) ? { scale: 1.05 } : { scale: 1 }}
+                                            whileTap={(item.isAvailable && item.sellerId.is_selling) ? { scale: 0.95 } : { scale: 1 }}
+                                            transition={{ hover: { duration: 0.3, ease: "easeOut" },
+                                                            x: { duration: 2, ease: "easeOut" }}}
+                                    >
+                                    {(!item.isAvailable || !item.sellerId.is_selling) && (
+                                        <>
+                                            <p className="absolute inset-0 flex items-center justify-center text-white z-30 text-xs">
+                                                Unavailable
+                                            </p>
+                                            <div className="absolute inset-0 bg-black opacity-50 rounded-xl z-20"></div>
+                                        </>
+                                    )}
+                                    <div className="relative flex justify-center mb-2">
+                                        {item.imageUrl ? (<img
+                                            src={item.imageUrl}
+                                            alt={item.name}
+                                            className="w-44 h-44 object-cover rounded-md"
+                                        />) : (
+                                            <>
+                                                <p className="absolute inset-0 flex items-center justify-center text-white z-10 text-xs">
+                                                    No image uploaded
+                                                </p>
+                                                <div className="w-44 h-44 bg-gray-400 rounded-md" />
+                                            </>
+                                        )}
+                                    </div>
+                                    <div className="text-left mb-auto">
+                                        <h3 className="font-medium text-sm">{item.name}</h3>
+                                        <p className="text-[0.6rem] text-gray-500 mb-6">{item.sellerId.store_name}</p>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center text-sm">
+                                                {item.price} UC
+                                            </div>
+                                            <FaHeart className="w-4 h-4 text-gray-400" />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )))}
+                            </div>
+                        </div>
+                    </>
+                )}
+
                 {/* Popular Restaurants Header */}
                 <motion.div
                     initial={{ opacity: 0, x: -10 }}
@@ -652,6 +754,7 @@ const CustomerPage = () => {
                     </div>
                 )}
 
+                {/* Online Stores */}
                 {viewState === 'selectStores' && (
                     <motion.div 
                         initial={{ opacity: 0, x: -10 }}
@@ -729,6 +832,7 @@ const CustomerPage = () => {
                     </div>
                 )}
 
+                {/* Popular Foods */}
                 {viewState === 'selectStores' && (
                     <motion.div 
                         initial={{ opacity: 0, x: -10 }}

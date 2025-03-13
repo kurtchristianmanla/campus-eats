@@ -40,7 +40,11 @@ const menuItemSchema = new mongoose.Schema({
     imageUrl: {
         type: String, // URL for an image of the product
     },
-    averageRating: { type: Number, default: 0 } // Precomputed average
+    averageRating: { type: Number, default: 0 }, // Precomputed average
+    tags: {
+        type: [String], // Array of tags (e.g., ["Dessert", "Ube", "Filipino"])
+        default: [], // Default to an empty array
+    },
 });
 
 const MenuItem = mongoose.model('MenuItem', menuItemSchema);
