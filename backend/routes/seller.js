@@ -117,33 +117,6 @@ router.get('/manage-orders', isRightRole(['seller']), async (req, res) => {
     }
 });
 
-// router.put('/set-status', isRightRole(['seller']), async (req, res) => {
-//     const { is_selling } = req.body;
-//     console.log(is_selling);
-//     try {
-//         // Find the user in the database using the decoded user ID
-//         const user = await User.findById(req.user.user_id).select('-password'); // Exclude password field for security
-//         if (!user) {
-//             return res.status(404).json({ message: 'User not found.' });
-//         }
-
-//         user.is_selling = is_selling;
-
-//         await user.save();
-
-//         req.io.emit('sellerStatusChanged', {
-//             sellerId: user._id,
-//             isSelling: user.is_selling,
-//             storeName: user.store_name,
-//             profilePicture: user.profile_picture
-//         });
-
-//         res.json({ status: user.is_selling });
-//     } catch (err) {
-//         res.status(500).json({ message: 'Server error' });
-//     }
-// });
-
 router.put('/set-status', isRightRole(['seller']), async (req, res) => {
     const { is_selling } = req.body;
     try {
