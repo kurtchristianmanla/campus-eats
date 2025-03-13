@@ -73,14 +73,18 @@ router.get('/recommendations', isRightRole(['customer']), async (req, res) => {
         const lastOrder = await Order
             .findOne({ customerId: userId, status: 'completed' })
             .sort({ createdAt: -1 })
-            .populate('items.productId', 'name price imageUrl')
+            .populate('items.productId', '_id name price imageUrl')
             .lean();
 
         if (!lastOrder) {
             return res.status(404).json({ message: 'No orders found' });
         }
         
-        const itemId = lastOrder.items[0].productId;
+        const itemId = lastOrder.items[0].productId?._id;
+
+        if (!itemId) {
+            return res.status(404).json({ message: 'No valid product ID found in the last order' });
+        }
 
         // Fetch necessary data
         const orders = await Order.find({});

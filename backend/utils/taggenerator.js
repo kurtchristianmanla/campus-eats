@@ -1,7 +1,7 @@
 const axios = require("axios");
 require("dotenv").config();
 
-const groqApiKey = process.env.GROQ_API_KEY || "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";
+const groqApiKey = process.env.GROQ_API_KEY;
 
 // Function to Generate Tags
 async function generateTags(name, description) {
