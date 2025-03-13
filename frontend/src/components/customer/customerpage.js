@@ -681,7 +681,7 @@ const CustomerPage = () => {
                 
                 {viewState === 'selectStores' && (
                     <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
-                        <div className="flex mt-6 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
+                        <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
                         {(sellersWithRatings
                             .filter((store) => store.sellerRating >= 4 && store.sellerRating <= 5)
                             .sort((a, b) => b.sellerRating - a.sellerRating)).length === 0 ? (
@@ -761,7 +761,7 @@ const CustomerPage = () => {
 
                 {viewState === 'selectStores' && (
                     <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
-                        <div className="flex mt-6 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
+                        <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
                         {(sellersWithRatings
                             .filter((store) => store.is_selling).length === 0) ? (
                             <div className="text-center text-xl text-gray-500 mb-4">No online stores available</div>
@@ -839,7 +839,7 @@ const CustomerPage = () => {
 
                 {viewState === 'selectStores' && (
                     <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
-                        <div className="flex mt-6 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
+                        <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
                         {ratedItems.length === 0 ? (
                             <div className="text-center text-xl text-gray-500 mb-4">No popular foods available</div>
                         ) : (
@@ -847,7 +847,7 @@ const CustomerPage = () => {
                                 .sort((a, b) => b.averageRating - a.averageRating)
                                 .map((item, index) => (
                                 <motion.div key={index} className="relative bg-white p-4 rounded-xl w-52 h-68 flex-shrink-0 inline-block 
-                                            scroll-ml-4 first:ml-0 flex flex-col overflow-hidden"
+                                            scroll-ml-4 first:ml-0 flex flex-col overflow-hidden justify-between"
                                         onClick={() => {
                                             // if (item.isAvailable) {
                                             //     handleOrderItem(item);
@@ -873,7 +873,7 @@ const CustomerPage = () => {
                                         <div className="absolute inset-0 bg-black opacity-50 rounded-xl z-20"></div>
                                     </>
                                 )}
-                                <div className="relative flex justify-center mb-2">
+                                <div className="relative flex justify-center mb-2 flex-col">
                                     {item.imageUrl ? (<img
                                         src={item.imageUrl}
                                         alt={item.name}
@@ -886,10 +886,10 @@ const CustomerPage = () => {
                                             <div className="w-44 h-44 bg-gray-400 rounded-md" />
                                         </>
                                     )}
-                                </div>
-                                <div className="text-left mb-auto">
-                                    <h3 className="font-medium text-sm">{item.name}</h3>
+                                    <h3 className="font-medium text-sm mt-2">{item.name}</h3>
                                     <p className="text-[0.7rem] text-gray-500 mb-6">{item.price} UC</p>
+                                </div>
+                                <div className="text-left">
                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center">
                                             {item.averageRating  && (<FaStar className="w-4 h-4 text-yellow-500" />)}
