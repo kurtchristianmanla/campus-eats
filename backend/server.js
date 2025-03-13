@@ -37,7 +37,8 @@ const allowedOrigins = [
     'http://192.168.254.153:3001',
     'http://192.168.72.22:3001',
     'http://192.168.137.1:3001',
-    'https://campus-eats-iota.vercel.app'
+    'https://campus-eats-iota.vercel.app',
+    'https://campus-eats-g5p3.onrender.com'
 ];
 
 // app.use(cors());
