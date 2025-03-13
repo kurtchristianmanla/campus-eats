@@ -39,11 +39,15 @@ const ItemReviews = ({ item, reviews }) => {
                         <div key={review._id} className="bg-white p-4 rounded-lg">
                             <div className="flex items-center space-x-4 mb-4">
                                 <div className="flex-shrink-0">
-                                    <img
+                                    {review.customerId.profile_picture ? (
+                                        <img
                                         className="h-12 w-12 rounded-full"
                                         src={review.customerId.profile_picture}
                                         alt={review.customerId.username}
                                     />
+                                    ) : (
+                                        `${review.customerId.username.charAt(0).toUpperCase()}`
+                                    )}
                                 </div>
                                 <div>
                                     <h2 className="text-md font-semibold">{review.customerId.username}</h2>

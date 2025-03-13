@@ -479,19 +479,19 @@ const CustomerPage = () => {
                                     <motion.div key={index} className="relative bg-white p-4 rounded-xl w-52 h-68 flex-shrink-0 inline-block 
                                                 scroll-ml-4 first:ml-0 flex flex-col overflow-hidden"
                                             onClick={() => {
-                                                if (item.isAvailable && item.sellerId.is_selling) {
+                                                if (item.isAvailable && item.sellerId?.is_selling) {
                                                     handleOrderItem(item);
                                                 }
                                             }}
                                             initial={{ opacity: 0, x: -10 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             exit={{ opacity: 0, x: -20  }}
-                                            whileHover={(item.isAvailable && item.sellerId.is_selling) ? { scale: 1.05 } : { scale: 1 }}
-                                            whileTap={(item.isAvailable && item.sellerId.is_selling) ? { scale: 0.95 } : { scale: 1 }}
+                                            whileHover={(item.isAvailable && item.sellerId?.is_selling) ? { scale: 1.05 } : { scale: 1 }}
+                                            whileTap={(item.isAvailable && item.sellerId?.is_selling) ? { scale: 0.95 } : { scale: 1 }}
                                             transition={{ hover: { duration: 0.3, ease: "easeOut" },
                                                             x: { duration: 2, ease: "easeOut" }}}
                                     >
-                                    {(!item.isAvailable || !item.sellerId.is_selling) && (
+                                    {(!item.isAvailable || !item.sellerId?.is_selling) && (
                                         <>
                                             <p className="absolute inset-0 flex items-center justify-center text-white z-30 text-xs">
                                                 Unavailable
@@ -515,7 +515,7 @@ const CustomerPage = () => {
                                     </div>
                                     <div className="text-left mb-auto">
                                         <h3 className="font-medium text-sm">{item.name}</h3>
-                                        <p className="text-[0.6rem] text-gray-500 mb-6">{item.sellerId.store_name}</p>
+                                        <p className="text-[0.6rem] text-gray-500 mb-6">{item.sellerId?.store_name}</p>
                                         <div className="flex items-center justify-between gap-2">
                                             <div className="flex items-center text-sm">
                                                 {item.price} UC
