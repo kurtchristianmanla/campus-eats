@@ -114,7 +114,7 @@ router.get('/recommendations', isRightRole(['customer']), async (req, res) => {
             .find({ _id: { $in: recommendations } })
             .populate('sellerId', 'username store_name is_selling');
 
-        res.json({recommendedItems, lastOrder});
+        res.json({recommendedItems, lastOrder: validOrder});
     } catch (error) {
         console.error('Error fetching recommended items:', error);
         res.status(500).json({ message: 'Error fetching recommendations', error: error.message || error });
