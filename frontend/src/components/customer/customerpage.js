@@ -492,7 +492,7 @@ const CustomerPage = () => {
                                             transition={{ hover: { duration: 0.3, ease: "easeOut" },
                                                             x: { duration: 2, ease: "easeOut" }}}
                                     >
-                                        <div className="relative flex justify-center mb-2">
+                                        <div className="relative flex justify-center mb-2 flex-col">
                                             {item.imageUrl ? (<img
                                                 src={item.imageUrl}
                                                 alt={item.name}
@@ -505,10 +505,10 @@ const CustomerPage = () => {
                                                     <div className="w-44 h-44 bg-gray-400 rounded-md" />
                                                 </>
                                             )}
+                                            <h3 className="font-medium text-sm mt-2">{item.name}</h3>
+                                            <p className="text-[0.6rem] text-gray-500 mb-6">{item.sellerId?.store_name}</p>
                                         </div>
                                         <div className="text-left">
-                                            <h3 className="font-medium text-sm">{item.name}</h3>
-                                            <p className="text-[0.6rem] text-gray-500 mb-6">{item.sellerId?.store_name}</p>
                                             <div className="flex items-center justify-between gap-2">
                                                 <div className="flex items-center text-sm">
                                                     {item.price} UC
