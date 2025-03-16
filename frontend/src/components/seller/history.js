@@ -147,7 +147,7 @@ const Transactions = () => {
         </header>
         <div className="container mx-auto p-4 text-sm">
             <h2 className="text-2xl font-bold text-gray-800 mb-4 -mt-2">
-                {seller.store_name || "Seller"}<span className='text-orange-500'> Transactions</span></h2>
+                {seller?.store_name || "Seller"}<span className='text-orange-500'> Transactions</span></h2>
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
                 <thead>
