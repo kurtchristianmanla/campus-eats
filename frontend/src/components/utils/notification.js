@@ -4,14 +4,19 @@ const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
     const [notification, setNotification] = useState(null);
+    const notificationSound = new Audio('/test/notification.wav');
+    notificationSound.preload = "auto"; // Ensure the sound is loaded early
 
     const showNotification = (title, body) => {
         if (Notification.permission === 'granted') {
-            const notificationSound = new Audio('/test/notification.wav');
-            notificationSound.play();
+            notificationSound.currentTime = 0; // Restart the sound
+            notificationSound.play(); 
 
             navigator.serviceWorker.ready.then(registration => {
-                registration.showNotification(title, { body });
+                registration.showNotification(title, { 
+                    body,
+                    silent: true
+                });
             });
         } else if (Notification.permission !== 'denied') {
             Notification.requestPermission().then(permission => {
