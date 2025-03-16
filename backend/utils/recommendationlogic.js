@@ -45,6 +45,9 @@ function cosineSimilarity(vecA, vecB) {
 
 // Function to recommend items for a user (Collaborative Filtering)
 function recommendItems(targetUserId, orders, menuItems) {
+    console.log('Orders:', orders?.length);
+    console.log('Menu Items:', menuItems?.length);
+
     // Create a user-item matrix
     const users = [...new Set(orders.map(order => order.customerId.toString()))];
     const items = menuItems.map(item => item._id.toString());
@@ -54,8 +57,13 @@ function recommendItems(targetUserId, orders, menuItems) {
         )
     );
 
+    console.log('Users:', users);
+    console.log('Items:', items);
+    console.log('User-Item Matrix:', userItemMatrix);
+
     // Find the target user's index
     const targetUserIndex = users.indexOf(targetUserId.toString());
+    console.log('Target User Index:', targetUserIndex);
 
     // Calculate similarity with other users
     const similarities = [];
@@ -65,9 +73,11 @@ function recommendItems(targetUserId, orders, menuItems) {
             similarities.push({ userId: users[i], similarity });
         }
     }
+    console.log('Similarities:', similarities);
 
     // Sort by similarity and get top 3 similar users
     const topN = similarities.sort((a, b) => b.similarity - a.similarity).slice(0, 3);
+    console.log('Top-N Similar Users:', topN);
 
     // Recommend items from similar users
     const recommendations = new Set();
@@ -79,6 +89,7 @@ function recommendItems(targetUserId, orders, menuItems) {
             }
         });
     });
+    console.log('Recommendations:', recommendations);
 
     return Array.from(recommendations);
 }
