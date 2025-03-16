@@ -1,4 +1,4 @@
-const CACHE_NAME = "campus-eats-cache-v1.71";
+const CACHE_NAME = "campus-eats-cache-v1.72";
 
 // Use a runtime caching strategy instead of a predefined list
 self.addEventListener("install", (event) => {
@@ -98,14 +98,23 @@ self.addEventListener('push', event => {
     );
 });
 
-
 self.addEventListener("notificationclick", (event) => {
     event.notification.close();
+
+    let urlOrders = "/customer/orders"; // Default to customer orders
+    if (event.notification.data?.userType === "seller") {
+        urlOrders = "/seller/orders";
+    }
     
     if (event.action === "open") {
-      clients.openWindow("/orders"); // Open order page
+      clients.openWindow(urlOrders); // Open order page
+    } else if (event.action === "view") {
+      clients.openWindow("/"); // Open your app
+    } else if (event.action === "dismiss") {
+      console.log("Notification dismissed");
     }
-  
     // const audio = new Audio("/test/notification.wav");
     // audio.play();
+
+    event.waitUntil(clients.openWindow(urlOrders));
 });

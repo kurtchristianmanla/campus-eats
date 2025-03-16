@@ -54,7 +54,8 @@ const ProfileCustomer = () => {
                 // Show notification with updated status text
                 showNotification(
                     'Order Status Updated!', 
-                    `Order #${data.order.orderNumber} is now ${statusText}.`
+                    `Order #${data.order.orderNumber} is now ${statusText}.`,
+                    'customer'
                 );
             }
         };

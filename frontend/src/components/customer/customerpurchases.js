@@ -141,10 +141,13 @@ const CustomerPurchases = () => {
                 const statusText = statusTextMap[data.order.status] || 'Unknown Status';
 
                 // Show notification with updated status text
-                showNotification(
+                if (data.order.status !== 'completed'){
+                    showNotification(
                     'Order Status Updated!', 
-                    `Order #${data.order.orderNumber} is now ${statusText}.`
-                );
+                    `Order #${data.order.orderNumber} is now ${statusText}.`,
+                    'customer'
+                    );
+                }
             }
         };
 

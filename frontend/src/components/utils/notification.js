@@ -7,7 +7,7 @@ export const NotificationProvider = ({ children }) => {
     const notificationSound = new Audio('/test/notification.wav');
     notificationSound.preload = "auto"; // Ensure the sound is loaded early
 
-    const showNotification = (title, body) => {
+    const showNotification = (title, body, type) => {
         if (Notification.permission === 'granted') {
             notificationSound.currentTime = 0; // Restart the sound
             notificationSound.play(); 
@@ -15,7 +15,12 @@ export const NotificationProvider = ({ children }) => {
             navigator.serviceWorker.ready.then(registration => {
                 registration.showNotification(title, { 
                     body,
-                    silent: true
+                    data: { userType: type } ,
+                    silent: true,
+                    actions: [
+                        { action: "open", title: "View Orders" },
+                        { action: "dismiss", title: "Dismiss" }
+                    ]
                 });
             });
         } else if (Notification.permission !== 'denied') {

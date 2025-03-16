@@ -123,7 +123,7 @@ const ManageOrders = () => {
                     return prevOrders; // Skip adding if duplicate
                 });
 
-                showNotification('New Order Received!', `Order #${data.newOrder.orderNumber}`);
+                showNotification('New Order Received!', `Order #${data.newOrder.orderNumber}`, 'seller');
                 
             }
         };
@@ -139,7 +139,7 @@ const ManageOrders = () => {
                     );
                 });
 
-                showNotification('Order Status Updated!', `Order #${data.order.orderNumber}`);
+                showNotification('Order Status Updated!', `Order #${data.order.orderNumber}`, 'seller');
             }
         };
 

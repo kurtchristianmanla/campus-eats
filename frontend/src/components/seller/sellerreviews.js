@@ -142,7 +142,7 @@ const SellerReviews = () => {
 
         const receiveNewOrder = (data) => {
             if (data.sellerId === sellerId) {
-                showNotification('New Order Received!', `Order #${data.newOrder.orderNumber}`);
+                showNotification('New Order Received!', `Order #${data.newOrder.orderNumber}`, 'seller');
                 toast.info(
                     'New Order Received!'
                 );
@@ -152,7 +152,7 @@ const SellerReviews = () => {
 
         const orderStatusChanged = (data) => {
             if (data.order.sellerId === sellerId) {
-                showNotification('Order Status Updated!', `Order #${data.order.orderNumber}`);
+                showNotification('Order Status Updated!', `Order #${data.order.orderNumber}`, 'seller');
             }
         };
 
