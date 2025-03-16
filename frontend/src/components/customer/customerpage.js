@@ -8,6 +8,9 @@ import useHandleLogout from '../api/logout';
 import { io } from 'socket.io-client';
 import ShowItem from './showitem';
 import Sidebar from './sidebar';
+import { getOrders } from '../api/orderService';
+import { useNotification } from '../utils/notification';
+import { toast } from 'react-toastify';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -21,6 +24,7 @@ const address = `${backend_url}`;
 const CustomerPage = () => {
     const navigate = useNavigate();
     const handleLogout = useHandleLogout();
+    const { showNotification } = useNotification();
     const [user, setUser] = useState(null);
     const [userId, setUserId] = useState('');
     const [username, setUsername] = useState('');
@@ -40,6 +44,7 @@ const CustomerPage = () => {
     const [lastOrder, setLastOrder] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
     const [viewItem, setViewItem] = useState(false);
+    const [orders, setOrders] = useState([]);
 
     // Function to check if the user is an admin
     const checkCustomerAccess = useCallback(async () => {
@@ -145,6 +150,18 @@ const CustomerPage = () => {
         }
     }, []);
 
+    const fetchOrders = useCallback(async () => {
+        const token = localStorage.getItem('token');
+
+        try {
+            const fetchedOrders = await getOrders(token); // Await the result
+            setOrders(fetchedOrders || []); // Set orders to the fetched data or an empty array
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            setOrders([]); // Optionally set to an empty array on error
+        }
+    }, []);
+
     // Run the check when the component mounts
     useEffect(() => {
         document.title = "Campus Eats | Customer";
@@ -158,6 +175,7 @@ const CustomerPage = () => {
         fetchSellers();
         fetchRatedItems();
         fetchRecommendations();
+        fetchOrders();
 
         if (viewSeller) {
             fetchMenu(viewSeller);
@@ -222,6 +240,51 @@ const CustomerPage = () => {
             }
         };
         
+        const orderStatusChanged = (data) => {
+            if (data.order.customerId === userId) {
+                setOrders(prevOrders => {
+                    return prevOrders.map(order => 
+                        order._id === data.order._id 
+                            ? { ...order, ...data.order } // Update the existing order
+                            : order
+                    );
+                });
+
+                // Map status to user-friendly text
+                const statusTextMap = {
+                    'cart': 'Cart',
+                    'pending': 'Pending',
+                    'preparing': 'Preparing',
+                    'ready': 'Ready for Pickup',
+                    'completed': 'Completed',
+                    'cancelled': 'Cancelled',
+                    'pre-order': 'Pre-Order'
+                };
+
+                // Get the user-friendly status text
+                const statusText = statusTextMap[data.order.status] || 'Unknown Status';
+
+                if (data.order.status === 'cancelled') {
+                    toast.error(
+                        `Order #${data.order.orderNumber} is now ${statusText}.`
+                    );
+                } else {
+                    toast.success(
+                        `Order #${data.order.orderNumber} is now ${statusText}.`
+                    );
+                }
+
+                // Show notification with updated status text
+                showNotification(
+                    'Order Status Updated!', 
+                    `Order #${data.order.orderNumber} is now ${statusText}.`
+                );
+            }
+        };
+
+        // Listen for new orders
+        socketConnection.on('updateOrder', orderStatusChanged);
+        
         socketConnection.on('updateBalance', updateBalance);
 
         socketConnection.on('sellerStatusChanged', updateShowSeller);
@@ -233,6 +296,7 @@ const CustomerPage = () => {
         
         // Clean up the styles on component unmount
         return () => {
+            socketConnection.off('updateOrder', orderStatusChanged);
             socketConnection.off('balanceAdded', updateBalance);
             socketConnection.off('sellerStatusChanged', updateShowSeller);
             socketConnection.off('menuAdded', handleMenuAdded);
@@ -242,12 +306,12 @@ const CustomerPage = () => {
             // document.body.style.overflow = 'auto';
             // document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
         };
-    }, [checkCustomerAccess, fetchSellers, viewSeller, fetchMenu, userId, fetchRatedItems, fetchRecommendations]);
+    }, [checkCustomerAccess, fetchSellers, viewSeller, fetchMenu, userId, 
+        fetchRatedItems, fetchRecommendations, fetchOrders, showNotification]);
 
     const [sellersWithRatings, setSellersWithRatings] = useState([]);
 
     useEffect(() => {
-        // Generate random ratings for sellers when the component mounts or sellers change
         const updatedSellers = sellers.map(store => ({
             ...store,
             sellerRating: store.seller_rating ? store.seller_rating.toFixed(1) : "No ratings",
@@ -412,6 +476,7 @@ const CustomerPage = () => {
                 profilePicture={profilePicture}
                 address={address}
                 handleLogout={handleLogout}
+                orderCount={orders.filter(order => ['preparing', 'ready'].includes(order.status)).length}
             />
 
             {/* Dark Overlay */}

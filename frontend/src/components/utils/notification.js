@@ -1,35 +1,32 @@
-export const requestNotificationPermission = async () => {
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-        console.warn('Notification permission not granted.');
-    }
-};
+import React, { createContext, useState, useContext } from 'react';
 
-export const subscribeToPush = async (publicVapidKey) => {
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
-    });
+const NotificationContext = createContext();
 
-    // Send subscription to the server
-    await fetch('/api/subscribe', {
-        method: 'POST',
-        body: JSON.stringify(subscription),
-        headers: {
-            'Content-Type': 'application/json'
+export const NotificationProvider = ({ children }) => {
+    const [notification, setNotification] = useState(null);
+
+    const showNotification = (title, body) => {
+        if (Notification.permission === 'granted') {
+            const notificationSound = new Audio('/test/notification.wav');
+            notificationSound.play();
+
+            navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification(title, { body });
+            });
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                showNotification(title, body);
+                }
+            });
         }
-    });
+    };
+
+    return (
+        <NotificationContext.Provider value={{ notification, setNotification, showNotification }}>
+            {children}
+        </NotificationContext.Provider>
+    );
 };
 
-// Helper function to convert VAPID key
-const urlBase64ToUint8Array = (base64String) => {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding)
-        .replace(/-/g, '+')
-        .replace(/_/g, '/');
-
-    const rawData = atob(base64);
-    return new Uint8Array([...rawData].map(char => char.charCodeAt(0)));
-};
-
+export const useNotification = () => useContext(NotificationContext);

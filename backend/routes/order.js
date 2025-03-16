@@ -342,7 +342,11 @@ router.get('/', isRightRole(['seller', 'customer']), async (req, res) => {
         }
 
         const orders = await Order.find(query)
-        .sort({ createdAt: -1 }); // Most recent first
+            .populate({
+                path: 'statusHistory.updatedBy', // Populate the updatedBy field in statusHistory
+                select: 'username user_type' // Only fetch the username field
+            })
+            .sort({ createdAt: -1 }); // Most recent first
 
         // console.log(orders);
 

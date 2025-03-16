@@ -11,6 +11,7 @@ import RateProduct from '../utils/rateproduct';
 import Header from '../utils/header';
 import ShowOrder from './showorder';
 import { FaStore } from 'react-icons/fa';
+import { useNotification } from '../utils/notification';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -38,6 +39,7 @@ const CustomerPurchases = () => {
     const [viewOrder, setViewOrder] = useState(false);
 
     const token = localStorage.getItem('token');
+    const { showNotification } = useNotification();
 
     // Function to check if the user is an admin
     const checkCustomerAccess = useCallback(async () => {
@@ -99,34 +101,13 @@ const CustomerPurchases = () => {
     }, []);
 
     useEffect(() => {
+        document.title = "Campus Eats | Orders";
 
         checkCustomerAccess();
 
         fetchOrders();
 
         fetchSellers();
-
-        // Notification with sound
-        const showNotification = (title, body) => {
-            if (Notification.permission === 'granted') {
-                // Play a sound when the notification is shown
-                const notificationSound = new Audio('/test/notification.wav'); // Replace with your sound file path
-                notificationSound.play();
-        
-                // Show the notification
-                navigator.serviceWorker.ready.then(registration => {
-                    registration.showNotification(title, { body });
-                });
-            } else if (Notification.permission !== 'denied') {
-                // Request permission if not already granted or denied
-                Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                        // Retry showing the notification after permission is granted
-                        showNotification(title, body);
-                    }
-                });
-            }
-        };
 
         // Initialize the Socket.IO connection
         const socketConnection = io(address);
@@ -193,7 +174,7 @@ const CustomerPurchases = () => {
             socketConnection.off('updateQueue', queueNumberUpdated);
             socketConnection.disconnect(); // Disconnect the socket
         };
-    }, [userId, token, fetchOrders, checkCustomerAccess, fetchSellers]);
+    }, [userId, token, fetchOrders, checkCustomerAccess, fetchSellers, showNotification]);
 
     useEffect(() => {
         // Update `selectedOrder` whenever `orders` change
@@ -249,7 +230,6 @@ const CustomerPurchases = () => {
                         />
                     </div>
                 )}
-
 
                 {/* Header */}
                 <Header

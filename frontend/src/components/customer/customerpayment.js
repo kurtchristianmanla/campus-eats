@@ -104,7 +104,7 @@ const CustomerPayment = () => {
 
 
     useEffect(() => {
-        document.title = "Campus Eats | Orders";
+        document.title = "Campus Eats | Payment";
 
         // Disable scrolling and zooming
         // document.body.style.overflow = 'hidden';

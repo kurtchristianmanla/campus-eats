@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { io } from 'socket.io-client';
 import Header from '../utils/header';
@@ -8,13 +7,8 @@ import Loading from '../utils/loading';
 import { getOrders, startPreparingOrder, markOrderReady } from '../api/orderService';
 import { toast } from 'react-toastify';
 import CancelOrderForm from '../utils/cancelorderform';
-import { motion, AnimatePresence } from 'framer-motion';
-
-// const protocol = process.env.REACT_APP_PROTOCOL || "http";
-// const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
-// const backend_port = process.env.REACT_APP_BACKEND_PORT || "3000";
-
-// const address = `${protocol}://${host_ip}:${backend_port}`;
+import { motion } from 'framer-motion';
+import { useNotification } from '../utils/notification';
 
 const backend_url = process.env.REACT_APP_BACKEND_URL;
 const address = `${backend_url}`;
@@ -22,6 +16,7 @@ const address = `${backend_url}`;
 const ManageOrders = () => {
     const [seller, setSeller] = useState([]);
     const [socket, setSocket] = useState(null); // Track the socket connection
+    const { showNotification } = useNotification();
     const [activeTab, setActiveTab] = useState('pending');
     const [orders, setOrders] = useState([]);
     const [isSelling, setIsSelling] = useState(false);
@@ -31,9 +26,9 @@ const ManageOrders = () => {
     // const [showReadyButton, setShowReadyButton] = useState(true);
     const [buttonStates, setButtonStates] = useState({});
     const [visibleTransactions, setVisibleTransactions] = useState({});
+    const [visibleReasons, setVisibleReasons] = useState({});
     const [isAccepting, setIsAccepting] = useState({});
     const [isMarkingReady, setIsMarkingReady] = useState({});
-
 
     // Extract sellerId from the token stored in localStorage
     const token = localStorage.getItem('token');
@@ -55,13 +50,18 @@ const ManageOrders = () => {
             [orderId]: !prevState[orderId], // Toggle only the clicked order
         }));
     };
+
+    const toggleReason = (orderId) => {
+        setVisibleReasons((prevState) => ({
+            ...prevState,
+            [orderId]: !prevState[orderId], // Toggle only the clicked order
+        }));
+    };
     
     const handleTabClick = (status) => {
         setActiveTab(status);
         setButtonStates({}); // Reset all button states when changing tabs
     };
-
-//   const navigate = useNavigate();
 
     // Function to fetch transaction data
     const fetchSellerData = async () => {
@@ -82,15 +82,6 @@ const ManageOrders = () => {
             setLoading(false);
         }
     };
-
-    // Notification with sound
-    const showNotification = (title, body) => {
-        if (Notification.permission === 'granted') {
-            navigator.serviceWorker.ready.then(registration => {
-            registration.showNotification(title, { body });
-            });
-        }
-    };
       
     const fetchOrders = useCallback(async () => {
         try {
@@ -103,6 +94,7 @@ const ManageOrders = () => {
     }, [token]);
 
     useEffect(() => {
+        document.title = "Campus Eats | Manage Orders";
 
         fetchSellerData();
 
@@ -133,8 +125,6 @@ const ManageOrders = () => {
 
                 showNotification('New Order Received!', `Order #${data.newOrder.orderNumber}`);
                 
-                // Optionally play a sound or show notification
-                // playNotificationSound('New Order Received!');
             }
         };
 
@@ -148,7 +138,7 @@ const ManageOrders = () => {
                             : order
                     );
                 });
-        
+
                 showNotification('Order Status Updated!', `Order #${data.order.orderNumber}`);
             }
         };
@@ -192,7 +182,7 @@ const ManageOrders = () => {
             socketConnection.off('overdueOrder', warningOverdueOrders);
             socketConnection.disconnect(); // Disconnect the socket
         };
-    }, [sellerId, fetchOrders]);
+    }, [sellerId, fetchOrders, showNotification]);
 
     const toggleIsSelling = async () => {
         const token = localStorage.getItem('token');
@@ -351,14 +341,37 @@ const ManageOrders = () => {
                                         Pickup time: {formatTime12Hour(order?.scheduledTime)}
                                     </h4>
                                 )}
+
                                 {order?.status === "cancelled" && (() => {
                                     const cancellation = order?.statusHistory?.find(entry => entry.status === "cancelled");
+                                    const capitalizeFirstLetter = (text) => 
+                                        text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+
                                     return (
-                                        <h4 className="font-semibold flex flex-row items-center text-red-500 text-[10px]">
-                                            {cancellation?.reason ? `Reason: ${cancellation.reason}` : "No reason provided"}
-                                        </h4>
+                                        <div className="font-semibold flex flex-row items-center">
+                                        {visibleReasons[order._id] ? (
+                                            <button
+                                                onClick={() => toggleReason(order._id)}
+                                                className=" text-red-500 text-[10px] hover:underline"
+                                            >
+                                                {cancellation?.reason ? `Reason: ${cancellation.reason}` : "No reason provided"}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => toggleReason(order._id)}
+                                                className=" text-red-500 text-[10px] hover:underline"
+                                            >
+                                                Cancelled by the
+                                                {cancellation?.updatedBy.user_type ? 
+                                                    cancellation?.updatedBy.user_type === 'admin' ? ' System' 
+                                                    : ` ${capitalizeFirstLetter(cancellation.updatedBy.user_type)}` 
+                                                    : " someone"}
+                                            </button>
+                                        )}
+                                    </div>
                                     );
                                 })()}
+
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <h3 className="font-bold">Order #{order.orderNumber}</h3>

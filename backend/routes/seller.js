@@ -103,7 +103,6 @@ router.get('/transactions', isRightRole(['seller']), async (req, res) => {
     }
 });
 
-
 router.get('/manage-orders', isRightRole(['seller']), async (req, res) => {
     try {
         // Find the user in the database using the decoded user ID

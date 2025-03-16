@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { io } from 'socket.io-client';
 import { motion } from "framer-motion";
+import { toast } from 'react-toastify';
 import api from '../api/interceptor';
 
 import ItemReviews from './itemreviews';
 import Header from '../utils/header';
 import { FaStar } from 'react-icons/fa';
+import { useNotification } from '../utils/notification';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -34,6 +36,8 @@ const SellerReviews = () => {
     // Extract sellerId from the token stored in localStorage
     const token = localStorage.getItem('token');
     const sellerId = token ? jwtDecode(token).user_id : null;
+    
+    const { showNotification } = useNotification();
 
     const fetchMenu = useCallback((sellerId) => {
         // Fetch menu items
@@ -125,6 +129,55 @@ const SellerReviews = () => {
         fetchReviews();
 
     }, [sellerId, fetchMenu, checkSellerAccess, fetchReviews]);
+    
+    useEffect(() => {
+        document.title = "Campus Eats | Reviews";
+
+        // Initialize the Socket.IO connection
+        const socketConnection = io(address);
+        setSocket(socketConnection);
+
+        // Join the seller-specific room
+        socketConnection.emit('joinSellerRoom', sellerId);
+
+        const receiveNewOrder = (data) => {
+            if (data.sellerId === sellerId) {
+                showNotification('New Order Received!', `Order #${data.newOrder.orderNumber}`);
+                toast.info(
+                    'New Order Received!'
+                );
+                console.log('New Order Received:', data.newOrder.orderNumber);
+            }
+        };
+
+        const orderStatusChanged = (data) => {
+            if (data.order.sellerId === sellerId) {
+                showNotification('Order Status Updated!', `Order #${data.order.orderNumber}`);
+            }
+        };
+
+        const warningOverdueOrders = (data) => {
+            if (data.order.sellerId === sellerId) {
+                toast.info(
+                    data.message, {
+                    duration: 5000,
+                });
+            }
+        };
+
+        // Listen for new orders
+        socketConnection.on('newOrder', receiveNewOrder);
+        socketConnection.on('updateOrder', orderStatusChanged);
+        socketConnection.on('overdueOrder', warningOverdueOrders);
+
+        // Clean up the socket connection when the component unmounts
+        return () => {
+            socketConnection.off('newOrder', receiveNewOrder); // Remove the listener
+            socketConnection.off('updateOrder', orderStatusChanged);
+            socketConnection.off('overdueOrder', warningOverdueOrders);
+            socketConnection.disconnect(); // Disconnect the socket
+        };
+    }, [sellerId, showNotification]);
 
     const handleItemClick = (item) => {
         setSelectedItem(item);

@@ -9,6 +9,7 @@ import { io } from 'socket.io-client';
 import { FaTrash } from 'react-icons/fa';
 import Sidebar from './sidebar';
 import { toast } from 'react-toastify';
+import { useNotification } from '../utils/notification';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -28,6 +29,7 @@ const CustomerOrders = () => {
     const [isInsufficient, setIsInsufficient] = useState(false);
     const navigate = useNavigate();
     const handleLogout = useHandleLogout();
+    const { showNotification } = useNotification();
 
     const [user, setUser] = useState(null);
     const [userId, setUserId] = useState('');
@@ -95,7 +97,7 @@ const CustomerOrders = () => {
 
 
     useEffect(() => {
-        document.title = "Campus Eats | Orders";
+        document.title = "Campus Eats | Cart";
 
         // Disable scrolling and zooming
         // document.body.style.overflow = 'hidden';
@@ -150,12 +152,51 @@ const CustomerOrders = () => {
             setCartItems(updatedCart);
         };
 
+        const orderStatusChanged = (data) => {
+            if (data.order.customerId === userId) {
+
+                // Map status to user-friendly text
+                const statusTextMap = {
+                    'cart': 'Cart',
+                    'pending': 'Pending',
+                    'preparing': 'Preparing',
+                    'ready': 'Ready for Pickup',
+                    'completed': 'Completed',
+                    'cancelled': 'Cancelled',
+                    'pre-order': 'Pre-Order'
+                };
+
+                // Get the user-friendly status text
+                const statusText = statusTextMap[data.order.status] || 'Unknown Status';
+
+                if (data.order.status === 'cancelled') {
+                    toast.error(
+                        `Order #${data.order.orderNumber} is now ${statusText}.`
+                    );
+                } else {
+                    toast.success(
+                        `Order #${data.order.orderNumber} is now ${statusText}.`
+                    );
+                }
+
+                // Show notification with updated status text
+                showNotification(
+                    'Order Status Updated!', 
+                    `Order #${data.order.orderNumber} is now ${statusText}.`
+                );
+            }
+        };
+
+        // Listen for new orders
+        socketConnection.on('updateOrder', orderStatusChanged);
+
         socketConnection.on('updateBalance', updateBalance);
         socketConnection.on('sellerStatusChanged', updateShowSeller);
         socketConnection.on('menuUpdated', handleMenuUpdated);
         
         // Clean up the styles on component unmount
         return () => {
+            socketConnection.off('updateOrder', orderStatusChanged);
             socketConnection.off('updateBalance', updateBalance);
             socketConnection.off('sellerStatusChanged', updateShowSeller);
             socketConnection.off('menuUpdated', handleMenuUpdated);
@@ -163,7 +204,7 @@ const CustomerOrders = () => {
             // document.body.style.overflow = 'auto';
             // document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
         };
-    }, [checkCustomerAccess, fetchSellers, userId]);
+    }, [checkCustomerAccess, fetchSellers, userId, showNotification]);
 
 
     const filteredItems = useMemo(() => {

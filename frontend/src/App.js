@@ -35,7 +35,8 @@ import CustomerPurchases from './components/customer/customerpurchases.js';
 import CustomerPolicy from './components/customer/customerpolicy.js';
 
 import ProtectedRoute from './components/api/protectroute.js';
-import { checkTokenExpiration } from './components/api/tokenutils'; // Import the token utility
+import { checkTokenExpiration } from './components/api/tokenutils';
+import { NotificationProvider } from './components/utils/notification.js';
 import './App.css';
 
 function App() {
@@ -115,75 +116,77 @@ function App() {
   }
 
   return (
-    <div className="Campus Eats">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        transition={Slide} // Apply the animation globally
-        style={{
-            width: '90%',          // Responsive width
-            maxWidth: '300px',     // Limit width on larger screens
-            marginTop: '20px',     // Adjust margin
-            right: '10px',         // Use 'right' instead of marginRight
-            left: 'auto'           // Ensure it's aligned to the right
-        }}
-        />
+    <NotificationProvider>
+      <div className="Campus Eats">
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          transition={Slide} // Apply the animation globally
+          style={{
+              width: '90%',          // Responsive width
+              maxWidth: '300px',     // Limit width on larger screens
+              marginTop: '20px',     // Adjust margin
+              right: '10px',         // Use 'right' instead of marginRight
+              left: 'auto'           // Ensure it's aligned to the right
+          }}
+          />
 
-      <Routes>
-        <Route path="/login" element={<Login />} /> {/* Route for Login */}
-        <Route path="/register" element={<Register />} /> {/* Route for Register */}
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Routes>
+          <Route path="/login" element={<Login />} /> {/* Route for Login */}
+          <Route path="/register" element={<Register />} /> {/* Route for Register */}
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Customer Route */}
-        <Route path="/customer" element={protectedRoute('customer', CustomerPage)} />
-        <Route path="/customer/profile" element={protectedRoute('customer', ProfileCustomer)} />
-        <Route path="/customer/cart" element={protectedRoute('customer', CustomerOrders)} />
-        <Route path="/customer/payment" element={protectedRoute('customer', CustomerPayment)} />
-        <Route path="/customer/my-orders" element={protectedRoute('customer', CustomerPurchases)} />
-        <Route path="/customer/use-policy" element={protectedRoute('customer', CustomerPolicy)} />
+          {/* Customer Route */}
+          <Route path="/customer" element={protectedRoute('customer', CustomerPage)} />
+          <Route path="/customer/profile" element={protectedRoute('customer', ProfileCustomer)} />
+          <Route path="/customer/cart" element={protectedRoute('customer', CustomerOrders)} />
+          <Route path="/customer/payment" element={protectedRoute('customer', CustomerPayment)} />
+          <Route path="/customer/my-orders" element={protectedRoute('customer', CustomerPurchases)} />
+          <Route path="/customer/use-policy" element={protectedRoute('customer', CustomerPolicy)} />
 
-        {/* Seller Route */}
-        <Route path="/seller" element={protectedRoute('seller', SellerHomepage)} />
-        <Route path="/seller/profile" element={protectedRoute('seller', ProfileSeller)} />
-        <Route path="/seller/manage-orders" element={protectedRoute('seller', ManageOrders)} />
-        <Route path="/seller/menu" element={protectedRoute('seller', SellerMenu)} />
-        <Route path="/seller/history" element={protectedRoute('seller', SellerHistory)} />
-        <Route path="/seller/use-policy" element={protectedRoute('seller', SellerPolicy)} />
-        <Route path="/seller/reviews" element={protectedRoute('seller', SellerReviews)} />
+          {/* Seller Route */}
+          <Route path="/seller" element={protectedRoute('seller', SellerHomepage)} />
+          <Route path="/seller/profile" element={protectedRoute('seller', ProfileSeller)} />
+          <Route path="/seller/manage-orders" element={protectedRoute('seller', ManageOrders)} />
+          <Route path="/seller/menu" element={protectedRoute('seller', SellerMenu)} />
+          <Route path="/seller/history" element={protectedRoute('seller', SellerHistory)} />
+          <Route path="/seller/use-policy" element={protectedRoute('seller', SellerPolicy)} />
+          <Route path="/seller/reviews" element={protectedRoute('seller', SellerReviews)} />
 
-        {/* Admin Route */}
-        <Route path="/admin" element={protectedRoute('admin', AdminDashboard)} />
-        <Route path="/admin/accounts" element={protectedRoute('admin', Accounts)} />
-        <Route path="/admin/addseller" element={protectedRoute('admin', AddSeller)} />
-        <Route path="/admin/top-up" element={protectedRoute('admin', Topup)} />
-        <Route path="/admin/cash-out" element={protectedRoute('admin', Cashout)} />
-        <Route path="/admin/transactions" element={protectedRoute('admin', Transactions)} />
-        <Route path="/admin/profile" element={protectedRoute('admin', ProfileAdmin)} />
-        <Route path="/admin/use-policy" element={protectedRoute('admin', AdminPolicy)} />
+          {/* Admin Route */}
+          <Route path="/admin" element={protectedRoute('admin', AdminDashboard)} />
+          <Route path="/admin/accounts" element={protectedRoute('admin', Accounts)} />
+          <Route path="/admin/addseller" element={protectedRoute('admin', AddSeller)} />
+          <Route path="/admin/top-up" element={protectedRoute('admin', Topup)} />
+          <Route path="/admin/cash-out" element={protectedRoute('admin', Cashout)} />
+          <Route path="/admin/transactions" element={protectedRoute('admin', Transactions)} />
+          <Route path="/admin/profile" element={protectedRoute('admin', ProfileAdmin)} />
+          <Route path="/admin/use-policy" element={protectedRoute('admin', AdminPolicy)} />
 
-        {/* Fallback Route */}
-        {/* <Route path="*" element={<Navigate to="/login" />} /> */}
+          {/* Fallback Route */}
+          {/* <Route path="*" element={<Navigate to="/login" />} /> */}
 
-        {/* Fallback Route */}
-        <Route
-          path="*"
-          element={
-            // token && (
-              // If logged in, navigate to the appropriate dashboard
-              <Navigate
-                to={`/${userRole || ''}`}
-                replace
-              />
-            // ) : (
-            //   // If not logged in, redirect to login
-            //   <Navigate to="/login" replace />
-            // )
-          }
-        />
+          {/* Fallback Route */}
+          <Route
+            path="*"
+            element={
+              // token && (
+                // If logged in, navigate to the appropriate dashboard
+                <Navigate
+                  to={`/${userRole || ''}`}
+                  replace
+                />
+              // ) : (
+              //   // If not logged in, redirect to login
+              //   <Navigate to="/login" replace />
+              // )
+            }
+          />
 
-      </Routes>
-    </div>
+        </Routes>
+      </div>
+    </NotificationProvider>
   );
 }
 

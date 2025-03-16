@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBook, FaShoppingBag, FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture, address, handleLogout }) => {
+const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture, handleLogout, orderCount }) => {
     const navigate = useNavigate();
     const [isLoggingOut, setIsLoggingOut] = useState(false); // State for loading
+    const [countOrder, setCountOrder] = useState(0);
 
     const handleLogoutClick = async () => {
         setIsLoggingOut(true); // Set loading state to true
         await handleLogout(); // Call the logout function
         setIsLoggingOut(false); // Reset loading state
     };
+
+    useEffect(() => {
+        if (orderCount) {
+            setCountOrder(orderCount);
+        }
+    }, [orderCount]);
 
     return (
         <AnimatePresence>
@@ -79,7 +86,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture,
                                 hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
                     >
                         <FaShoppingBag className="ml-2 text-xl mr-4" />
-                        My Orders
+                        My Orders ({countOrder})
                     </motion.button>
 
                     <div className="absolute bottom-0 left-0 right-0 flex justify-center p-4 z-20">

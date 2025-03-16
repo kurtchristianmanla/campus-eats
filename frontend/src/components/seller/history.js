@@ -4,33 +4,47 @@ import Header from '../utils/header';
 import api from '../api/interceptor';
 import Loading from '../utils/loading';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
+import { useNotification } from '../utils/notification';
+import { io } from 'socket.io-client';
+import { jwtDecode } from 'jwt-decode';
+
+const backend_url = process.env.REACT_APP_BACKEND_URL;
+const address = `${backend_url}`;
 
 const Transactions = () => {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [seller, setSeller] = useState(null);
-  const navigate = useNavigate();
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [seller, setSeller] = useState(null);
+    const navigate = useNavigate();
 
-  // Function to fetch transaction data
-  const fetchTransactions = async () => {
+    const [socket, setSocket] = useState(null); 
+    const { showNotification } = useNotification();
+
+    // Extract sellerId from the token stored in localStorage
     const token = localStorage.getItem('token');
-    try {
-      const response = await api.get('/seller/transactions', {
-          headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
-          },
-      });
-  
-      setTransactions(response.data); // Update state with transaction data
-      setLoading(false); // Set loading to false
-    } catch (error) {
-        console.error('Error fetching transactions:', error);
-        setError( error.response.data.message || 'Error fetching transactions.');
-        setLoading(false); // Set loading to false even if there's an error
-    }
-  };
+    const sellerId = token ? jwtDecode(token).user_id : null;
+
+    // Function to fetch transaction data
+    const fetchTransactions = async () => {
+        const token = localStorage.getItem('token');
+        try {
+        const response = await api.get('/seller/transactions', {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+        });
+    
+        setTransactions(response.data); // Update state with transaction data
+        setLoading(false); // Set loading to false
+        } catch (error) {
+            console.error('Error fetching transactions:', error);
+            setError( error.response.data.message || 'Error fetching transactions.');
+            setLoading(false); // Set loading to false even if there's an error
+        }
+    };
 
     // Function to fetch transaction data
     const fetchSellerData = async () => {
@@ -51,12 +65,61 @@ const Transactions = () => {
         }
     };
 
-  useEffect(() => {
-    
-    fetchTransactions();
-    fetchSellerData();
+    useEffect(() => {
+        
+        fetchTransactions();
+        fetchSellerData();
 
-  }, []);
+    }, []);
+
+    useEffect(() => {
+        document.title = "Campus Eats | Transaction History";
+
+        // Initialize the Socket.IO connection
+        const socketConnection = io(address);
+        setSocket(socketConnection);
+
+        // Join the seller-specific room
+        socketConnection.emit('joinSellerRoom', sellerId);
+
+        const receiveNewOrder = (data) => {
+            if (data.sellerId === sellerId) {
+                showNotification('New Order Received!', `Order #${data.newOrder.orderNumber}`);
+                toast.info(
+                    'New Order Received!'
+                );
+                console.log('New Order Received:', data.newOrder.orderNumber);
+            }
+        };
+
+        const orderStatusChanged = (data) => {
+            if (data.order.sellerId === sellerId) {
+                showNotification('Order Status Updated!', `Order #${data.order.orderNumber}`);
+            }
+        };
+
+        const warningOverdueOrders = (data) => {
+            if (data.order.sellerId === sellerId) {
+                toast.info(
+                    data.message, {
+                    duration: 5000,
+                });
+            }
+        };
+
+        // Listen for new orders
+        socketConnection.on('newOrder', receiveNewOrder);
+        socketConnection.on('updateOrder', orderStatusChanged);
+        socketConnection.on('overdueOrder', warningOverdueOrders);
+
+        // Clean up the socket connection when the component unmounts
+        return () => {
+            socketConnection.off('newOrder', receiveNewOrder); // Remove the listener
+            socketConnection.off('updateOrder', orderStatusChanged);
+            socketConnection.off('overdueOrder', warningOverdueOrders);
+            socketConnection.disconnect(); // Disconnect the socket
+        };
+    }, [sellerId, showNotification]);
 
     const calculateRunningBalance = (transactions) => {
         // Sort transactions in chronological order (oldest first)
@@ -102,24 +165,24 @@ const Transactions = () => {
         return date.toLocaleString(); // Includes both date and time
     };
 
-  if (loading) {
-    return <Loading />;
-  }
+    if (loading) {
+        return <Loading />;
+    }
 
-  if (error) {
-    return (
-        <div className="min-h-screen bg-[#f8f9fd] flex flex-col items-center p-4">
-            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    if (error) {
+        return (
+            <div className="min-h-screen bg-[#f8f9fd] flex flex-col items-center p-4">
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-            {/* Header */}
-            <Header
-                headerName={'Transactions'}
-                navigateTo={'/seller'}
-            />
-            <p className="text-center text-red-500">{error}</p>
-        </div>
-    );
-  }
+                {/* Header */}
+                <Header
+                    headerName={'Transactions'}
+                    navigateTo={'/seller'}
+                />
+                <p className="text-center text-red-500">{error}</p>
+            </div>
+        );
+    }
 
   return (
     <div className="min-h-screen bg-[#f8f9fd] flex flex-col items-center p-4">

@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from './header';
 import { motion } from 'framer-motion';
 
 const UsePolicy = (user_type_route) => {
+    useEffect(() => {
+        document.title = "Campus Eats | Use Policy";
+    }, [])
+
     return (
         <div className="min-h-screen bg-[#f8f9fd] p-6">
             <Header

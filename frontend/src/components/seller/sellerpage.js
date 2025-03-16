@@ -6,13 +6,26 @@ import { motion, AnimatePresence } from "framer-motion";
 // import { io } from 'socket.io-client';
 import useHandleLogout from '../api/logout';
 import api from '../api/interceptor';
-import { requestNotificationPermission } from '../utils/notification';
+import { useNotification } from '../utils/notification';
+import { io } from 'socket.io-client';
+import { toast } from 'react-toastify';
+import { getOrders } from '../api/orderService';
+
+const backend_url = process.env.REACT_APP_BACKEND_URL;
+const address = `${backend_url}`;
 
 const SellerHomepage = () => {
     const navigate = useNavigate();
     const handleLogout = useHandleLogout();
     const [username, setUsername] = useState(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [orders, setOrders] = useState([]);
+    const [socket, setSocket] = useState(null); 
+    const { showNotification } = useNotification();
+
+    // Extract sellerId from the token stored in localStorage
+    const token = localStorage.getItem('token');
+    const sellerId = token ? jwtDecode(token).user_id : null;
 
     // Function to check if the user is an admin
     const checkSellerAccess = useCallback(async () => {
@@ -58,8 +71,6 @@ const SellerHomepage = () => {
 
         checkSellerAccess();
 
-        requestNotificationPermission();
-
         // Clean up the styles on component unmount
         return () => {
             document.body.style.overflow = 'auto';
@@ -67,10 +78,81 @@ const SellerHomepage = () => {
         };
     }, [checkSellerAccess]);
 
-    // const handleLogout = () => {
-    //     localStorage.removeItem('token');  // Clear the token
-    //     navigate('/login');  // Redirect to the login page
-    // };
+    const fetchOrders = useCallback(async () => {
+        try {
+            const fetchedOrders = await getOrders(token); // Await the result
+            setOrders(fetchedOrders || []); // Set orders to the fetched data or an empty array
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            setOrders([]); // Optionally set to an empty array on error
+        }
+    }, [token]);
+
+    useEffect(() => {
+        fetchOrders();
+
+        // Initialize the Socket.IO connection
+        const socketConnection = io(address);
+        setSocket(socketConnection);
+
+        // Join the seller-specific room
+        socketConnection.emit('joinSellerRoom', sellerId);
+
+        const receiveNewOrder = (data) => {
+            if (data.sellerId === sellerId) {
+                setOrders(prevOrders => {
+                    const isDuplicate = prevOrders.some(order => order._id === data.newOrder._id);
+                    if (!isDuplicate) {
+                        const newOrders = [...prevOrders, data.newOrder]; // Append instead of prepend
+                        return newOrders.sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
+                    }
+                    return prevOrders; // Skip adding if duplicate
+                });
+
+                showNotification('New Order Received!', `Order #${data.newOrder.orderNumber}`);
+                toast.info(
+                    'New Order Received!'
+                );
+            }
+        };
+
+        const orderStatusChanged = (data) => {
+            if (data.order.sellerId === sellerId) {
+                console.log("Received data:", data);
+                setOrders(prevOrders => {
+                    return prevOrders.map(order => 
+                        order._id === data.order._id 
+                            ? { ...order, ...data.order } // Update the existing order
+                            : order
+                    );
+                });
+
+                showNotification('Order Status Updated!', `Order #${data.order.orderNumber}`);
+            }
+        };
+
+        const warningOverdueOrders = (data) => {
+            if (data.order.sellerId === sellerId) {
+                toast.info(
+                    data.message, {
+                    duration: 5000,
+                });
+            }
+        };
+
+        // Listen for new orders
+        socketConnection.on('newOrder', receiveNewOrder);
+        socketConnection.on('updateOrder', orderStatusChanged);
+        socketConnection.on('overdueOrder', warningOverdueOrders);
+
+        // Clean up the socket connection when the component unmounts
+        return () => {
+            socketConnection.off('newOrder', receiveNewOrder); // Remove the listener
+            socketConnection.off('updateOrder', orderStatusChanged);
+            socketConnection.off('overdueOrder', warningOverdueOrders);
+            socketConnection.disconnect(); // Disconnect the socket
+        };
+    }, [sellerId, showNotification, fetchOrders]);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen); // Toggle the sidebar visibility
@@ -183,7 +265,8 @@ const SellerHomepage = () => {
                 {/* TOGGLE ONLINE Button */}
                 <motion.button
                     onClick={() => navigate("/seller/manage-orders")}
-                    className="w-full py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
+                     className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 
+                        text-white text-lg font-semibold shadow-md flex items-center justify-center relative"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     whileHover={{ scale: 1.05 }}
@@ -194,12 +277,20 @@ const SellerHomepage = () => {
                     }}
                 >
                     MANAGE ORDERS
+                    {/* Show pending order count */}
+                    {orders.filter(order => order.status === 'pending').length > 0 && (
+                        <span className="absolute -top-2 -right-4 bg-purple-500 text-white text-xs 
+                            font-semibold px-2 py-1 rounded-full shadow-md"
+                            style={{ transform: 'rotate(15deg)' }}>
+                            {orders.filter(order => order.status === 'pending').length} New
+                        </span>
+                    )}
                 </motion.button>
 
                 {/* MENU Button */}
                 <motion.button
                     onClick={() => navigate("/seller/menu")}
-                    className="w-full py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
+                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     whileHover={{ scale: 1.05 }}
@@ -215,7 +306,7 @@ const SellerHomepage = () => {
                 {/* HISTORY Button */}
                 <motion.button
                     onClick={() => navigate("/seller/reviews")}
-                    className="w-full py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
+                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     whileHover={{ scale: 1.05 }}
@@ -231,7 +322,7 @@ const SellerHomepage = () => {
                 {/* HISTORY Button */}
                 <motion.button
                     onClick={() => navigate("/seller/history")}
-                    className="w-full py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
+                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     whileHover={{ scale: 1.05 }}

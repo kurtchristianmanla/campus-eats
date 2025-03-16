@@ -49,6 +49,7 @@ const ProfileUser = (user_type_route) => {
 
     // Fetch user profile on component mount
     useEffect(() => {
+        document.title = "Campus Eats | Profile";
         const fetchProfile = async () => {
             try {
                 const data = await fetchUserProfile(token);
@@ -338,18 +339,18 @@ const ProfileUser = (user_type_route) => {
                                 <p className="text-sm text-green-600">Balance: UC {(user.balance || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
                             )}
 
-                            <div className="mt-4 space-x-2">
+                            <div className="mt-4 space-x-2 flex">
                                 <button
                                 onClick={toggleEditProfile}
                                 className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 py-2 rounded 
-                                            hover:from-orange-500 hover:to-orange-600"
+                                            hover:from-orange-500 hover:to-orange-600 text-sm flex-1"
                                 >
                                 Edit Profile
                                 </button>
                                 <button
                                 onClick={toggleChangePassword}
-                                className="bg-gradient-to-br from-gray-500 via-gray-500 to-gray-400 text-white px-4 py-2 rounded hover:from-gray-600
-                                            hover:to-gray-500"
+                                className="bg-gradient-to-br from-gray-500 via-gray-500 to-gray-400 text-white px-4 py-2 
+                                            rounded hover:from-gray-600 hover:to-gray-500 text-sm whitespace-nowrap"
                                 >
                                 Change Password
                                 </button>

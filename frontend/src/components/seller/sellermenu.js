@@ -83,6 +83,8 @@ const SellerMenu = () => {
 
     // Fetch menu items from the backend
     useEffect(() => {
+        document.title = "Campus Eats | Customize Menu";
+
         if (!sellerId) {
             console.error("No seller ID found in token");
             return;
