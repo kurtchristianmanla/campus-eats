@@ -306,7 +306,7 @@ router.put('/cancel/:orderId', isRightRole(['seller', 'customer']), async (req, 
 
             const transaction = await Transaction.findOne({ transactionId: order.paymentTransactionId });
             if (transaction) {
-                transaction.status = 'refunded'; // Change status to 'released'
+                transaction.status = 'refunded';
                 transaction.details = {
                     ...transaction.details,
                     cancelledReason: reason

@@ -130,7 +130,7 @@ const completeOrReleasePayment = async (io, transactionId, status) => {
             await user.save({ session });
 
             io.emit('updateBalance', { balance: user.balance, userId: user._id });
-        }   else {
+        } else {
             throw new Error('Invalid action. Use "complete", "released", or "refunded".');
         }
 
