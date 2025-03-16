@@ -178,7 +178,7 @@ const AdminDashboard = () => {
                 {/* ACCOUNTS Button */}
                 <motion.button
                     onClick={() => navigate("/admin/accounts")}
-                    className="w-full py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
+                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     whileHover={{ scale: 1.05 }}
@@ -194,7 +194,7 @@ const AdminDashboard = () => {
                 {/* TOP-UP Button */}
                 <motion.button
                     onClick={() => navigate("/admin/top-up")}
-                    className="w-full py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
+                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     whileHover={{ scale: 1.05 }}
@@ -210,7 +210,7 @@ const AdminDashboard = () => {
                 {/* CASH OUT Button */}
                 <motion.button
                     onClick={() => navigate("/admin/cash-out")}
-                    className="w-full py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
+                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     whileHover={{ scale: 1.05 }}
@@ -226,7 +226,7 @@ const AdminDashboard = () => {
                 {/* TRANSACTIONS Button */}
                 <motion.button
                     onClick={() => navigate("/admin/transactions")}
-                    className="w-full py-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
+                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     whileHover={{ scale: 1.05 }}
