@@ -69,8 +69,22 @@ function recommendItems(targetUserId, orders, menuItems) {
     const similarities = [];
     for (let i = 0; i < users.length; i++) {
         if (i !== targetUserIndex) {
-            const similarity = cosineSimilarity(userItemMatrix[targetUserIndex], userItemMatrix[i]);
-            similarities.push({ userId: users[i], similarity });
+            const targetVector = userItemMatrix[targetUserIndex];
+            const userVector = userItemMatrix[i];
+
+            // Skip if either vector has a magnitude of 0
+            const targetMagnitude = Math.sqrt(targetVector.reduce((sum, val) => sum + val * val, 0));
+            const userMagnitude = Math.sqrt(userVector.reduce((sum, val) => sum + val * val, 0));
+
+            if (targetMagnitude === 0 || userMagnitude === 0) {
+                console.log(`Skipping user ${users[i]} due to zero magnitude.`);
+                continue;
+            }
+
+            const similarity = cosineSimilarity(targetVector, userVector);
+            if (!isNaN(similarity)) {
+                similarities.push({ userId: users[i], similarity });
+            }
         }
     }
     console.log('Similarities:', similarities);

@@ -103,7 +103,7 @@ router.get('/recommendations', isRightRole(['customer']), async (req, res) => {
         const itemId = validItem.productId._id;
 
         // Fetch necessary data
-        const orders = await Order.find({});
+        const orders = await Order.find({ status: { $in: ['ready', 'completed'] } });
         const menuItems = await MenuItem.find({});
 
         // Get hybrid recommendations
