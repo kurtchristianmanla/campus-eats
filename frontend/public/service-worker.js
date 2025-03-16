@@ -99,22 +99,25 @@ self.addEventListener('push', event => {
 });
 
 self.addEventListener("notificationclick", (event) => {
-    event.notification.close();
+  event.notification.close();
 
-    let urlOrders = "/customer/orders"; // Default to customer orders
-    if (event.notification.data?.userType === "seller") {
-        urlOrders = "/seller/orders";
-    }
+  let urlOrders = "/customer/my-orders"; // Default to customer orders
+  if (event.notification.data?.userType === "seller") {
+      urlOrders = "/seller/manage-orders";
+  }
     
-    if (event.action === "open") {
-      clients.openWindow(urlOrders); // Open order page
-    } else if (event.action === "view") {
-      clients.openWindow("/"); // Open your app
-    } else if (event.action === "dismiss") {
-      console.log("Notification dismissed");
-    }
-    // const audio = new Audio("/test/notification.wav");
-    // audio.play();
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+        for (let client of clientList) {
+            if (client.url.includes(urlOrders) && "focus" in client) {
+                return client.focus(); // Focus if already open
+            }
+        }
+        return clients.openWindow(urlOrders); // Open if not already open
+    })
+  );
 
-    event.waitUntil(clients.openWindow(urlOrders));
+  if (event.action === "dismiss") {
+      console.log("Notification dismissed");
+  }
 });

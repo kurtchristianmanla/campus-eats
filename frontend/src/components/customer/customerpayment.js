@@ -7,6 +7,7 @@ import api from '../api/interceptor';
 import { createOrders } from '../api/orderService';
 import { io } from 'socket.io-client';
 import { toast, Slide } from 'react-toastify';
+import { useNotification } from '../utils/notification';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -35,6 +36,10 @@ const CustomerPayment = () => {
     const [minTime, setMinTime] = useState('');
     const [maxTime, setMaxTime] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    const { showNotification } = useNotification();
+
+    // Extract sellerId from the token stored in localStorage
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
         const now = new Date();
@@ -131,16 +136,56 @@ const CustomerPayment = () => {
             }
         };
 
+        const orderStatusChanged = (data) => {
+            if (data.order.customerId === userId) {
+
+                // Map status to user-friendly text
+                const statusTextMap = {
+                    'cart': 'Cart',
+                    'pending': 'Pending',
+                    'preparing': 'Preparing',
+                    'ready': 'Ready for Pickup',
+                    'completed': 'Completed',
+                    'cancelled': 'Cancelled',
+                    'pre-order': 'Pre-Order'
+                };
+
+                // Get the user-friendly status text
+                const statusText = statusTextMap[data.order.status] || 'Unknown Status';
+
+                if (data.order.status === 'cancelled') {
+                    toast.error(
+                        `Order #${data.order.orderNumber} is now ${statusText}.`
+                    );
+                } else {
+                    toast.success(
+                        `Order #${data.order.orderNumber} is now ${statusText}.`
+                    );
+                }
+
+                // Show notification with updated status text
+                showNotification(
+                    'Order Status Updated!', 
+                    `Order #${data.order.orderNumber} is now ${statusText}.`,
+                    'customer'
+                );
+            }
+        };
+
+        // Listen for new orders
+        socketConnection.on('updateOrder', orderStatusChanged);
+
         socketConnection.on('updateBalance', updateBalance);
         
         // Clean up the styles on component unmount
         return () => {
-            socketConnection.off('balanceAdded', updateBalance);
+            socketConnection.off('updateOrder', orderStatusChanged);
+            socketConnection.off('updateBalance', updateBalance);
             socketConnection.disconnect();
             // document.body.style.overflow = 'auto';
             // document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
         };
-    }, [checkCustomerAccess, userId, fetchItems]);
+    }, [checkCustomerAccess, userId, fetchItems, showNotification]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
