@@ -18,13 +18,8 @@ const initializeSocket = require('./socket');
 const app = express();
 const port = 3000;
 
-const options = {
-    key: fs.readFileSync('./cert/localhost+1-key.pem'),  // Update with correct path
-    cert: fs.readFileSync('./cert/localhost+1.pem')      // Update with correct path
-};
-
 // Create an HTTP server to attach the WebSocket server
-const server = http.createServer(options, app);
+const server = http.createServer(app);
 
 const io = initializeSocket(server);
 
@@ -32,11 +27,7 @@ const io = initializeSocket(server);
 const allowedOrigins = [
     'http://localhost:3000', 
     'http://localhost:3001', 
-    'http://192.168.254.152:3001', 
-    'http://192.168.254.152:3000',
     'http://192.168.254.153:3001',
-    'http://192.168.72.22:3001',
-    'http://192.168.137.1:3001',
     'https://campus-eats-iota.vercel.app',
     'https://campus-eats-g5p3.onrender.com'
 ];
@@ -45,14 +36,12 @@ const allowedOrigins = [
 app.use(cors({
     origin: (origin, callback) => {
         if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-          // Allow the request if the origin matches the allowed list
-          callback(null, true);
+            callback(null, true);
         } else {
-          // Reject the request if the origin is not allowed
-          callback(new Error('Not allowed by CORS'));
+            callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true,  // Allow cookies to be sent
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     exposedHeaders: ['Set-Cookie']
