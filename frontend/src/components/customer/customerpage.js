@@ -454,7 +454,7 @@ const CustomerPage = () => {
                 
                 {(lastOrder !== null && viewState === 'selectStores') && (
                     <>
-                        {/* Popular Foods */}
+                        {/* Recommendations */}
                         <motion.div 
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -492,18 +492,18 @@ const CustomerPage = () => {
                                             transition={{ hover: { duration: 0.3, ease: "easeOut" },
                                                             x: { duration: 2, ease: "easeOut" }}}
                                     >
-                                        <div className="relative flex justify-center mb-2 flex-col">
+                                        <div className="flex justify-center mb-2 flex-col">
                                             {item.imageUrl ? (<img
                                                 src={item.imageUrl}
                                                 alt={item.name}
                                                 className="w-44 h-44 object-cover rounded-md"
                                             />) : (
-                                                <>
+                                                <div className="relative">
                                                     <p className="absolute inset-0 flex items-center justify-center text-white z-10 text-xs">
                                                         No image uploaded
                                                     </p>
                                                     <div className="w-44 h-44 bg-gray-400 rounded-md" />
-                                                </>
+                                                </div>
                                             )}
                                             <h3 className="font-medium text-sm mt-2">{item.name}</h3>
                                             <p className="text-[0.6rem] text-gray-500 mb-6">{item.sellerId?.store_name}</p>
@@ -873,18 +873,18 @@ const CustomerPage = () => {
                                         <div className="absolute inset-0 bg-black opacity-50 rounded-xl z-20"></div>
                                     </>
                                 )}
-                                <div className="relative flex justify-center mb-2 flex-col">
+                                <div className="flex justify-center mb-2 flex-col">
                                     {item.imageUrl ? (<img
                                         src={item.imageUrl}
                                         alt={item.name}
                                         className="w-44 h-44 object-cover rounded-md"
                                     />) : (
-                                        <>
+                                        <div className="relative">
                                             <p className="absolute inset-0 flex items-center justify-center text-white z-10 text-xs">
                                                 No image uploaded
                                             </p>
                                             <div className="w-44 h-44 bg-gray-400 rounded-md" />
-                                        </>
+                                        </div>
                                     )}
                                     <h3 className="font-medium text-sm mt-2">{item.name}</h3>
                                     <p className="text-[0.7rem] text-gray-500 mb-6">{item.price} UC</p>
