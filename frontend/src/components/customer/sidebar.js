@@ -86,7 +86,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture,
                                 hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
                     >
                         <FaShoppingBag className="ml-2 text-xl mr-4" />
-                        My Orders ({countOrder})
+                        My Orders {countOrder ? `(${countOrder})` : ''}
                     </motion.button>
 
                     <div className="absolute bottom-0 left-0 right-0 flex justify-center p-4 z-20">
