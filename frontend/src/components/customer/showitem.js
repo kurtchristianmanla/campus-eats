@@ -131,7 +131,7 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
                     </div>
                 </div>
                 <div className="flex justify-center items-center">
-                    <span className="block text-sm font-medium text-gray-700 mt-3">{description}</span>
+                    <span className="block text-sm font-medium text-gray-700 mt-3 px-4 text-center">{description}</span>
                 </div>
                 {/* Add Button */}
                 <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4 z-20">
