@@ -96,7 +96,6 @@ async function autoCancelOverdueOrders(io) {
                 updatedBy: SYSTEM_USER_ID,
                 reason: 'Auto-cancelled due to overdue preparation time.'
             });
-            await order.save();
 
             // Update the related transaction's status
             if (order.paymentTransactionId) {
@@ -115,6 +114,8 @@ async function autoCancelOverdueOrders(io) {
                     await transaction.save();
                 }
             }
+            
+            await order.save();
         }
     } catch (error) {
         console.error('Overdue orders tracking error:', error);
