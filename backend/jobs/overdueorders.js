@@ -8,7 +8,7 @@ const SYSTEM_USER_ID = '6761bf3b6480598ce47ec999';
 async function autoCancelOverdueOrders(io) {
     console.log("Running cron job to check overdue preparing orders...");
     const now = new Date();
-    const offsetTime = 10;
+    const offsetTime = 15;
 
     try {
         const orders = await Order.find({

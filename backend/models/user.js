@@ -90,21 +90,9 @@ const userSchema = new mongoose.Schema({
     
     seller_rating: {
         type: Number,
-        // required: function () {
-        //     return this.user_type === 'seller';
-        // },
         min: 1,
         max: 5,
-        default: null, // Default to null for non-sellers
-        // validate: {
-        //     validator: function (value) {
-        //         if (this.user_type === 'seller') {
-        //             return value >= 1 && value <= 5; // Rating should be between 0 and 5 for sellers
-        //         }
-        //         return value === null; // Ensure it's null for non-sellers
-        //     },
-        //     message: 'Seller rating must be between 1 and 5.'
-        // }
+        default: null,
     },
 });
 
@@ -112,6 +100,26 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', async function(next) {
     if (this.isModified('password')) {
         this.password = await bcrypt.hash(this.password, 10); // Hash password
+    }
+    next();
+});
+
+// Pre-save hook to trim whitespace from fields
+userSchema.pre('save', function(next) {
+    if (this.isModified('first_name')) {
+        this.first_name = this.first_name.trim(); // Trim first_name
+    }
+    if (this.isModified('last_name')) {
+        this.last_name = this.last_name.trim(); // Trim last_name
+    }
+    if (this.isModified('username')) {
+        this.username = this.username.trim(); // Trim username
+    }
+    if (this.isModified('email')) {
+        this.email = this.email.trim(); // Trim email
+    }
+    if (this.isModified('store_name')) {
+        this.store_name = this.store_name.trim(); // Trim store_name
     }
     next();
 });

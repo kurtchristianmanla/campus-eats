@@ -212,11 +212,13 @@ const ProfileUser = (user_type_route) => {
 
         if (newPassword !== confirmPassword) {
             setPasswordChangeError('New password and confirm password do not match.');
+            setIsPasswordSubmitting(false);
             return;
         }
 
         if (newPassword === currentPassword) {
             setPasswordChangeError('New password and current password must not be the same.');
+            setIsPasswordSubmitting(false);
             return;
         }
 
@@ -287,7 +289,7 @@ const ProfileUser = (user_type_route) => {
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }} 
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="flex justify-center items-center mt-[-8rem] min-h-screen"
+                className="flex justify-center items-center mt-[-7rem] min-h-screen"
             >
                 <div className="bg-gradient-to-br from-white via-white to-blue-200/50 shadow-lg rounded-lg w-full max-w-3xl 
                                 hover:scale-105 transition-transform duration-300 relative">
@@ -325,10 +327,10 @@ const ProfileUser = (user_type_route) => {
 
                         {/* Info and Buttons */}
                         <div className="flex-1">
-                            <div className="flex items-end">
+                            <div className="flex items-start flex-col">
                                 <h1 className="text-2xl mr-1 font-bold">{`${user.username}`}</h1>
                                 {user.user_type === 'seller' && (
-                                    <h1 className="text-l font-semibold">{`(${user.store_name})`}</h1>
+                                    <h1 className="text-xs font-semibold">{`(${user.store_name})`}</h1>
                                 )}
                             </div>
                             <p className="text-sm text-gray-600">

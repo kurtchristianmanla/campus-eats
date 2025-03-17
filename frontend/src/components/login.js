@@ -96,7 +96,7 @@ const Login = () => {
 
           } else {
               // alert(data.message || 'Login failed');
-              setErrorMessage(data.message || 'Invalid username or password');
+              setErrorMessage(data.message || 'Invalid email or password');
           }
       } catch (error) {
           console.error('Error during login:', error);

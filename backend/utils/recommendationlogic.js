@@ -45,8 +45,6 @@ function cosineSimilarity(vecA, vecB) {
 
 // Function to recommend items for a user (Collaborative Filtering)
 function recommendItems(targetUserId, orders, menuItems) {
-    console.log('Orders:', orders?.length);
-    console.log('Menu Items:', menuItems?.length);
 
     // Create a user-item matrix
     const users = [...new Set(orders.map(order => order.customerId.toString()))];
@@ -57,8 +55,7 @@ function recommendItems(targetUserId, orders, menuItems) {
         )
     );
 
-    console.log('Users:', users);
-    console.log('Items:', items);
+    console.log("User:", users);
     console.log('User-Item Matrix:', userItemMatrix);
 
     // Find the target user's index

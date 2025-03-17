@@ -17,6 +17,7 @@ export const NotificationProvider = ({ children }) => {
                     body,
                     data: { userType: type } ,
                     silent: true,
+                    vibrate: [200, 100, 200],
                     actions: [
                         { action: "open", title: "View Orders" },
                         { action: "dismiss", title: "Dismiss" }

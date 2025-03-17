@@ -579,7 +579,6 @@ const CustomerPage = () => {
                                                 <div className="flex items-center text-sm">
                                                     {item.price} UC
                                                 </div>
-                                                <FaHeart className="w-4 h-4 text-gray-400" />
                                             </div>
                                         </div>
                                     </motion.div>
@@ -804,7 +803,6 @@ const CustomerPage = () => {
                                             <span className="text-xs ml-1">
                                                 {store.sellerRating}</span>
                                         </div>
-                                        <FaHeart className="w-4 h-4 text-gray-400" />
                                     </div>
                                 </div>
                             </motion.div>
@@ -882,7 +880,6 @@ const CustomerPage = () => {
                                             <span className={`text-xs ${store.seller_rating ? "ml-1" : ""}`}>
                                                 {store.sellerRating}</span>
                                         </div>
-                                        <FaHeart className="w-4 h-4 text-gray-400" />
                                     </div>
                                 </div>
                             </motion.div>

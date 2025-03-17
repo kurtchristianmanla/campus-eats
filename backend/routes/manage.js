@@ -16,6 +16,10 @@ const access_secret = process.env.JWT_ACCESS_SECRET_KEY;
 const refresh_secret = process.env.JWT_REFRESH_SECRET_KEY;
 const app_address = process.env.FRONTEND_URL;
 
+// Rate limiting constants
+const MAX_FAILED_ATTEMPTS = 5; // Maximum allowed failed attempts
+const BLOCK_TIME = 15 * 60; // Block time in seconds (15 minutes)
+
 const generateTokens = (user) => {
     const access_token = jwt.sign(
         { user_id: user._id, user_type: user.user_type, username: user.username },
@@ -135,12 +139,22 @@ router.post('/verify-email-code', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     console.log('Email and Pasword from client: ', { email, password });
+    const key = `login_attempts:${email}`;
 
     try {
         // Find the user by username
+        const attempts = await client.get(key);
+        if (attempts && attempts >= MAX_FAILED_ATTEMPTS) {
+            return res.status(429).json({ message: 'Too many failed attempts. Try again in 15 minutes.' });
+        }
+
         const user = await User.findOne({ email });
 
         if (!user) {
+            // Increment failed attempts
+            await client.incr(key);
+            await client.expire(key, BLOCK_TIME); // Reset expiry on each failed attempt
+
             return res.status(404).send('User not found');
         }
 
@@ -151,8 +165,15 @@ router.post('/login', async (req, res) => {
         console.log('Password comparison result:', isMatch);
 
         if (!isMatch) {
+            // Increment failed attempts
+            await client.incr(key);
+            await client.expire(key, BLOCK_TIME); // Reset expiry on each failed attempt
+
             return res.status(401).send('Invalid credentials');
         }
+
+        // Successful login: Reset failed login attempts
+        await client.del(key);
 
         const { access_token, refresh_token } = generateTokens(user);
         
