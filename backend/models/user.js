@@ -115,9 +115,6 @@ userSchema.pre('save', function(next) {
     if (this.isModified('username')) {
         this.username = this.username.trim(); // Trim username
     }
-    if (this.isModified('email')) {
-        this.email = this.email.trim(); // Trim email
-    }
     if (this.isModified('store_name')) {
         this.store_name = this.store_name.trim(); // Trim store_name
     }
