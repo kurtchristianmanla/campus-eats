@@ -1,5 +1,6 @@
 const Order = require('../models/order');
 const Transaction = require('../models/transaction');
+const { updateQueueNumbers } = require('../utils/orderutils');
 const { completeOrReleasePayment } = require('../utils/paymentservice')
 
 const SYSTEM_USER_ID = '6761bf3b6480598ce47ec999';
@@ -116,6 +117,8 @@ async function autoCancelOverdueOrders(io) {
             }
             
             await order.save();
+
+            await updateQueueNumbers(io);
         }
     } catch (error) {
         console.error('Overdue orders tracking error:', error);
