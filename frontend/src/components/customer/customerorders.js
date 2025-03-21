@@ -300,7 +300,7 @@ const CustomerOrders = () => {
     const formatPrice = (num) => {
         if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
         if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
-        if (num >= 1_000) return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+        if (num >= 100_000) return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
         return num.toFixed(2);
     };
     
@@ -355,10 +355,6 @@ const CustomerOrders = () => {
 
                 // Remove selectedItems from cartItems
                 const updatedCartItems = filteredItems.filter(item => !selectedItems.includes(item._id));
-
-                // Update the cart in localStorage as well
-                // localStorage.setItem(`cart_${userId}`, JSON.stringify(updatedCartItems));
-                // setCartItems(updatedCartItems);
 
                 // Clear selectedItems after placing the order
                 setSelectedItems([]);
@@ -687,7 +683,7 @@ const CustomerOrders = () => {
                                     items-center px-4 py-6 z-20 bg-white gap-4">
                                     <div className="flex flex-col justify-start min-w-[100px] max-w-[150px] overflow-hidden">
                                         <span className="text-sm">Total</span>
-                                        <span className="text-2xl font-bold">UC {getTotalSelectedPrice()}</span>
+                                        <span className="text-xl font-bold">UC {getTotalSelectedPrice()}</span>
                                     </div>
                                     <motion.button
                                         onClick={handleOrder}
