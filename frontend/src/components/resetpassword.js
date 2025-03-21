@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useCallback } from 'react';
 
 const backend_url = process.env.REACT_APP_BACKEND_URL;
 const address = `${backend_url}`;
@@ -14,6 +15,30 @@ const ResetPassword = () => {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token'); // Extract token from URL
     const navigate = useNavigate();
+
+    const checkToken = useCallback(async () => {
+          const token = localStorage.getItem('token'); // Retrieve token from localStorage
+          if (token) {
+              navigate('/');
+              return; 
+          }
+    }, [navigate]);
+
+    useEffect(() => {
+        document.title = "Campus Eats | Reset Password";
+    
+        checkToken();
+    
+        // Disable scrolling and zooming
+        document.body.style.overflow = 'hidden';
+        document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+    
+        // Clean up the styles on component unmount
+        return () => {
+          document.body.style.overflow = 'auto';
+          document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
+        };
+    }, [checkToken]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

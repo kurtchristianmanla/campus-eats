@@ -28,6 +28,7 @@ const allowedOrigins = [
     'http://localhost:3000', 
     'http://localhost:3001', 
     'http://192.168.254.153:3001',
+    'http://192.168.254.152:3001',
     'https://campus-eats-iota.vercel.app',
     'https://campus-eats-g5p3.onrender.com'
 ];
@@ -60,6 +61,7 @@ const menuRoutes = require('./routes/menu');
 const orderRoutes = require('./routes/order');
 const ratingRoutes = require('./routes/rating');
 const subscribeRoutes = require('./routes/subscribe');
+const queueRoutes = require('./routes/livequeue');
 
 const transactionRoutes = require('./models/transaction'); 
 
@@ -81,6 +83,7 @@ app.use('/seller', sellerRoutes);
 app.use('/customer', customerRoutes);
 app.use('/menu', menuRoutes);
 app.use('/order', orderRoutes);
+app.use('/live-queue', queueRoutes);
 
 // require('./utils/ordercancel');
 cronjob(io);

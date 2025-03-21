@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCallback } from 'react';
 
 const backend_url = process.env.REACT_APP_BACKEND_URL;
 const address = `${backend_url}`;
@@ -21,10 +22,21 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isVerificationSent, setIsVerificationSent] = useState(false); // Track if verification code is sent
   const [isVerified, setIsVerified] = useState(false); // Track if email is verified
-  const history = useNavigate();
+  const navigate = useNavigate();
+
+  const checkToken = useCallback(async () => {
+      const token = localStorage.getItem('token'); // Retrieve token from localStorage
+      if (token) {
+          navigate('/');
+          return; 
+      }
+  }, [navigate]);
+  
 
   useEffect(() => {
     document.title = "Campus Eats | Register";
+
+    checkToken();
 
     // Disable scrolling and zooming
     document.body.style.overflow = 'hidden';
@@ -35,7 +47,7 @@ const Register = () => {
       document.body.style.overflow = 'auto';
       document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
     };
-  }, []);
+  }, [checkToken]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -164,7 +176,7 @@ const Register = () => {
           verificationCode: ''
         });
         setTimeout(() => {
-          history('/login');
+          navigate('/login');
         }, 2000);
       } else {
         setErrorMessage(data.message || 'Registration failed');

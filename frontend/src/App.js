@@ -9,6 +9,7 @@ import Login from './components/login.js';
 import Register from './components/register.js';
 import ForgotPassword from './components/forgotpassword.js';
 import ResetPassword from './components/resetpassword.js';
+import LiveQueue from './components/livequeue.js';
 
 import AdminDashboard from './components/admin/admindashboard.js';
 import Accounts from './components/admin/accounts.js';
@@ -84,7 +85,8 @@ function App() {
     const excludedPaths = [
       '/register', 
       '/forgot-password',
-      '/reset-password'
+      '/reset-password',
+      '/live-queue'
     ];
     if (!excludedPaths.includes(location.pathname)) {
       const validateToken = async () => {
@@ -97,9 +99,6 @@ function App() {
 
       validateToken();
     }
-    // document.title = "Campus Eats";
-    // Check for the token when the app loads
-    // checkTokenAndRedirect(navigate);
   }, [navigate, location.pathname]);
 
   // Get token from localStorage (for the fallback route check)
@@ -136,6 +135,7 @@ function App() {
           <Route path="/register" element={<Register />} /> {/* Route for Register */}
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/live-queue" element={<LiveQueue />} />
 
           {/* Customer Route */}
           <Route path="/customer" element={protectedRoute('customer', CustomerPage)} />

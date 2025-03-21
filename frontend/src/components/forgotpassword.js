@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -12,8 +12,18 @@ const ForgotPassword = () => {
     const [messageType, setMessageType] = useState(''); // 'success' or 'error'
     const navigate = useNavigate();
 
+    const checkToken = useCallback(async () => {
+        const token = localStorage.getItem('token'); // Retrieve token from localStorage
+        if (token) {
+            navigate('/');
+            return; 
+        }
+    }, [navigate]);
+
     useEffect(() => {
         document.title = "Campus Eats | Forgot Password";
+        
+        checkToken();
 
         // Disable scrolling and zooming
         document.body.style.overflow = 'hidden';
@@ -24,7 +34,7 @@ const ForgotPassword = () => {
             document.body.style.overflow = 'auto';
             document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
         };
-    }, []);
+    }, [checkToken]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

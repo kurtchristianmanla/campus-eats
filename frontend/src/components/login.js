@@ -22,13 +22,10 @@ const Login = () => {
 
     const checkToken = useCallback(async () => {
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
-
         if (token) {
             navigate('/');
             return; 
         }
-
-
     }, [navigate]);
 
     useEffect(() => {

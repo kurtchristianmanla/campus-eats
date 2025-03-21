@@ -370,7 +370,7 @@ const Transactions = () => {
                   <td className="px-4 py-2 border-b">{transaction.transactionId}</td>
                   <td className="px-4 py-2 border-b">{transaction.user.username}</td>
                   {/* <td className="px-0 py-2 border-b">{transaction.type}</td> */}
-                  <td className="px-4 py-2 border-b">{transaction.amount}</td>
+                  <td className="px-4 py-2 border-b">{transaction.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
                   {activeTab === 'payment' && (
                     <td
                         className={`px-0 py-2 border-b ${
@@ -453,10 +453,10 @@ const Transactions = () => {
                         <Tooltip id={`${transaction.status}-tooltip`} place="top" type="dark" effect="solid" />
                     </div>
                   </td>
-                  <td className="px-4 py-2 border-b">{transaction.userBalanceAfter || 'N/A'}</td>
+                  <td className="px-4 py-2 border-b">{transaction.userBalanceAfter.toLocaleString("en-US", { minimumFractionDigits: 2 }) || 'N/A'}</td>
 
                   {activeTab === "payment" && (
-                    <td className="px-4 py-2 border-b">{transaction.sellerBalanceAfter || 'N/A'}</td>
+                    <td className="px-4 py-2 border-b">{transaction.sellerBalanceAfter.toLocaleString("en-US", { minimumFractionDigits: 2 }) || 'N/A'}</td>
                 )}
                 </tr>
               ))}
