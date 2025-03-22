@@ -94,6 +94,7 @@ const userSchema = new mongoose.Schema({
         max: 5,
         default: null,
     },
+    sessionToken: { type: String, default: null },
 });
 
 // Pre-save hook to hash the password before saving to DB
@@ -106,16 +107,19 @@ userSchema.pre('save', async function(next) {
 
 // Pre-save hook to trim whitespace from fields
 userSchema.pre('save', function(next) {
-    if (this.isModified('first_name')) {
+    if (this.isModified('first_name') && this.first_name) {
         this.first_name = this.first_name.trim(); // Trim first_name
     }
-    if (this.isModified('last_name')) {
+    if (this.isModified('last_name') && this.last_name) {
         this.last_name = this.last_name.trim(); // Trim last_name
     }
-    if (this.isModified('username')) {
+    if (this.isModified('username') && this.username) {
         this.username = this.username.trim(); // Trim username
     }
-    if (this.isModified('store_name')) {
+    if (this.isModified('store_name') && this.store_name) {
+        this.store_name = this.store_name.trim(); // Trim store_name
+    }
+    if (this.isModified('email') && this.store_name) {
         this.store_name = this.store_name.trim(); // Trim store_name
     }
     next();
