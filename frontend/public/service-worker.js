@@ -1,4 +1,4 @@
-const CACHE_NAME = "campus-eats-cache-v1.73";
+const CACHE_NAME = "campus-eats-cache-v1.74";
 
 // Use a runtime caching strategy instead of a predefined list
 self.addEventListener("install", (event) => {
@@ -11,7 +11,7 @@ self.addEventListener("install", (event) => {
         //   '/manifest.json',
           'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap',
           // Add only critical assets that you're sure exist
-          '/test/campus-eats-logo.png'
+          '/test/campus-eats-logo.png',
         ]);
       }).catch(err => {
         console.error('Cache installation failed:', err);
