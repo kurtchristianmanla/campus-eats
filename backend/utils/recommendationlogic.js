@@ -55,12 +55,8 @@ function recommendItems(targetUserId, orders, menuItems) {
         )
     );
 
-    console.log("User:", users);
-    console.log('User-Item Matrix:', userItemMatrix);
-
     // Find the target user's index
     const targetUserIndex = users.indexOf(targetUserId.toString());
-    console.log('Target User Index:', targetUserIndex);
 
     // Calculate similarity with other users
     const similarities = [];
@@ -84,11 +80,9 @@ function recommendItems(targetUserId, orders, menuItems) {
             }
         }
     }
-    console.log('Similarities:', similarities);
 
     // Sort by similarity and get top 3 similar users
     const topN = similarities.sort((a, b) => b.similarity - a.similarity).slice(0, 3);
-    console.log('Top-N Similar Users:', topN);
 
     // Recommend items from similar users
     const recommendations = new Set();

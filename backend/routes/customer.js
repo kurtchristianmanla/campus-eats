@@ -16,9 +16,6 @@ router.use(isRightRole(['customer']), profileRoutes);
 // API Routes
 router.get('/find-sellers', isRightRole(['customer']), async (req, res) => {
     try {
-        // const users = await User.find({
-        //     user_type: 'seller',  // Only sellers
-        // }).select('_id store_name is_selling user_type email profile_picture seller_rating');
         // Fetch sellers with their completed order count
         const sellers = await User.aggregate([
             {
@@ -61,7 +58,7 @@ router.get('/find-sellers', isRightRole(['customer']), async (req, res) => {
                 },
             },
         ]);
-        res.json(users);
+        res.json(sellers);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch users' });
     }
