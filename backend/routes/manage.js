@@ -201,8 +201,8 @@ router.post('/login', async (req, res) => {
         await client.del(key);
 
         // Check if the user already has an active session
-        if (user.sessionToken) {
-            return res.status(403).json({ message: 'Someone is already logged in' });
+        if (user.sessionToken && user.user_type === 'admin') {
+            return res.status(403).json({ message: 'Admin account is already in use elsewhere'  });
         }
 
         // Generate a new session token
