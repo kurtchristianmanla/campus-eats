@@ -4,71 +4,94 @@ const Transaction = require('../models/transaction');
 const { generateTransactionId } = require('./transacutils');
 const mongoose = require('../db/db');
 
+// At the top of paymentservice.js
+const userLocks = new Map();
+
+const acquireLock = async (userId) => {
+    while (userLocks.has(userId)) {
+        // Wait a bit and check again
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    userLocks.set(userId, true);
+};
+
+const releaseLock = (userId) => {
+    userLocks.delete(userId);
+};
+
 const holdPayment = async (io, userId, orderId, orderAmount, retryCount = 0) => {
-    const MAX_RETRIES = 3;
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    try { 
+        await acquireLock(userId);
+           
+        const MAX_RETRIES = 5;
+        const session = await mongoose.startSession();
+        session.startTransaction();
 
-    try {
-        const user = await User.findById(userId).session(session);
-        if (!user) throw new Error('User not found.');
-        if (user.balance < orderAmount) throw new Error('Insufficient balance.');
+        try {
+            const user = await User.findById(userId).session(session);
+            if (!user) throw new Error('User not found.');
+            if (user.balance < orderAmount) throw new Error('Insufficient balance.');
 
-        // Deduct temporarily (hold)
-        user.balance -= orderAmount;
-        await user.save({ session });
+            // Deduct temporarily (hold)
+            user.balance -= orderAmount;
+            await user.save({ session });
 
-        // Fetch the order details
-        const order = await Order.findById(orderId).populate('sellerId', 'store_name').session(session); // Get store_name from seller
+            // Fetch the order details
+            const order = await Order.findById(orderId).populate('sellerId', 'store_name').session(session); // Get store_name from seller
 
-        if (!order) throw new Error('Order not found.');
+            if (!order) throw new Error('Order not found.');
 
-        // Prepare transaction details
-        const transactionDetails = {
-            orderId: order._id,
-            orderNumber: order.orderNumber,
-            store_name: order.sellerId.store_name,
-            items: order.items.map(item => ({
-                name: item.name,
-                quantity: item.quantity
-            }))
-        };
+            // Prepare transaction details
+            const transactionDetails = {
+                orderId: order._id,
+                orderNumber: order.orderNumber,
+                store_name: order.sellerId.store_name,
+                items: order.items.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity
+                }))
+            };
 
-        // Create hold transaction
-        const transactionId = await generateTransactionId();
-        console.log("New Transaction ID: ", transactionId);
+            // Create hold transaction
+            const transactionId = await generateTransactionId();
+            console.log("New Transaction ID: ", transactionId);
 
-        const holdTransaction = new Transaction({
-            transactionId,
-            user: user._id,
-            type: 'pay',
-            amount: orderAmount,
-            status: 'hold',
-            details: transactionDetails,
-            userBalanceAfter: user.balance,
-        });
+            const holdTransaction = new Transaction({
+                transactionId,
+                user: user._id,
+                type: 'pay',
+                amount: orderAmount,
+                status: 'hold',
+                details: transactionDetails,
+                userBalanceAfter: user.balance,
+            });
 
-        await holdTransaction.save({ session });
+            await holdTransaction.save({ session });
 
-        // Commit the transaction
-        await session.commitTransaction();
-        session.endSession();
+            // Commit the transaction
+            await session.commitTransaction();
+            session.endSession();
 
-        io.emit('updateBalance', { balance: user.balance, userId: user._id });
-        
-        return { success: true, message: 'Payment held successfully.', transactionId };
-    } catch (error) {
-        // Abort the transaction on error
-        await session.abortTransaction();
-        session.endSession();
-        
-        // If it's a write conflict and we haven't exceeded max retries, try again
-        if (error.message.includes('Write conflict') && retryCount < MAX_RETRIES) {
-            console.log(`Transaction write conflict, retrying (${retryCount + 1}/${MAX_RETRIES})...`);
-            return holdPayment(io, userId, orderId, orderAmount, retryCount + 1);
+            io.emit('updateBalance', { balance: user.balance, userId: user._id });
+            
+            return { success: true, message: 'Payment held successfully.', transactionId };
+        } catch (error) {
+            // Abort the transaction on error
+            await session.abortTransaction();
+            session.endSession();
+            
+            // If it's a write conflict and we haven't exceeded max retries, try again
+            if (error.message.includes('Write conflict') && retryCount < MAX_RETRIES) {
+                console.log(`Transaction write conflict, retrying (${retryCount + 1}/${MAX_RETRIES})...`);
+                return holdPayment(io, userId, orderId, orderAmount, retryCount + 1);
+            }
+            
+            return { success: false, message: error.message };
+        } finally {
+            releaseLock(userId);
         }
-        
-        return { success: false, message: error.message };
+    } catch (lockError) {
+        return { success: false, message: 'Failed to acquire lock for user.' };
     }
 };
 
