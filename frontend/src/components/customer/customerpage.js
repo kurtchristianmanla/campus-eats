@@ -813,83 +813,8 @@ const CustomerPage = () => {
                                             <span className="text-xs ml-1">
                                                 {store.sellerRating}</span>
                                         </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Online Stores */}
-                {viewState === 'selectStores' && (
-                    <motion.div 
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10  }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className="flex justify-between items-center mt-2 px-4">
-                        <span className="text-sm font-semibold text-gray-600">Online Stores</span>
-                    </motion.div>
-                )}
-
-                {viewState === 'selectStores' && (
-                    <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
-                        <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
-                        {(sellersWithRatings
-                            .filter((store) => store.is_selling).length === 0) ? (
-                            <div className="text-center text-xl text-gray-500 mb-4">No online stores available</div>
-                        ) : (
-                            sellersWithRatings
-                                .filter((store) => store.is_selling)
-                                .sort((a, b) => a.store_name.localeCompare(b.store_name))
-                                .map((store, index) => (
-                                <motion.div key={index} className="relative bg-white p-4 rounded-xl w-52 h-68 flex-shrink-0 inline-block 
-                                            scroll-ml-4 first:ml-0 flex flex-col overflow-hidden"
-                                        onClick={() => {
-                                            if (store.is_selling) {
-                                                handleViewSeller(store);
-                                            }
-                                        }}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20  }}
-                                        whileHover={store.is_selling ? { scale: 1.05 } : { scale: 1 }}
-                                        whileTap={store.is_selling ? { scale: 0.95 } : { scale: 1 }}
-                                        transition={{ hover: { duration: 0.3, ease: "easeOut" },
-                                                        x: { duration: 2, ease: "easeOut" }}}
-                                >
-                                {!store.is_selling && (
-                                    <>
-                                        <p className="absolute inset-0 flex items-center justify-center text-white z-30 text-xs">
-                                            Unavailable
-                                        </p>
-                                        <div className="absolute inset-0 bg-black opacity-50 rounded-xl z-20"></div>
-                                    </>
-                                )}
-                                <div className="relative flex justify-center mb-2">
-                                    {store.profile_picture ? (<img
-                                        src={store.profile_picture}
-                                        alt={store.store_name}
-                                        className="w-44 h-44 object-cover rounded-md"
-                                    />) : (
-                                        <>
-                                            <p className="absolute inset-0 flex items-center justify-center text-white z-10 text-xs">
-                                                No image uploaded
-                                            </p>
-                                            <div className="w-44 h-44 bg-gray-400 rounded-md" />
-                                        </>
-                                    )}
-                                </div>
-                                <div className="text-left mb-auto">
-                                    <h3 className="font-medium text-sm">{store.store_name}</h3>
-                                    <p className="text-[0.7rem] text-gray-500 mb-6">{store.location || 'PHINMA UPANG'}</p>
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="flex items-center">
-                                            {store.seller_rating && (<FaStar className="w-4 h-4 text-yellow-500" />)}
-                                            <span className={`text-xs ${store.seller_rating ? "ml-1" : ""}`}>
-                                                {store.sellerRating}</span>
-                                        </div>
+                                        <span className="text-xs text-gray-500">
+                                            {store.completedOrderCount} Sold</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -1052,6 +977,83 @@ const CustomerPage = () => {
                                         </div>
                                             <span className="text-xs text-gray-500">
                                                 {item.reviewCount} Reviews</span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Online Stores */}
+                {viewState === 'selectStores' && (
+                    <motion.div 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10  }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="flex justify-between items-center mt-2 px-4">
+                        <span className="text-sm font-semibold text-gray-600">Online Stores</span>
+                    </motion.div>
+                )}
+
+                {viewState === 'selectStores' && (
+                    <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
+                        <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
+                        {(sellersWithRatings
+                            .filter((store) => store.is_selling).length === 0) ? (
+                            <div className="text-center text-xl text-gray-500 mb-4">No online stores available</div>
+                        ) : (
+                            sellersWithRatings
+                                .filter((store) => store.is_selling)
+                                .sort((a, b) => a.store_name.localeCompare(b.store_name))
+                                .map((store, index) => (
+                                <motion.div key={index} className="relative bg-white p-4 rounded-xl w-52 h-68 flex-shrink-0 inline-block 
+                                            scroll-ml-4 first:ml-0 flex flex-col overflow-hidden"
+                                        onClick={() => {
+                                            if (store.is_selling) {
+                                                handleViewSeller(store);
+                                            }
+                                        }}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20  }}
+                                        whileHover={store.is_selling ? { scale: 1.05 } : { scale: 1 }}
+                                        whileTap={store.is_selling ? { scale: 0.95 } : { scale: 1 }}
+                                        transition={{ hover: { duration: 0.3, ease: "easeOut" },
+                                                        x: { duration: 2, ease: "easeOut" }}}
+                                >
+                                {!store.is_selling && (
+                                    <>
+                                        <p className="absolute inset-0 flex items-center justify-center text-white z-30 text-xs">
+                                            Unavailable
+                                        </p>
+                                        <div className="absolute inset-0 bg-black opacity-50 rounded-xl z-20"></div>
+                                    </>
+                                )}
+                                <div className="relative flex justify-center mb-2">
+                                    {store.profile_picture ? (<img
+                                        src={store.profile_picture}
+                                        alt={store.store_name}
+                                        className="w-44 h-44 object-cover rounded-md"
+                                    />) : (
+                                        <>
+                                            <p className="absolute inset-0 flex items-center justify-center text-white z-10 text-xs">
+                                                No image uploaded
+                                            </p>
+                                            <div className="w-44 h-44 bg-gray-400 rounded-md" />
+                                        </>
+                                    )}
+                                </div>
+                                <div className="text-left mb-auto">
+                                    <h3 className="font-medium text-sm">{store.store_name}</h3>
+                                    <p className="text-[0.7rem] text-gray-500 mb-6">{store.location || 'PHINMA UPANG'}</p>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center">
+                                            {store.seller_rating && (<FaStar className="w-4 h-4 text-yellow-500" />)}
+                                            <span className={`text-xs ${store.seller_rating ? "ml-1" : ""}`}>
+                                                {store.sellerRating}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </motion.div>
