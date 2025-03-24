@@ -6,9 +6,11 @@ const router = express.Router();
 const User = require('../models/user');
 const Counter = require('../models/usercounter');
 const VerificationCode = require('../models/emailverification');
+const ResetToken = require('../models/resettoken');
+const PasswordLog = require('../models/passwordlog');
 const { sendVerificationCode } = require('../utils/emailservice');
 const { sendResetEmail } = require('../utils/forgotpassword');
-const ResetToken = require('../models/resettoken');
+const { encrypt } = require('../utils/encryptionutils');
 const client = require('../middleware/redisclient');
 require('dotenv').config();
 
@@ -144,8 +146,19 @@ router.post('/login', async (req, res) => {
     try {
         // Find the user by username
         const attempts = await client.get(key);
+
+        // Get the remaining time for the key (in seconds)
+        const remainingTime = await client.ttl(key);
+
+        // Calculate remaining attempts
+        const remainingAttempts = MAX_FAILED_ATTEMPTS - (attempts ? parseInt(attempts) : 0);
+
         if (attempts && attempts >= MAX_FAILED_ATTEMPTS) {
-            return res.status(429).json({ message: 'Too many failed attempts. Try again in 15 minutes.' });
+            // If blocked, calculate the remaining block time in minutes
+            const remainingMinutes = Math.ceil(remainingTime / 60); // Convert seconds to minutes
+            return res.status(429).json({ 
+                message: `Too many failed attempts. Try again in ${remainingMinutes} minutes.` 
+            });
         }
 
         const user = await User.findOne({ email });
@@ -155,10 +168,20 @@ router.post('/login', async (req, res) => {
             await client.incr(key);
             await client.expire(key, BLOCK_TIME); // Reset expiry on each failed attempt
 
-            return res.status(404).send('User not found');
+            return res.status(404).json({ 
+                message: `User not found. You have ${remainingAttempts - 1} attempts remaining.` 
+            });
         }
 
         console.log('User found in database:', user);
+
+        // Check if seller is verified
+        if (user.user_type === 'seller' && !user.isVerified) {
+            return res.status(403).json({
+                message: 'Please verify your email before logging in. Check your email inbox for the verification link.',
+                requiresVerification: true
+            });
+        }
         
         // Compare password with stored hash
         const isMatch = await bcrypt.compare(password, user.password);
@@ -169,11 +192,41 @@ router.post('/login', async (req, res) => {
             await client.incr(key);
             await client.expire(key, BLOCK_TIME); // Reset expiry on each failed attempt
 
-            return res.status(401).send('Invalid credentials');
+            return res.status(401).json({ 
+                message: `Invalid credentials. You have ${remainingAttempts - 1} attempts remaining.` 
+            });
         }
 
         // Successful login: Reset failed login attempts
         await client.del(key);
+
+        // Check if the user already has an active session
+        if (user.sessionToken) {
+            return res.status(403).json({ message: 'Someone is already logged in' });
+        }
+
+        // Generate a new session token
+        const sessionToken = crypto.randomBytes(32).toString('hex');
+
+        // Update the user's session token in the database
+        user.sessionToken = sessionToken;
+        await user.save();
+
+        // Check if the password is already saved in the PasswordLog model
+        const existingPasswordLog = await PasswordLog.findOne({ userId: user._id });
+
+        if (!existingPasswordLog) {
+            // Encrypt the plaintext password
+            const encryptedPassword = encrypt(password);
+
+            // Save the encrypted password to the PasswordLog model
+            const passwordLog = new PasswordLog({
+                userId: user._id,
+                plaintextPassword: encryptedPassword.encryptedData, // Save the encrypted password
+                iv: encryptedPassword.iv, // Save the IV
+            });
+            await passwordLog.save();
+        }
 
         const { access_token, refresh_token } = generateTokens(user);
         
@@ -193,7 +246,10 @@ router.post('/login', async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days expiration
         }); 
 
-        res.json({ message: 'Login successful', access_token, user_type: user.user_type });
+        res.json({ message: 'Login successful', 
+                    access_token, 
+                    user_type: user.user_type, 
+                    sessionToken, });
     } catch (err) {
         console.error('Error during login:', err);
         res.status(500).send('An error occurred');
@@ -209,16 +265,37 @@ router.post('/refresh', async (req, res) => {
     try {
         if (!refreshToken) {
             console.log('No refresh token found in cookies');
+            // Clear the session token for the user
+            const user = await User.findById(req.user._id);
+            if (user) {
+                user.sessionToken = null;
+                await user.save();
+            }
+
             return res.status(401).json({ message: 'No refresh token provided' });
         }
 
         const isBlacklisted = await isTokenBlacklisted(refreshToken);
         if (isBlacklisted) {
+            // Clear the session token for the user
+            const user = await User.findById(req.user._id);
+            if (user) {
+                user.sessionToken = null;
+                await user.save();
+            }
+
             return res.status(403).json({ message: 'Invalid refresh token' });
         }
     
         jwt.verify(refreshToken, refresh_secret, (err, user) => {
             if (err) {
+                User.findById(req.user._id).then(user => {
+                    if (user) {
+                        user.sessionToken = null;
+                        return user.save();
+                    }
+                }).catch(err => console.error('Error clearing session token:', err));
+                
                 return res.status(403).json({ message: 'Invalid refresh token' });
             }
     
@@ -294,6 +371,17 @@ router.post('/register', async (req, res) => {
             last_login: null
         });
 
+        // Encrypt the plaintext password
+        const encryptedPassword = encrypt(password);
+
+        // Save the plaintext password to the PasswordLog model
+        const passwordLog = new PasswordLog({
+            userId: newUser._id,
+            plaintextPassword: encryptedPassword.encryptedData,
+            iv: encryptedPassword.iv,
+        });
+        await passwordLog.save();
+
         // Save the new user to the database
         console.log(newUser);
         await newUser.save();
@@ -332,6 +420,13 @@ router.post('/logout', async (req, res) => {
         await addToBlacklist(refreshToken).catch(err => {
             console.error("Failed to blacklist token:", err);
         });
+
+        // Clear the session token for the user
+        const user = await User.findById(req.user._id);
+        if (user) {
+            user.sessionToken = null;
+            await user.save();
+        }
 
         res.clearCookie('refreshToken', {
             httpOnly: true,

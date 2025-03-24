@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const crypto = require('crypto');
 
 const upload = require('../middleware/upload');
 const isRightRole = require('../middleware/auth'); 
@@ -15,10 +16,12 @@ const MenuItem = require('../models/menuitem');
 const Transaction = require('../models/transaction');
 
 const { generateTransactionId } = require('../utils/transacutils');
+const { sendSellerVerificationEmail } = require('../utils/emailservice'); 
 const profileRoutes = require('../utils/profileroutes'); 
 
 const jwt = require('jsonwebtoken');
 const secret_key = process.env.JWT_SECRET_KEY;
+const app_address = process.env.FRONTEND_URL;
 
 // API Routes
 router.get('/accounts', isRightRole(['admin']), async (req, res) => {
@@ -72,9 +75,6 @@ router.post('/addseller', isRightRole(['admin']), async (req, res) => {
             return res.status(400).json({ success: false, message: 'Email already exists' });
         }
 
-        // // Hash the password before saving
-        // const hashedPassword = await bcrypt.hash(password, 10); // Salt rounds set to 10
-
         // Check if the username already exists (for custom username)
         const usernameExists = await User.findOne({ username });
 
@@ -82,7 +82,6 @@ router.post('/addseller', isRightRole(['admin']), async (req, res) => {
             return res.status(400).json({ success: false, message: 'Username already taken' });
         }
 
-        
         // Update the counter
         const counter = await Counter.findOneAndUpdate(
             { _id: 'user_id' }, // Find the counter document
@@ -90,7 +89,9 @@ router.post('/addseller', isRightRole(['admin']), async (req, res) => {
             { new: true, upsert: true  } // Return the updated counter document
         ); 
 
-        console.log(counter);
+        // Generate verification token
+        const verificationToken = crypto.randomBytes(20).toString('hex');
+        const verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
         // Create a new user document
         const newUser = new User({
@@ -105,15 +106,17 @@ router.post('/addseller', isRightRole(['admin']), async (req, res) => {
             balance: 0, // Assuming balance starts at 0
             created_at: new Date(),
             last_login: null,
-            seller_rating: null
+            seller_rating: null,
+            isVerified: false, // Add verification status
+            verificationToken,
+            verificationTokenExpires
         });
 
-        // Save the new user to the database
-        console.log(newUser);
         await newUser.save();
-            // .catch(err => {
-            //     console.error(err.message); // Check error details
-            // });
+
+        const verificationUrl = `${app_address}/verify-seller?token=${verificationToken}`;
+        await sendSellerVerificationEmail(email, verificationUrl);
+
         console.log('User registered successfully:', newUser);
 
         res.send('User registered successfully');

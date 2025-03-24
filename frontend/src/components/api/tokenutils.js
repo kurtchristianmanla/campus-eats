@@ -3,8 +3,9 @@ import { refreshAccessToken } from './interceptor';
 
 export const checkTokenExpiration = async () => {
     const token = localStorage.getItem('token');
+    const sessionToken = localStorage.getItem('sessionToken');
 
-    if (!token) {
+    if (!token || !sessionToken) {
         return null; // No token, user needs to log in
     }
 
@@ -26,6 +27,7 @@ export const checkTokenExpiration = async () => {
     } catch (error) {
         console.error('Token validation error:', error);
         localStorage.removeItem('token'); // Remove invalid token
+        localStorage.removeItem('sessionToken');
         return null;
     }
 };

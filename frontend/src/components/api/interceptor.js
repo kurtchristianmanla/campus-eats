@@ -51,8 +51,12 @@ export const refreshAccessToken = async () => {
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
+    const sessionToken = localStorage.getItem('sessionToken');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    if (sessionToken) {
+      config.headers['X-Session-Token'] = sessionToken; // Add session token to headers
     }
     return config;
   },

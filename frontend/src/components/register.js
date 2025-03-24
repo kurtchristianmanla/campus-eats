@@ -86,7 +86,7 @@ const Register = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccessMessage('Verification code sent to your email.');
+        setSuccessMessage('Verification code sent to your email. Please check your inbox or spam folder.');
         setIsVerificationSent(true); // Set verification code as sent
       } else {
         setErrorMessage(data.message || 'Failed to send verification code');

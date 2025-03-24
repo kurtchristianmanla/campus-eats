@@ -95,6 +95,12 @@ const userSchema = new mongoose.Schema({
         default: null,
     },
     sessionToken: { type: String, default: null },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: String,
+    verificationTokenExpires: Date,
 });
 
 // Pre-save hook to hash the password before saving to DB

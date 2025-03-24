@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaStore, FaShoppingCart } from "react-icons/fa";
 
-const Popup = ({ setShowAdded }) => {
+const Popup = ({ setShowAdded, limitExceeded }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,7 +30,9 @@ const Popup = ({ setShowAdded }) => {
                 transition={{ duration: 0.3, ease: "easeOut" }}
             >
                 <div className="flex items-center">
-                    <h3 className="text-md">Item added to cart successfully</h3>
+                    <h3 className="text-md">
+                        {limitExceeded ? "Cannot add, item limit exceeded!" : "Item added to cart successfully!"}
+                    </h3>
                 </div>
                 <div className="flex gap-4 items-center justify-end">
                     <button className="flex items-center justify-between gap-1 hover:underline cursor-pointer"

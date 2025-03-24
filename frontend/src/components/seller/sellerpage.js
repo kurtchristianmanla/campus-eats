@@ -22,10 +22,12 @@ const SellerHomepage = () => {
     const [orders, setOrders] = useState([]);
     const [socket, setSocket] = useState(null); 
     const { showNotification } = useNotification();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     // Extract sellerId from the token stored in localStorage
     const token = localStorage.getItem('token');
     const sellerId = token ? jwtDecode(token).user_id : null;
+    const userName = token ? jwtDecode(token).username : null;
 
     // Function to check if the user is an admin
     const checkSellerAccess = useCallback(async () => {
@@ -158,6 +160,12 @@ const SellerHomepage = () => {
         setIsSidebarOpen(!isSidebarOpen); // Toggle the sidebar visibility
     };
 
+    const handleLogoutClick = async () => {
+        setIsLoggingOut(true); // Set loading state to true
+        await handleLogout(); // Call the logout function
+        setIsLoggingOut(false); // Reset loading state
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-white to-gray-100 flex flex-col items-center justify-center">
             {/* Navigation Bar */}
@@ -205,11 +213,16 @@ const SellerHomepage = () => {
                         Use Policy
                     </button>
                     <button
-                        onClick={handleLogout}
-                        className="relative justify-start items-center w-full mt-2 py-2 text-right bg-gradient-to-r from-white to-white font-semibold hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
-                        >
+                        onClick={handleLogoutClick}
+                        className={`relative justify-start items-center w-full mt-2 py-2 text-right font-semibold rounded-md pr-4 border-b 
+                            ${isLoggingOut 
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'  // Disabled state
+                                : 'bg-gradient-to-r from-white to-white hover:from-orange-400 hover:to-red-500 hover:text-white' // Normal state
+                            }`}
+                        disabled={isLoggingOut} // Disable button when logging out
+                    >
                         <FaSignOutAlt className="ml-2 text-xl mr-32" />
-                        Logout
+                        {isLoggingOut ? 'Logging Out...' : 'Logout'}
                     </button>
                 </motion.div>
                 )}
@@ -258,7 +271,7 @@ const SellerHomepage = () => {
                 >
                     <span className="text-black">Welcome, </span>
                     <span className="bg-gradient-to-br from-orange-600 to-orange-400 bg-clip-text text-transparent transition duration-300">
-                        {username}
+                        {userName}
                     </span>
                 </motion.h1>
 

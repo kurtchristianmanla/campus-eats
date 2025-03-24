@@ -60,6 +60,7 @@ const Cashout = () => {
             setSearchedUsername(response.data.username);
             setSearchedEmail(response.data.email);
         } else {
+            setSuccessMessage("");
             setErrorMessage(response.data.message || 'User not found.');
             setUserBalance(null);
             setCashOutAmount('');
@@ -70,6 +71,7 @@ const Cashout = () => {
         }
     } catch (error) {
         console.error('Error searching user:', error);
+        setSuccessMessage("");
         setErrorMessage( error.response.data.message || 'An error occurred while searching for the user. Please try again.');
     } finally {
         setLoadingSearch(false);
@@ -95,6 +97,7 @@ const Cashout = () => {
       });
   
       if (response.status === 200) {
+          setErrorMessage("");
           setSuccessMessage('Cash out successful!');
           setUserBalance((prevBalance) => prevBalance - parseFloat(cashOutAmount));
           setAmountCredited(parseFloat(cashOutAmount));
@@ -102,9 +105,11 @@ const Cashout = () => {
           setSuccessWindow(true);
       } else {
           setErrorMessage(response.data.message || 'Cash out failed.');
+          setSuccessMessage("");
       }
     } catch (error) {
         console.error('Error during cash out:', error.response.data.message);
+        setSuccessMessage("");
         setErrorMessage(error.response.data.message || 'An error occurred during the cash out process. Please try again.');
     } finally {
         setLoadingCashOut(false);
@@ -218,6 +223,7 @@ const Cashout = () => {
                   onClick={() => {
                     if (userBalance < cashOutAmount) {
                       setErrorMessage("Insufficient Balance");
+                      setSuccessMessage("");
                     } else if (cashOutAmount) {
                       setIsConfirming(true);
                       setErrorMessage("");

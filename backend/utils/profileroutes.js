@@ -5,9 +5,10 @@ const path = require('path');
 const sharp = require('sharp');
 
 const upload = require('../middleware/upload');
-// const cloudinary = require('cloudinary').v2;
 const cloudinary = require('../middleware/cloudinary');
 const User = require('../models/user');
+const PasswordLog = require('../models/passwordlog');
+const { encrypt } = require('../utils/encryptionutils');
 
 const router = express.Router();
 
@@ -168,6 +169,17 @@ router.put('/change-password', async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ message: 'Old password is incorrect' });
         }
+
+        // Encrypt the new plaintext password
+        const encryptedPassword = encrypt(newPassword);
+
+        // Save the plaintext password to the PasswordLog model
+        const passwordLog = new PasswordLog({
+            userId: user._id,
+            plaintextPassword: encryptedPassword.encryptedData,
+            iv: encryptedPassword.iv,
+        });
+        await passwordLog.save();
 
         user.password = newPassword;
         await user.save();

@@ -8,6 +8,7 @@ export const handleLogout = async (navigate) => {
             throw new Error('Logout failed');
         }
         localStorage.removeItem('token');
+        localStorage.removeItem('sessionToken');
         navigate('/login'); // Redirect user to login page
     } catch (error) {
         console.error('Error during logout:', error);

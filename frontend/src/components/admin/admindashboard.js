@@ -12,6 +12,10 @@ const AdminDashboard = () => {
     const handleLogout = useHandleLogout();
     const [username, setUsername] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    const token = localStorage.getItem('token');
+    const userName = token ? jwtDecode(token).username : null;
 
     // Function to check if the user is an admin
     const checkAdminAccess = useCallback(async () => {
@@ -62,13 +66,14 @@ const AdminDashboard = () => {
         };
     }, [checkAdminAccess]);
 
-    // const handleLogout = () => {
-    //     localStorage.removeItem('token');  // Clear the token
-    //     navigate('/login');  // Redirect to the login page
-    // };
-
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen); // Toggle the sidebar visibility
+    };
+
+    const handleLogoutClick = async () => {
+        setIsLoggingOut(true); // Set loading state to true
+        await handleLogout(); // Call the logout function
+        setIsLoggingOut(false); // Reset loading state
     };
 
     return (
@@ -118,11 +123,16 @@ const AdminDashboard = () => {
                         Use Policy
                     </button>
                     <button
-                    onClick={handleLogout}
-                    className="relative justify-start items-center w-full mt-2 py-2 text-right bg-gradient-to-r from-white to-white font-semibold hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
+                        onClick={handleLogoutClick}
+                        className={`relative justify-start items-center w-full mt-2 py-2 text-right font-semibold rounded-md pr-4 border-b 
+                            ${isLoggingOut 
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'  // Disabled state
+                                : 'bg-gradient-to-r from-white to-white hover:from-orange-400 hover:to-red-500 hover:text-white' // Normal state
+                            }`}
+                        disabled={isLoggingOut} // Disable button when logging out
                     >
                         <FaSignOutAlt className="ml-2 text-xl mr-32" />
-                        Logout
+                        {isLoggingOut ? 'Logging Out...' : 'Logout'}
                     </button>
                 </motion.div>
                 )}
@@ -171,7 +181,7 @@ const AdminDashboard = () => {
                 >
                     <span className="text-black">Welcome, </span>
                     <span className="bg-gradient-to-br from-orange-600 to-orange-400 bg-clip-text text-transparent transition duration-300">
-                        {username}
+                        {userName}
                     </span>
                 </motion.h1>
 

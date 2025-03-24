@@ -59,6 +59,7 @@ const Topup = () => {
           setSearchedUsername(data.username);
           setSearchedEmail(data.email);
       } else {
+          setSuccessMessage("");
           setErrorMessage(response.data.message || 'User not found.');
           setUserBalance(null);
           setTopUpAmount('');
@@ -69,6 +70,7 @@ const Topup = () => {
       }
     } catch (error) {
         console.error('Error searching user:', error);
+        setSuccessMessage("");
         setErrorMessage( error.response.data.message || 'An error occurred while searching for the user. Please try again.');
     } finally {
         setLoadingSearch(false);
@@ -93,16 +95,19 @@ const Topup = () => {
       });
   
       if (response.status === 200) {
+          setErrorMessage("");
           setSuccessMessage('Top-up successful!');
           setUserBalance((prevBalance) => prevBalance + parseFloat(topUpAmount));
           setAmountCredited(parseFloat(topUpAmount));
           setTopUpAmount('');
           setSuccessWindow(true);
       } else {
+          setSuccessMessage("");
           setErrorMessage(response.data.message || 'Top-up failed.');
       }
     } catch (error) {
         console.error('Error during top-up:', error);
+        setSuccessMessage("");
         setErrorMessage( error.response.data.message || 'An error occurred during the top-up process. Please try again.');
     } finally {
         setLoadingTopUp(false);

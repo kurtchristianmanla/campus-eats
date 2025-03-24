@@ -36,6 +36,7 @@ const CustomerPage = () => {
 
     const [sellers, setSellers] = useState([]);
     const [ratedItems, setRatedItems] = useState([]);
+    const [mostOrderedItems, setMostOrderedItems] = useState([]);
     const [viewState, setViewState] = useState('selectStores');
     const [viewSeller, setViewSeller] = useState(null);
     const [viewStoreName, setViewStoreName] = useState('');
@@ -109,7 +110,8 @@ const CustomerPage = () => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            setRatedItems(response.data); // Update state with user data
+            setRatedItems(response.data.highRatedItems);
+            setMostOrderedItems(response.data.mostOrderedItems);
             // console.log(sellers);
             setLoading(false); // Set loading to false
         } catch (error) {
@@ -225,6 +227,12 @@ const CustomerPage = () => {
             }
 
             setRatedItems((prevItems) =>
+                prevItems.map((item) =>
+                    item._id === data.updatedItem._id ? { ...item, ...data.updatedItem } : item
+                )
+            );
+
+            setMostOrderedItems((prevItems) =>
                 prevItems.map((item) =>
                     item._id === data.updatedItem._id ? { ...item, ...data.updatedItem } : item
                 )
@@ -518,9 +526,9 @@ const CustomerPage = () => {
                     transition={{ duration: 1, ease: "easeOut" }}
                     className="text-3xl font-bold p-4">Enjoy Delicious Food</motion.h1>
                 
+                {/* Recommendations */}
                 {(lastOrder !== null && viewState === 'selectStores') && (
                     <>
-                        {/* Recommendations */}
                         <motion.div 
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -617,7 +625,9 @@ const CustomerPage = () => {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -10  }}
                                 transition={{ duration: 1, ease: "easeOut" }}
-                                className="text-sm font-semibold text-gray-600">{viewState === 'selectStores' ? 'Popular stores' : 'All stores'}</motion.span>
+                                className="text-sm font-semibold text-gray-600">
+                                    {viewState === 'selectStores' ? 'Highly Rated Stores' : 'All Stores'}
+                            </motion.span>
                             <span className="text-xs text-orange-500 hover:underline cursor-pointer"
                                     onClick={toggleViewStores}>
                                 {viewState === 'selectStores' ? 'View all stores' : 'View popular stores'}
@@ -888,7 +898,7 @@ const CustomerPage = () => {
                     </div>
                 )}
 
-                {/* Popular Foods */}
+                {/* Most Ordered Foods */}
                 {viewState === 'selectStores' && (
                     <motion.div 
                         initial={{ opacity: 0, x: -10 }}
@@ -896,7 +906,88 @@ const CustomerPage = () => {
                         exit={{ opacity: 0, x: -10  }}
                         transition={{ duration: 1, ease: "easeOut" }}
                         className="flex justify-between items-center mt-2 px-4">
-                        <span className="text-sm font-semibold text-gray-600">Popular Foods</span>
+                        <span className="text-sm font-semibold text-gray-600">Most Ordered Foods</span>
+                    </motion.div>
+                )}
+
+                {viewState === 'selectStores' && (
+                    <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
+                        <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
+                        {mostOrderedItems.length === 0 ? (
+                            <div className="text-center text-xl text-gray-500 mb-4">No popular foods available</div>
+                        ) : (
+                            mostOrderedItems
+                                .sort((a, b) => b.averageRating - a.averageRating)
+                                .map((item, index) => (
+                                <motion.div key={index} className="relative bg-white p-4 rounded-xl w-52 h-68 flex-shrink-0 inline-block 
+                                            scroll-ml-4 first:ml-0 flex flex-col overflow-hidden justify-between"
+                                        onClick={() => {
+                                            // if (item.isAvailable) {
+                                            //     handleOrderItem(item);
+                                            // }
+                                            const sellerInfo = sellers.find(s => s._id === item.sellerId); // Find the seller
+                                            if (item.isAvailable && sellerInfo?.is_selling) {
+                                                handleOrderItem(item);
+                                            }
+                                        }}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20  }}
+                                        whileHover={(item.isAvailable && sellers.find(s => s._id === item.sellerId)?.is_selling) ? { scale: 1.05 } : { scale: 1 }}
+                                        whileTap={(item.isAvailable && sellers.find(s => s._id === item.sellerId)?.is_selling) ? { scale: 0.95 } : { scale: 1 }}
+                                        transition={{ hover: { duration: 0.3, ease: "easeOut" },
+                                                        x: { duration: 2, ease: "easeOut" }}}
+                                >
+                                {(!item.isAvailable || !sellers.find(s => s._id === item.sellerId)?.is_selling) && (
+                                    <>
+                                        <p className="absolute inset-0 flex items-center justify-center text-white z-30 text-xs">
+                                            Unavailable
+                                        </p>
+                                        <div className="absolute inset-0 bg-black opacity-50 rounded-xl z-20"></div>
+                                    </>
+                                )}
+                                <div className="flex justify-center mb-2 flex-col">
+                                    {item.imageUrl ? (<img
+                                        src={item.imageUrl}
+                                        alt={item.name}
+                                        className="w-44 h-44 object-cover rounded-md"
+                                    />) : (
+                                        <div className="relative">
+                                            <p className="absolute inset-0 flex items-center justify-center text-white z-10 text-xs">
+                                                No image uploaded
+                                            </p>
+                                            <div className="w-44 h-44 bg-gray-400 rounded-md" />
+                                        </div>
+                                    )}
+                                    <h3 className="font-medium text-sm mt-2">{item.name}</h3>
+                                    <p className="text-[0.7rem] text-gray-500 mb-6">{item.price} UC</p>
+                                </div>
+                                <div className="text-left">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center">
+                                            {item.averageRating  && (<FaStar className="w-4 h-4 text-yellow-500" />)}
+                                            <span className="text-xs">
+                                                {item.averageRating.toFixed(1)}</span>
+                                        </div>
+                                        <span className="text-xs text-gray-500">
+                                            {item.orderCount} Sold</span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )))}
+                        </div>
+                    </div>
+                )}
+
+                {/* High Rated Foods */}
+                {viewState === 'selectStores' && (
+                    <motion.div 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10  }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="flex justify-between items-center mt-2 px-4">
+                        <span className="text-sm font-semibold text-gray-600">High Rated Foods</span>
                     </motion.div>
                 )}
 
@@ -959,7 +1050,8 @@ const CustomerPage = () => {
                                             <span className="text-xs">
                                                 {item.averageRating.toFixed(1)}</span>
                                         </div>
-                                        <FaHeart className="w-4 h-4 text-gray-400" />
+                                            <span className="text-xs text-gray-500">
+                                                {item.reviewCount} Reviews</span>
                                     </div>
                                 </div>
                             </motion.div>

@@ -216,6 +216,31 @@ router.get('/reviews', isRightRole(['seller']), async (req, res) => {
     }
 });
 
+router.get('/verify-seller', async (req, res) => {
+    try {
+        const { token } = req.query;
+        
+        const user = await User.findOne({ 
+            verificationToken: token,
+            verificationTokenExpires: { $gt: Date.now() } 
+        });
+
+        if (!user) {
+            return res.status(400).send('Invalid or expired verification token');
+        }
+
+        user.isVerified = true;
+        user.verificationToken = undefined;
+        user.verificationTokenExpires = undefined;
+        await user.save();
+
+        res.send('Email verified successfully. You can now log in as a seller.');
+    } catch (error) {
+        console.error('Email verification error:', error);
+        res.status(500).send('Error verifying email');
+    }
+});
+
 // Route to fetch user profile
 router.use(isRightRole(['seller']), profileRoutes);
 

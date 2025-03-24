@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { motion } from "framer-motion";
+import Intro from './utils/intro';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -19,6 +20,17 @@ const Login = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+
+    const [showLogin, setShowLogin] = useState(false);
+    const [seenIntro, setSeenIntro] = useState(false);
+
+    useEffect(() => {
+        const hasSeenIntro = localStorage.getItem('hasSeenIntro');
+        if (hasSeenIntro) {
+            setSeenIntro(true);
+            setShowLogin(true);
+        }
+    }, []);
 
     const checkToken = useCallback(async () => {
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
@@ -77,8 +89,8 @@ const Login = () => {
 
           if (response.ok) {
               alert('Login successful');
-            //   localStorage.setItem('token', data.token); // Store token
               localStorage.setItem('token', data.access_token);
+              localStorage.setItem('sessionToken', data.sessionToken);
               setEmail(''); // Clear username
               setPassword(''); // Clear password
               // navigate('/home'); // Redirect to the dashboard
@@ -104,10 +116,12 @@ const Login = () => {
       }
     };
 
-    const loginMessage_1 = "Good to see you again, enter your details below to continue ordering.";
+    const loginMessage_1 = `Good to see you${seenIntro ? " again" : ""}, enter your details below to continue ordering.`;
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            {!showLogin && <Intro onFinish={() => setShowLogin(true)} />}
+            {showLogin && (
             <motion.div
                 initial={{ opacity: 0, y: 50 }} // Start slightly below and hidden
                 animate={{ opacity: 1, y: 0 }} // Move to original position and fade in
@@ -257,7 +271,8 @@ const Login = () => {
                 </p>
                 </motion.div>
             </motion.div>
-            </div>
+            )}
+        </div>
     );
 };
 

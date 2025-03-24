@@ -10,6 +10,7 @@ import Register from './components/register.js';
 import ForgotPassword from './components/forgotpassword.js';
 import ResetPassword from './components/resetpassword.js';
 import LiveQueue from './components/livequeue.js';
+import SellerVerify from './components/verifyseller.js';
 
 import AdminDashboard from './components/admin/admindashboard.js';
 import Accounts from './components/admin/accounts.js';
@@ -50,18 +51,6 @@ function App() {
     </ProtectedRoute>
   );
 
-  // if ('serviceWorker' in navigator && 'PushManager' in window) {
-  //   window.addEventListener('load', () => {
-  //     navigator.serviceWorker.register('/service-worker.js')
-  //         .then(registration => {
-  //             console.log('Service Worker registered:', registration);
-  //         })
-  //         .catch(error => {
-  //             console.error('Service Worker registration failed:', error);
-  //         });
-  //   });
-  // }
-
   useEffect(() => {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/service-worker.js').then((registration) => {
@@ -86,7 +75,8 @@ function App() {
       '/register', 
       '/forgot-password',
       '/reset-password',
-      '/live-queue'
+      '/live-queue',
+      '/verify-seller'
     ];
     if (!excludedPaths.includes(location.pathname)) {
       const validateToken = async () => {
@@ -136,6 +126,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/live-queue" element={<LiveQueue />} />
+          <Route path="/verify-seller" element={<SellerVerify />} />
 
           {/* Customer Route */}
           <Route path="/customer" element={protectedRoute('customer', CustomerPage)} />

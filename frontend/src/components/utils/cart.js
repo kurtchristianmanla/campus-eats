@@ -22,6 +22,11 @@ export const addToCart = (userId, item, quantity) => {
     const existingItemIndex = cart.findIndex(cartItem => cartItem._id === item._id); // Compare using _id or another unique identifier
 
     if (existingItemIndex > -1) {
+        // Check if the current quantity plus the new quantity exceeds 20
+        if ((cart[existingItemIndex].quantity + quantity) > 20) {
+            return { success: false, message: "Item limit exceeded" }; // Return a flag indicating the limit is exceeded
+        }
+
         // If the item already exists, update the quantity
         cart[existingItemIndex].quantity += quantity;
     } else {
@@ -31,6 +36,8 @@ export const addToCart = (userId, item, quantity) => {
 
     // Save the updated cart to localStorage
     localStorage.setItem(getCartKey(userId), JSON.stringify(cart));
+
+    return { success: true }; // Return a flag indicating the item was added successfully
 };
 
 export const removeFromCart = (userId, itemId, quantity) => {

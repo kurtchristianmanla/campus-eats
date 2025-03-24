@@ -95,7 +95,7 @@ const AddSeller = () => {
       });
   
       if (response.status === 200) {
-          setSuccessMessage('Registration successful! Redirecting...');
+          setSuccessMessage('Please check your seller email address to verify it...');
           setFormData({
               username: '',
               store_name: '',

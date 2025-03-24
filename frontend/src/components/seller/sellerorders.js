@@ -29,6 +29,7 @@ const ManageOrders = () => {
     const [visibleReasons, setVisibleReasons] = useState({});
     const [isAccepting, setIsAccepting] = useState({});
     const [isMarkingReady, setIsMarkingReady] = useState({});
+    const [isToggling, setIsToggling] = useState(false);
 
     // Extract sellerId from the token stored in localStorage
     const token = localStorage.getItem('token');
@@ -185,6 +186,7 @@ const ManageOrders = () => {
     }, [sellerId, fetchOrders, showNotification]);
 
     const toggleIsSelling = async () => {
+        setIsToggling(true);
         const token = localStorage.getItem('token');
         try {
             const response = await api.put('/seller/set-status', {
@@ -207,6 +209,7 @@ const ManageOrders = () => {
             toast.error(error.response.data.message || 'Error setting store availability.');
         } finally {
             setLoading(false);
+            setIsToggling(false);
         }
     };
 
@@ -500,7 +503,12 @@ const ManageOrders = () => {
             <div className="fixed bottom-0 p-4 z-20 w-full max-w-md">
                 <button
                     onClick={toggleIsSelling}
-                    className="w-full px-10 py-3 rounded-lg shadow-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md hover:scale-105 transform transition duration-300"
+                    className={`w-full px-10 py-3 rounded-lg shadow-lg text-white text-lg font-semibold transition duration-300 transform 
+                        ${isToggling 
+                            ? 'bg-gray-400 cursor-not-allowed'  // Disabled state
+                            : 'bg-gradient-to-r from-orange-400 to-red-500 hover:scale-105' // Normal state
+                        }`}
+                    disabled={isToggling}
                 >
                     MAKE STORE {isSelling ? 'OFFLINE' : 'ONLINE'}
                 </button>

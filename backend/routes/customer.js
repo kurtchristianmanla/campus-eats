@@ -16,11 +16,51 @@ router.use(isRightRole(['customer']), profileRoutes);
 // API Routes
 router.get('/find-sellers', isRightRole(['customer']), async (req, res) => {
     try {
-    //   const users = await User.find();
-        const users = await User.find({
-            user_type: 'seller',  // Only sellers
-            // is_selling: true       // Sellers who are currently selling
-        }).select('_id store_name is_selling user_type email profile_picture seller_rating');
+        // const users = await User.find({
+        //     user_type: 'seller',  // Only sellers
+        // }).select('_id store_name is_selling user_type email profile_picture seller_rating');
+        // Fetch sellers with their completed order count
+        const sellers = await User.aggregate([
+            {
+                $match: {
+                    user_type: 'seller', // Only sellers
+                    // is_selling: true // Optional: Only sellers who are currently selling
+                },
+            },
+            {
+                $lookup: {
+                    from: 'orders', // Join with the orders collection
+                    localField: '_id', // User _id (sellerId)
+                    foreignField: 'sellerId', // Order sellerId
+                    as: 'orders', // Store the joined orders in 'orders'
+                },
+            },
+            {
+                $addFields: {
+                    completedOrderCount: {
+                        $size: {
+                            $filter: {
+                                input: '$orders',
+                                as: 'order',
+                                cond: { $eq: ['$$order.status', 'completed'] }, // Filter completed orders
+                            },
+                        },
+                    },
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    store_name: 1,
+                    is_selling: 1,
+                    user_type: 1,
+                    email: 1,
+                    profile_picture: 1,
+                    seller_rating: 1,
+                    completedOrderCount: 1, // Include completed order count
+                },
+            },
+        ]);
         res.json(users);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch users' });
@@ -30,16 +70,70 @@ router.get('/find-sellers', isRightRole(['customer']), async (req, res) => {
 // API Routes
 router.get('/find-items', isRightRole(['customer']), async (req, res) => {
     try {
-        const highRatedItems = await MenuItem.find({
-            averageRating: { $gte: 4, $lte: 5 }, // Filter only 4 to 5 star ratings
-            // isAvailable: true, // Only show available items
-        });
+        // Fetch high-rated items (4 to 5 stars)
+        const highRatedItems = await MenuItem.aggregate([
+            {
+                $match: {
+                    averageRating: { $gte: 4, $lte: 5 }, // Filter only 4 to 5 star ratings
+                    isAvailable: true, // Only show available items
+                },
+            },
+            {
+                $lookup: {
+                    from: 'productratings', // Join with the ratings collection
+                    localField: '_id', // MenuItem _id
+                    foreignField: 'productId', // Rating productId
+                    as: 'reviews', // Store the joined reviews in 'reviews'
+                },
+            },
+            {
+                $addFields: {
+                    reviewCount: { $size: '$reviews' }, // Add reviewCount field
+                },
+            },
+            {
+                $limit: 5, // Limit to 5 high-rated items
+            },
+        ]);
 
-        if (!highRatedItems.length) {
-            return res.status(404).json({ message: 'No high-rated menu items found' });
+        // Fetch most ordered items
+        const mostOrderedItems = await MenuItem.aggregate([
+            {
+                $lookup: {
+                    from: 'orders', // Join with the orders collection
+                    localField: '_id', // MenuItem _id
+                    foreignField: 'items.productId', // Order items.productId
+                    as: 'orders', // Store the joined orders in 'orders'
+                },
+            },
+            {
+                $addFields: {
+                    orders: {
+                        $filter: {
+                            input: '$orders', // Filter the joined orders
+                            as: 'order',
+                            cond: { $eq: ['$$order.status', 'completed'] }, // Only include completed orders
+                        },
+                    },
+                    orderCount: { $size: '$orders' }, // Count the filtered orders
+                },
+            },
+            {
+                $match: { orderCount: { $gt: 0 } }, // Filter out items with no orders
+            },
+            {
+                $sort: { orderCount: -1 }, // Sort by order count in descending order
+            },
+            {
+                $limit: 5, // Limit to top 10 most ordered items
+            },
+        ]);
+
+        if (!highRatedItems.length && !mostOrderedItems.length) {
+            return res.status(404).json({ message: 'No high-rated or most ordered menu items found' });
         }
 
-        res.json(highRatedItems);
+        res.json({ highRatedItems, mostOrderedItems });
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch users' });
     }

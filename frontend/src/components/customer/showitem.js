@@ -27,6 +27,7 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
 
     const [showAdded, setShowAdded] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
+    const [limitExceeded, setLimitExceeded] = useState(false);
 
     // Fetch data for editing a menu item if menuItemId is provided
     useEffect(() => {
@@ -65,8 +66,13 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
         api.get(`/menu/item/${itemId}`)
             .then((response) => {
                 const menuItem = response.data.menuItem;
-                addToCart(userId, menuItem, quantity);
-                setShowAdded(true);
+                const result = addToCart(userId, menuItem, quantity);
+                if (result.success) {
+                    setLimitExceeded(false); // Show success popup
+                } else {
+                    setLimitExceeded(true); // Show limit exceeded popup
+                }
+                setShowAdded(true)
             })
             .catch((error) => {
                 console.error('Error fetching menu item:', error);
@@ -82,6 +88,7 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
                 {showAdded && (
                     <Popup 
                         setShowAdded={setShowAdded}
+                        limitExceeded={limitExceeded}
                     />
                 )}
             </AnimatePresence>
