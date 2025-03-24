@@ -81,6 +81,7 @@ router.post('/create', isRightRole(['customer']), async (req, res) => {
         console.log("Step 2: Holding payment"); 
         // Hold Payment Before Creating the Order
         const holdResponse = await holdPayment(req.io, req.user.user_id, newOrder._id, totalAmount);
+
         console.log("Hold Payment Response:", holdResponse); 
         if (!holdResponse.success) {
             await Order.findByIdAndDelete(newOrder._id);
@@ -90,7 +91,7 @@ router.post('/create', isRightRole(['customer']), async (req, res) => {
         // Update the order with payment status and transaction ID
         newOrder.paymentStatus = 'hold';
         newOrder.paymentTransactionId = holdResponse.transactionId;
-        // await newOrder.save();
+        
         try {
             await newOrder.save();
             console.log(`Order saved for seller ${sellerId}`);
@@ -110,6 +111,15 @@ router.post('/create', isRightRole(['customer']), async (req, res) => {
         });
 
     } catch (error) {
+        // Try to clean up the order if it was created
+        try {
+            if (newOrder && newOrder._id) {
+                await Order.findByIdAndDelete(newOrder._id);
+            }
+        } catch (cleanupError) {
+            console.error("Error cleaning up failed order:", cleanupError);
+        }
+        
         res.status(500).json({ message: error.message });
     }
 });

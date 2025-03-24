@@ -4,7 +4,8 @@ const Transaction = require('../models/transaction');
 const { generateTransactionId } = require('./transacutils');
 const mongoose = require('../db/db');
 
-const holdPayment = async (io, userId, orderId, orderAmount) => {
+const holdPayment = async (io, userId, orderId, orderAmount, retryCount = 0) => {
+    const MAX_RETRIES = 3;
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -35,6 +36,8 @@ const holdPayment = async (io, userId, orderId, orderAmount) => {
 
         // Create hold transaction
         const transactionId = await generateTransactionId();
+        console.log("New Transaction ID: ", transactionId);
+
         const holdTransaction = new Transaction({
             transactionId,
             user: user._id,
@@ -58,6 +61,13 @@ const holdPayment = async (io, userId, orderId, orderAmount) => {
         // Abort the transaction on error
         await session.abortTransaction();
         session.endSession();
+        
+        // If it's a write conflict and we haven't exceeded max retries, try again
+        if (error.message.includes('Write conflict') && retryCount < MAX_RETRIES) {
+            console.log(`Transaction write conflict, retrying (${retryCount + 1}/${MAX_RETRIES})...`);
+            return holdPayment(io, userId, orderId, orderAmount, retryCount + 1);
+        }
+        
         return { success: false, message: error.message };
     }
 };
