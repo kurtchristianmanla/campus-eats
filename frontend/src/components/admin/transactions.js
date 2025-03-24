@@ -65,8 +65,15 @@ const Transactions = () => {
   const [itemsPerPage, setItemsPerPage] = useState(25); // Default to 100 items per page 
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
 
+  const [dateFilterMode, setDateFilterMode] = useState('single'); // 'single' or 'range'
+  const [startDate, setStartDate] = useState(getTodayDate());
+  const [endDate, setEndDate] = useState(getTodayDate());
+  const [sortOrder, setSortOrder] = useState('desc');
+
   const sortedTransactions = transactions.sort((a, b) => {
-    return new Date(b.createdAt) - new Date(a.createdAt); // Sort from latest to oldest
+    return sortOrder === 'desc' 
+      ? new Date(b.createdAt) - new Date(a.createdAt)
+      : new Date(a.createdAt) - new Date(b.createdAt);
   });
 
   const groupedTransactions = sortedTransactions.reduce((acc, transaction) => {
@@ -89,18 +96,22 @@ const Transactions = () => {
     return toZonedTime(utcDate, timeZone);
   };
 
+  // Replace your existing filteredTransactions logic with this:
   const filteredTransactions = groupedTransactions[activeTab]?.filter((transaction) => {
-        
-    if (!selectedDate) return true; // Show all transactions if no date is selected
+    if (dateFilterMode === 'single' && !selectedDate) return true;
+    if (dateFilterMode === 'range' && (!startDate || !endDate)) return true;
 
     // Convert the transaction's createdAt to local time (Philippines)
     const localTransactionDate = convertToLocalTime(new Date(transaction.createdAt));
-
-    // Format the local date as YYYY-MM-DD for comparison
     const formattedTransactionDate = format(localTransactionDate, 'yyyy-MM-dd');
 
-    // Compare with the selected date
-    return formattedTransactionDate === selectedDate;
+    if (dateFilterMode === 'single') {
+      return formattedTransactionDate === selectedDate;
+    } else {
+      // For range mode, check if the date is between start and end (inclusive)
+      return formattedTransactionDate >= startDate && 
+            formattedTransactionDate <= endDate;
+    }
   });
   
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -130,9 +141,15 @@ const Transactions = () => {
   const handleDownloadPDF = () => {
     // Filter transactions based on date range (if applicable)
     const filteredTransactions = transactions.filter((transaction) => {
-        const localTransactionDate = convertToLocalTime(new Date(transaction.createdAt));
-        const formattedTransactionDate = format(localTransactionDate, 'yyyy-MM-dd');
+      const localTransactionDate = convertToLocalTime(new Date(transaction.createdAt));
+      const formattedTransactionDate = format(localTransactionDate, 'yyyy-MM-dd');
+  
+      if (dateFilterMode === 'single') {
         return formattedTransactionDate === selectedDate;
+      } else {
+        return formattedTransactionDate >= startDate && 
+               formattedTransactionDate <= endDate;
+      }
     });
 
      // Group transactions by type
@@ -287,7 +304,7 @@ const Transactions = () => {
         <h1 className="text-lg font-bold text-gray-700">Transactions</h1>
       </header>
       <div className="container mx-auto p-4 text-[10px]">
-        <h2 className="text-2xl font-semibold -mt-4 text-gray-800 mb-4">Transaction List</h2>
+        <h2 className="text-xl font-semibold -mt-4 text-gray-800 mb-2">Campus Eats Transaction List</h2>
   
         {/* Tabs - Now based on transaction type */}
         <div className="flex space-x-4 mb-4 border-b border-gray-200">
@@ -310,35 +327,84 @@ const Transactions = () => {
         </div>
   
         {/* Items Per Page Dropdown */}
-        <div className="mb-4 flex flex-row items-center">
-            <label htmlFor="dateFilter" className="mr-2">Filter by date:</label>
-            <input
+        <div className="mb-1 flex flex-row items-center flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <label htmlFor="dateFilterMode" className="">Filter by:</label>
+            <select
+              id="dateFilterMode"
+              value={dateFilterMode}
+              onChange={(e) => setDateFilterMode(e.target.value)}
+              className="p-1 border border-gray-300 rounded"
+            >
+              <option value="single">Single Date</option>
+              <option value="range">Date Range</option>
+            </select>
+          </div>
+
+          {dateFilterMode === 'single' ? (
+            <div className="flex items-center gap-2">
+              <label htmlFor="dateFilter">Date:</label>
+              <input
                 type="date"
                 id="dateFilter"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="p-1 border border-gray-300 rounded"
-            />
-
-            <label htmlFor="itemsPerPage" className="mx-2">Items per page:</label>
-            <select
-                id="itemsPerPage"
-                value={itemsPerPage}
-                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <label htmlFor="startDate">From:</label>
+              <input
+                type="date"
+                id="startDate"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
                 className="p-1 border border-gray-300 rounded"
+              />
+              <label htmlFor="endDate">To:</label>
+              <input
+                type="date"
+                id="endDate"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={startDate} // Ensure end date can't be before start date
+                className="p-1 border border-gray-300 rounded"
+              />
+            </div>
+          )}
+        </div>
+        <div className="mb-4 flex flex-row items-center flex-wrap gap-2">
+          <label htmlFor="itemsPerPage" className="">Items per page:</label>
+          <select
+            id="itemsPerPage"
+            value={itemsPerPage}
+            onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+            className="p-1 border border-gray-300 rounded"
+          >
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+
+          <label htmlFor="sortOrder">Sort by:</label>
+            <select
+              id="sortOrder"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="p-1 border border-gray-300 rounded"
             >
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
+              <option value="desc">Newest First</option>
+              <option value="asc">Oldest First</option>
             </select>
 
-            <button
-                onClick={handleDownloadPDF}
-                className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 flex items-center gap-1"
-            >
-                <span>PDF</span> 
-                <span><FaDownload /></span>
-            </button>
+          <button
+            onClick={handleDownloadPDF}
+            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 flex items-center gap-1"
+          >
+            <span>PDF</span> 
+            <span><FaDownload /></span>
+          </button>
         </div>
   
         {/* Render transactions for the active tab */}

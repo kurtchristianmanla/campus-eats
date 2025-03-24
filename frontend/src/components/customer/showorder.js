@@ -114,7 +114,6 @@ const ShowOrder = ({ orderSelected, seller }) => {
             if (containerRef.current) {
                 const container = containerRef.current;
                 const circles = container.querySelectorAll('.status-circle');
-                console.log('Circles:', circles); // Debugging: Log the circles
     
                 if (circles.length >= 2) {
                     const firstCircle = circles[0];
@@ -124,7 +123,6 @@ const ShowOrder = ({ orderSelected, seller }) => {
                     const lastCircleCenter = lastCircle.offsetTop + (lastCircle.offsetHeight / 2);
     
                     const calculatedLineHeight = lastCircleCenter - firstCircleCenter;
-                    console.log('Calculated Line Height:', calculatedLineHeight); // Debugging: Log the calculated height
                     setLineHeight(calculatedLineHeight);
                 }
             }
@@ -238,6 +236,14 @@ const ShowOrder = ({ orderSelected, seller }) => {
                         <span className="text-xs font-bold text-gray-400">Payment {order?.paymentStatus}</span>
                         <span className="text-[10px] font-normal italic text-gray-400">{order?.paymentTransactionId}</span>
                     </div>
+
+                    {order?.status === "ready" && (
+                        <div className="flex flex-col justify-start items-start">
+                            <span className="text-xs text-red-600">
+                                Reminder: Your order is available for pickup and must be claimed within 1 day. For perishable items, please claim as soon as possible. For non-perishable goods, check with the seller if next-day pickup is allowed. Unclaimed orders may no longer be available. Thank you!
+                            </span>
+                        </div>
+                    )}
                     
                     <div className="border-b" />
 

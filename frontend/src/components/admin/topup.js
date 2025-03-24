@@ -82,6 +82,11 @@ const Topup = () => {
     setSuccessMessage('');
     setLoadingTopUp(true);
 
+    if (!/^\d+(\.\d{1,2})?$/.test(topUpAmount)) {
+      setErrorMessage("Please enter a valid amount with up to 2 decimal places");
+      return;
+    }
+
     const token = localStorage.getItem('token');
     try {
       const response = await api.post('/admin/top-up', {
@@ -214,7 +219,13 @@ const Topup = () => {
                 placeholder="Enter amount"
                 className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 leading-tight placeholder-orange-300"
                 value={topUpAmount}
-                onChange={(e) => setTopUpAmount(e.target.value)}
+                onChange={(e) => {
+                  // Allow only numbers with up to 2 decimal places
+                  const value = e.target.value;
+                  if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                    setTopUpAmount(value);
+                  }
+                }}
               />
               {!isConfirming ? (
                 <button

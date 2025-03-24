@@ -47,6 +47,14 @@ const menuItemSchema = new mongoose.Schema({
     },
 });
 
+// Pre-save hook to trim whitespace from fields
+menuItemSchema.pre('save', function(next) {
+    if (this.isModified('name') && this.name) {
+        this.name = this.name.trim();
+    }
+    next();
+});
+
 const MenuItem = mongoose.model('MenuItem', menuItemSchema);
 
 module.exports = MenuItem;

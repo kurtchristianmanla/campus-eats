@@ -272,7 +272,13 @@ const MenuForm = ({ menuItemId, fetchMenu, item, setIsFormVisible, store }) => {
                         min="1"
                         placeholder="Enter price"
                         value={price}
-                        onChange={(e) => setPrice(e.target.value)}
+                        onChange={(e) => {
+                            // Allow only numbers with up to 2 decimal places
+                            const value = e.target.value;
+                            if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                              setPrice(value);
+                            }
+                        }}
                         className="w-full p-2 border border-gray-300 rounded-md placeholder:text-xs"
                         required
                     />
