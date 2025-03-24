@@ -136,11 +136,11 @@ const LiveQueue = () => {
         : [];
 
     // Function to split orders into a 6x5 grid filled up to down
-    const splitIntoGrid = (orders) => {
-        const grid = Array.from({ length: 6 }, () => Array(5).fill(null)); // Initialize a 6x5 grid with null values
-        for (let col = 0; col < 5; col++) {
-            for (let row = 0; row < 6; row++) {
-                const index = col * 6 + row;
+    const splitIntoGrid = (orders, columns = 5, rows = 6) => {
+        const grid = Array.from({ length: rows }, () => Array(columns).fill(null));
+        for (let col = 0; col < columns; col++) {
+            for (let row = 0; row < rows; row++) {
+                const index = col * rows + row;
                 if (index < orders.length) {
                     grid[row][col] = orders[index];
                 }
@@ -149,57 +149,72 @@ const LiveQueue = () => {
         return grid;
     };
 
-    const preparingGrid = splitIntoGrid(preparingOrders);
-    const readyGrid = splitIntoGrid(readyOrders);
-
     return (
         <div className="relative p-8 bg-gray-100 min-h-screen overflow-hidden">
             <div className="absolute -bottom-40 -right-20 w-full h-2/3 bg-gradient-to-r from-orange-700 via-orange-400 
                 to-orange-500 z-0 opacity-20"
                  style={{ transform: 'rotate(-8deg)' }} />
-            {/* Title and Logo in Upper-Left Corner */}
-            <motion.div className="absolute top-4 left-2 flex items-start z-50 bg-white bg-opacity-80 p-3 w-60 
-                    rounded-md cursor-pointer"
-                onClick={() => navigate('/')}
-                whileTap={{ scale: 0.95 }}
-                whileHover={{ scale: 1.01 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}  >
-                <img
-                    src="/test/campus-eats-logo.png"
-                    alt="Campus Eats Logo"
-                    className="w-12 h-12"
-                />
-                <h1 className="font-bold relative">
-                    <p className="text-2xl absolute text-black whitespace-nowrap">Campus Eats</p>
-                    <p className="text-xl absolute text-orange-500 whitespace-nowrap top-6 left-12">Live Queue</p>
-                </h1>
-            </motion.div>
+
+            {/* Header */}
+            <header className="relative z-10 mb-4 -mt-4">
+                <div className="flex justify-between items-center">
+                    <motion.div 
+                        className="flex items-center bg-white rounded-lg shadow-md p-3 cursor-pointer"
+                        onClick={() => navigate('/')}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <img src="/test/campus-eats-logo.png" alt="Logo" className="w-10 h-10 mr-3" />
+                        <div>
+                            <h1 className="text-xl font-bold text-gray-800">Campus Eats</h1>
+                            <p className="text-sm text-orange-500">Live Queue</p>
+                        </div>
+                    </motion.div>
+                    
+                    {/* Current time display */}
+                    <div className="bg-white rounded-lg shadow-md px-4 py-2">
+                        <p className="text-gray-700 font-medium">
+                            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                    </div>
+                </div>
+            </header>
 
             {/* Seller Title with Clickable Popup */}
             <div className="flex justify-center items-center mb-4 relative">
                 <motion.div
-                    className="w-full h-16 bg-center rounded-lg cursor-pointer"
+                    className="w-full h-24 bg-center rounded-lg cursor-pointer"
                     style={{ backgroundImage: `url(${currentSeller.sellerBanner})` }}
                     onClick={() => setShowSellerPopup(!showSellerPopup)}
                     whileHover={{ scale: 1.01 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}  
                 >
                     {/* Semi-transparent overlay */}
-                    <div className="w-full h-full bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
-                        <div
-                            className="w-12 h-12 rounded-lg cursor-pointer z-10 mr-3">
-                            {currentSeller.sellerBanner ? (<img
-                                src={currentSeller.sellerBanner}
-                                alt="Campus Eats Logo"
-                                className="w-12 h-12 rounded-lg"
-                            />) : (
-                                <span className="w-12 h-12 text-black flex justify-center items-center bg-gray-300 text-2xl font-bold rounded-lg">
-                                    {currentSeller.sellerName.charAt(0).toUpperCase()}</span>
-                            )}
-                        </div>
-                        <h1 className="text-2xl font-bold text-gray-800">
-                            {currentSeller.sellerName}
-                        </h1>
+                    <div className="w-full h-24 p-4 absolute inset-0 bg-black bg-opacity-30 flex items-center justify-start rounded-lg">
+                        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mr-4 overflow-hidden">
+                                {currentSeller.sellerBanner ? (
+                                    <img 
+                                        src={currentSeller.sellerBanner} 
+                                        alt="Seller" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-2xl font-bold text-orange-500">
+                                        {currentSeller.sellerName.charAt(0).toUpperCase()}
+                                    </span>
+                                )}
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-white">
+                                    {currentSeller.sellerName}
+                                </h2>
+                                <div className="flex items-center mt-1">
+                                    <span className={`inline-block w-3 h-3 rounded-full mr-2 ${currentSeller.isSelling ? 'bg-green-500' : 'bg-red-500'}`} />
+                                    <span className="text-white text-sm">
+                                        {currentSeller.isSelling ? 'Open' : 'Closed'}
+                                    </span>
+                                </div>
+                            </div>
                     </div>
                 </motion.div>
 
@@ -208,7 +223,7 @@ const LiveQueue = () => {
                     {showSellerPopup && (
                         <motion.div
                             ref={popupRef}
-                            className="absolute top-12 bg-white p-1 rounded-lg shadow-md w-96 z-50 max-h-[32rem] overflow-y-auto"
+                            className="absolute top-12 left-40 bg-white p-1 rounded-lg shadow-md w-96 z-50 max-h-[32rem] overflow-y-auto"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
@@ -250,23 +265,37 @@ const LiveQueue = () => {
 
             {/* Orders Grid */}
             {currentSeller.isSelling ? (
-                <div className="flex gap-5">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
                     {/* Now Preparing Section */}
-                    <div className="flex-1 z-20">
-                        <div className="bg-white p-6 rounded-lg">
-                            <h2 className="text-2xl font-semibold mb-4 flex justify-center text-orange-600">Now Preparing</h2>
-                            <div className="grid grid-cols-5 gap-2">
-                                {preparingGrid.map((row, rowIndex) => (
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div className="bg-orange-500 p-4">
+                            <h2 className="text-xl font-bold text-white text-center">
+                                Now Preparing ({preparingOrders.length})
+                            </h2>
+                        </div>
+                        <div className="p-4">
+                            <div className="grid grid-cols-5 gap-3">
+                                {splitIntoGrid(preparingOrders).map((row, rowIndex) => (
                                     <React.Fragment key={rowIndex}>
                                         {row.map((order, colIndex) => (
                                             <motion.div
                                                 key={order ? order._id : `${rowIndex}-${colIndex}`}
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ duration: 0.5, delay: (colIndex * 6 + rowIndex) * 0.1 }}
-                                                className="p-2 text-center text-xl h-14 flex items-center justify-center"
+                                                initial={{ scale: 0.8, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ 
+                                                    type: 'spring',
+                                                    stiffness: 500,
+                                                    damping: 30,
+                                                    delay: (colIndex * 6 + rowIndex) * 0.05
+                                                }}
+                                                className={`h-8 flex items-center justify-center rounded-lg
+                                                    ${order ? 'bg-orange-100 border-2 border-orange-300' : 'bg-gray-50'}`}
                                             >
-                                                {order ? `${order.orderNumber}` : ''}
+                                                {order && (
+                                                    <span className="text-lg font-bold text-orange-700">
+                                                        {order.orderNumber}
+                                                    </span>
+                                                )}
                                             </motion.div>
                                         ))}
                                     </React.Fragment>
@@ -276,21 +305,35 @@ const LiveQueue = () => {
                     </div>
 
                     {/* Ready to Serve Section */}
-                    <div className="flex-1 z-20">
-                        <div className="bg-white p-6 rounded-lg">
-                            <h2 className="text-2xl font-semibold mb-4 flex justify-center text-green-600">Ready to Serve</h2>
-                            <div className="grid grid-cols-5 gap-2">
-                                {readyGrid.map((row, rowIndex) => (
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div className="bg-green-500 p-4">
+                            <h2 className="text-xl font-bold text-white text-center">
+                                Ready to Serve ({readyOrders.length})
+                            </h2>
+                        </div>
+                        <div className="p-4">
+                            <div className="grid grid-cols-5 gap-3">
+                                {splitIntoGrid(readyOrders).map((row, rowIndex) => (
                                     <React.Fragment key={rowIndex}>
                                         {row.map((order, colIndex) => (
                                             <motion.div
                                                 key={order ? order._id : `${rowIndex}-${colIndex}`}
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ duration: 0.5, delay: (colIndex * 6 + rowIndex) * 0.1 }}
-                                                className="p-2 text-center text-xl h-14 flex items-center justify-center"
+                                                initial={{ scale: 0.8, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ 
+                                                    type: 'spring',
+                                                    stiffness: 500,
+                                                    damping: 30,
+                                                    delay: (colIndex * 6 + rowIndex) * 0.05
+                                                }}
+                                                className={`h-8 flex items-center justify-center rounded-lg
+                                                    ${order ? 'bg-green-100 border-2 border-green-300 animate-pulse' : 'bg-gray-50'}`}
                                             >
-                                                {order ? `${order.orderNumber}` : ''}
+                                                {order && (
+                                                    <span className="text-lg font-bold text-green-700">
+                                                        {order.orderNumber}
+                                                    </span>
+                                                )}
                                             </motion.div>
                                         ))}
                                     </React.Fragment>
@@ -300,10 +343,22 @@ const LiveQueue = () => {
                     </div>
                 </div>
             ) : (
-                <div className="text-center text-xl text-gray-500 mt-8">
-                    This seller is currently not selling.
+                <div className="bg-white rounded-xl shadow-lg p-8 text-center relative z-10">
+                    <div className="text-gray-500 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-medium text-gray-700 mb-2">Currently Closed</h3>
+                    <p className="text-gray-500">This seller is not currently accepting orders</p>
                 </div>
             )}
+
+            {/* Footer */}
+            <footer className="mt-4 text-center text-sm text-gray-500 relative z-10">
+                <p>Last updated: {new Date().toLocaleTimeString()}</p>
+                <p className="mt-1">Campus Eats © {new Date().getFullYear()}</p>
+            </footer>
         </div>
     );
 };
