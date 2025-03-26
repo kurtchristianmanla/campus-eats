@@ -417,25 +417,33 @@ router.post('/logout', async (req, res) => {
             return res.status(400).json({ message: "No refresh token found" });
         }
 
-        await addToBlacklist(refreshToken).catch(err => {
-            console.error("Failed to blacklist token:", err);
+        // Verify the refresh token to get user information
+        jwt.verify(refreshToken, refresh_secret, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ message: "Invalid refresh token" });
+            }
+
+            // Add the refresh token to the blacklist
+            await addToBlacklist(refreshToken).catch(err => {
+                console.error("Failed to blacklist token:", err);
+            });
+
+            // Clear the session token for the user
+            const user = await User.findById(decoded.user_id);
+            if (user) {
+                user.sessionToken = null;
+                await user.save();
+            }
+
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'None',
+                path: '/',
+            });
+
+            res.json({ message: "Logged out successfully" });
         });
-
-        // Clear the session token for the user
-        const user = await User.findById(req.user._id);
-        if (user) {
-            user.sessionToken = null;
-            await user.save();
-        }
-
-        res.clearCookie('refreshToken', {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'None',
-            path: '/',
-        });
-
-        res.json({ message: "Logged out successfully" });
     } catch (error) {
         console.error("Logout error:", error);
         res.status(500).json({ message: "Internal server error" });
