@@ -1,7 +1,6 @@
 // src/components/MenuForm.js
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { FaMinus, FaPlus } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getOrderDetails, completeOrder } from '../api/orderService';
 import RateProduct from '../utils/rateproduct';
@@ -18,15 +17,6 @@ const backend_url = process.env.REACT_APP_BACKEND_URL;
 const address = `${backend_url}`;
 
 const ShowOrder = ({ orderSelected, seller }) => {
-    const [name, setName] = useState('');
-    const [itemName, setItemName] = useState('');
-    const [minPrepTime, setMinTime] = useState('');
-    const [maxPrepTime, setMaxTime] = useState('');
-    const [quantity, setQuantity] = useState(1);
-    const [price, setPrice] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
-    const [description, setDescription] = useState('');
-    const [showAdded, setShowAdded] = useState(false);
 
     const [order, setOrder] = useState(null);
     const [showRatingForm, setShowRatingForm] = useState({});
@@ -138,141 +128,168 @@ const ShowOrder = ({ orderSelected, seller }) => {
 
     return (
         <div className="mt-12 flex flex-col w-full">
+            {/* Rating Forms */}
             <AnimatePresence>
-                {orderToRate &&
-                    orderToRate.items.map((item) => 
-                        showRatingForm[item.productId] && (
-                            <RateProduct 
-                                key={item.productId}
-                                token={token} 
-                                productId={item.productId} 
-                                productName={item.name}
-                                orderId={orderToRate._id}
-                                setShowRatingForm={setShowRatingForm}
-                            />
-                        )
+                {orderToRate && orderToRate.items.map((item) => 
+                    showRatingForm[item.productId] && (
+                        <RateProduct 
+                            key={item.productId}
+                            token={token} 
+                            productId={item.productId} 
+                            productName={item.name}
+                            orderId={orderToRate._id}
+                            setShowRatingForm={setShowRatingForm}
+                        />
                     )
-                }
-            </AnimatePresence>
-            <AnimatePresence>
-                {(Object.values(showRatingForm).some(value => value) && orderToRate) && (
-                    <motion.div
-                        className="fixed inset-0 bg-black z-[60]"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.5 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                    ></motion.div>
                 )}
             </AnimatePresence>
 
+            {/* Dark overlay for rating forms */}
+            <AnimatePresence>
+                {(Object.values(showRatingForm).some(value => value) && orderToRate) && (
+                    <motion.div
+                        className="fixed inset-0 bg-black z-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.5 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* Main Content */}
             <div className="space-y-2 p-4">
+                {/* Order Header */}
                 <div className="relative overflow-visible lg:px-8">
                     <motion.h1 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20  }}
                         transition={{ duration: 1, ease: "easeOut" }}
-                        className="text-3xl font-bold">
-                            Status: {order?.status.charAt(0).toUpperCase() + order?.status.slice(1)}
+                        className="text-3xl font-bold bg-white rounded-xl p-4 mt-2 overflow-hidden relative">
+                        Order #{order?.orderNumber || "N/A"}
+                        <span className="block text-lg font-normal text-gray-600">
+                            {order?.status.charAt(0).toUpperCase() + order?.status.slice(1)}
                             {order?.queueNumber && (
-                                <p className='text-sm'>
-                                <span>Queue:</span>
-                                <span>{order.queueNumber}</span></p>
-                            )} 
+                                <span className="ml-2">- Queue: {order.queueNumber}</span>
+                            )}
+                        </span>
+                        <motion.div
+                            className="absolute top-0 right-0 opacity-70"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0.5 }}
+                            transition={{ delay: 0.5, duration: 1, ease: "easeInOut" }}
+                        >
+                            <img
+                                src="/test/campus-eats-logo.png"
+                                alt="Campus Eats Logo"
+                                className="w-32 h-32 object-contain opacity-30 blur-xs"
+                            />
+                        </motion.div>
                     </motion.h1>
-                </div>
-                <div className="p-4 bg-white rounded-xl w-full max-h-[36rem] lg:max-h-[26rem] md:max-h-[26rem] overflow-y-auto 
-                            scrollbar-hide flex flex-col gap-4">
-                    <div className="relative flex justify-start items-center text-center">
-                        <h2 className="font-semibold flex flex-row items-center gap-1 text-gray-800 text-md">
-                            <FaStore className="text-gray-600 font-normal text-sm" />
-                            {seller || "Unknown Store"}
-                            <span>- Order #{order?.orderNumber || "N/A"}</span>
-                        </h2>
+                    
+                    <div className="flex items-center mt-2 px-2">
+                        <FaStore className="text-gray-700 mr-2" />
+                        <span className="font-semibold text-gray-700">{seller || "Unknown Store"}</span>
                     </div>
 
-                    
-                    {(order?.orderType === "pre-order") && (
-                        <h4 className="font-light text-orange-500 text-xs -mt-4">
+                    {order?.orderType === "pre-order" && (
+                        <div className="text-sm text-orange-500 mt-1 px-2">
                             {order?.status === "pre-order" || order?.status === "pending" ? 
-                            `Scheduled at ${formatTimestamp(order?.scheduledTime)}` : order?.orderType}
-                        </h4>
+                                `Scheduled for ${formatTimestamp(order?.scheduledTime)}` : 
+                                "Pre-Order"}
+                        </div>
                     )}
+                </div>
 
-                    {order?.items.map((item, index) => (
-                        <div key={index} className="flex flex-row items-center justify-start gap-4">
-                            <div className="relative w-24 h-24 flex justify-start items-start text-center">
-                                {item.imageUrl ? (<img
-                                    src={item.imageUrl}
-                                    alt={item.name}
-                                    className="w-24 h-24 object-cover rounded-md"
-                                />) : (
-                                    <>
-                                        <p className="absolute inset-0 flex items-center bg-gray-400 rounded-md justify-center text-white z-10 text-xs">
-                                            No image uploaded
+                <div className='overflow-y-auto flex-1 max-h-[24rem]'>
+                    <div className="space-y-2 mb-2">
+                        {order?.items.map((item, index) => (
+                            <div key={index} className="flex items-center bg-white rounded-lg p-3 shadow-sm">
+                                {/* Fixed size image container */}
+                                <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
+                                    {item.imageUrl ? (
+                                        <img
+                                            src={item.imageUrl}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                            <span className="text-xs text-gray-500">No image</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Item details */}
+                                <div className="ml-3 flex-1 min-w-0">
+                                    <h3 className="font-medium text-gray-800">
+                                        {item.quantity}x {item.name}
+                                    </h3>
+                                    {item.description && (
+                                        <p className="text-xs text-gray-500 truncate">
+                                            {item.description}
                                         </p>
-                                    </>
-                                )}
-                            </div>
+                                    )}
+                                </div>
 
-                            <div className="flex flex-row flex-grow">
-                                <span>{item.quantity}x {item.name}</span>
-                            </div>
-
-                            <div className="flex flex-col items-end">
-                                <div className="">
-                                    <div className="flex justify-between gap-1 font-semibold">
-                                        {/* <span>Amount</span> */}
-                                        <span>UC {item.price}</span>
-                                    </div>
+                                {/* Price */}
+                                <div className="ml-2 text-right w-16 flex-shrink-0">
+                                    <span className="font-semibold">UC {item.price}</span>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                    
-                    <div className="flex flex-col justify-end items-end text-center">
-                        <span className="block text-2xl font-bold text-gray-700">Total UC {order?.totalAmount}</span>
-                        <span className="text-xs font-bold text-gray-400">Payment {order?.paymentStatus}</span>
-                        <span className="text-[10px] font-normal italic text-gray-400">{order?.paymentTransactionId}</span>
+                        ))}
                     </div>
 
-                    {order?.status === "ready" && (
-                        <div className="flex flex-col justify-start items-start">
-                            <span className="text-xs text-red-600">
-                                Reminder: Your order is available for pickup and must be claimed within 1 day. For perishable items, please claim as soon as possible. For non-perishable goods, check with the seller if next-day pickup is allowed. Unclaimed orders may no longer be available. Thank you!
+                    {/* Order Summary */}
+                    <div className="bg-white rounded-lg p-4 shadow-sm mb-2">
+                        <div className="flex justify-between items-center mt-2">
+                            <span className="text-sm text-gray-500">Payment Status</span>
+                            <span className={`text-sm ${
+                                order?.paymentStatus === 'paid' ? 'text-green-500' : 'text-orange-500'
+                            }`}>
+                                {order?.paymentStatus}
                             </span>
                         </div>
-                    )}
-                    
-                    <div className="border-b" />
+                        {order?.paymentTransactionId && (
+                            <div className="text-xs text-gray-400 mt-1 truncate">
+                                Transaction: {order.paymentTransactionId}
+                            </div>
+                        )}
+                        <div className="mt-4 pt-2 border-t">
+                            <h3 className="text-lg font-bold text-right">Total UC {order?.totalAmount}</h3>
+                        </div>
+                    </div>
 
-                    <div className="relative" ref={containerRef}>
-                            {/* Steps - in reverse order for bottom-to-top display */}
-                            <div className="space-y-4">
+                    {/* Ready for pickup notice */}
+                    {order?.status === "ready" && (
+                        <div className="mb-2 p-3 bg-orange-50 rounded-lg text-sm text-orange-800">
+                            <strong>Reminder:</strong> Your order is ready for pickup. Please claim within 1 day.
+                        </div>
+                    )}
+
+                    {/* Status Tracker */}
+                    <div className="bg-white rounded-lg p-4 shadow-sm relative mb-4" ref={containerRef}>
+                        <h3 className="font-bold text-gray-800 mb-3">Order Status</h3>
+                        
+                        <div className="space-y-4">
                             {[...visibleSteps].reverse().map((step, index) => {
                                 const reversedIndex = visibleSteps.length - 1 - index;
                                 const isPast = reversedIndex < currentStepIndex;
                                 const isCurrent = reversedIndex === currentStepIndex;
-                                const historyItem = getHistoryItemForStatus(step.status);
-                                const timestamp = historyItem ? formatTimestamp(historyItem.timestamp) : '';
+                                const historyItem = order?.statusHistory?.find(h => h.status === step.status);
                                 const isCancelled = step.status === 'cancelled';
                                 const isCompleted = step.status === 'completed';
 
                                 return (
                                     <div key={step.id} className="flex items-start">
-                                        {/* Circle indicator */}
-                                        <motion.div 
-                                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full status-circle ${
-                                                isCompleted ? 'bg-green-500' :
-                                                isCancelled && isCurrent ? 'bg-red-500' : 
-                                                isCurrent ? 'bg-orange-500' : 
-                                                isPast ? 'bg-gray-400' : 'bg-gray-200'
-                                            }`}
-                                            initial={{ scale: 0.8, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ delay: index * 0.15 }}
-                                            >
+                                        {/* Status indicator circle */}
+                                        <div className={`relative z-10 flex-shrink-0 w-6 h-6 rounded-full status-circle flex items-center justify-center ${
+                                            isCompleted ? 'bg-green-500' :
+                                            isCancelled && isCurrent ? 'bg-red-500' : 
+                                            isCurrent ? 'bg-orange-500' : 
+                                            isPast ? 'bg-gray-400' : 'bg-gray-200'
+                                        }`}>
                                             {isCancelled && isCurrent ? (
                                                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -288,104 +305,84 @@ const ShowOrder = ({ orderSelected, seller }) => {
                                             ) : (
                                                 <span className="text-gray-500 text-xs">{step.id}</span>
                                             )}
-                                        </motion.div>
+                                        </div>
                                         
-                                        {/* Content */}
-                                        <div className="ml-2 pt-0.5">
-                                            <motion.div
-                                                initial={{ x: 10, opacity: 0 }}
-                                                animate={{ x: 0, opacity: 1 }}
-                                                transition={{ delay: index * 0.15 + 0.1 }}
-                                                style={getCancelledStyle(isCancelled && isCurrent)}
-                                                className={isCancelled && isCurrent ? 'pl-2' : ''}
-                                            >
-                                                <div className="flex flex-col">
-                                                    <h3 className={`text-xs font-medium ${
-                                                        isCompleted ? 'text-green-600' :
-                                                        isCancelled && isCurrent ? 'text-red-600' :
-                                                        isCurrent ? 'text-orange-600' : 'text-gray-600'
-                                                    }`}>
-                                                        {step.label}
-                                                    </h3>
-                                                    {timestamp && (
-                                                        <span className="text-xs text-gray-400 mt-0.5">{timestamp}</span>
-                                                    )}
-                                                    {isCancelled && historyItem && historyItem.reason && (
-                                                    <p className="text-xs text-red-500 mt-1 max-w-xs">
-                                                        {historyItem.reason}
-                                                    </p>
-                                                    )}
+                                        {/* Status details */}
+                                        <div className="ml-3">
+                                            <div className={`text-sm font-medium ${
+                                                isCompleted ? 'text-green-600' :
+                                                isCancelled && isCurrent ? 'text-red-600' :
+                                                isCurrent ? 'text-orange-600' : 'text-gray-600'
+                                            }`}>
+                                                {step.label}
+                                            </div>
+                                            {historyItem?.timestamp && (
+                                                <div className="text-xs text-gray-400 mt-1">
+                                                    {formatTimestamp(historyItem.timestamp)}
                                                 </div>
-                                                {isCurrent && !isCancelled && !isCompleted && (
-                                                    <p className="text-xs text-orange-500 mt-0.5 italic">Current status</p>
-                                                )}
-                                                {isCompleted && (
-                                                    <p className="text-xs text-green-500 mt-0.5 italic">Order completed</p>
-                                                )}
-                                            </motion.div>
+                                            )}
+                                            {isCancelled && historyItem?.reason && (
+                                                <div className="text-xs text-red-500 mt-1">
+                                                    {historyItem.reason}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
-                        {/* Vertical line that's properly sized */}
+
+                        {/* Status timeline */}
                         {lineHeight > 0 && (
-                        <>
-                            {/* Background line */}
-                            <div 
-                            className="absolute left-[15.1px] w-0.5 bg-gray-200 rounded z-0"
-                            style={{
-                                top: `${4}px`,
-                                height: `${lineHeight}px`
-                            }}
-                            ></div>
-                            
-                            {/* Animated progress line */}
-                            <motion.div 
-                            className={`absolute left-[15.1px] w-0.5 rounded z-0 ${
-                                order.status === 'cancelled' ? 'bg-red-400' : 'bg-gray-400'
-                            }`}
-                            style={{
-                                top: `${4}px`,
-                                height: `${lineHeight * progress}px`
-                            }}
-                            initial={{ height: 0 }}
-                            animate={{ height: `${lineHeight * progress}px` }}
-                            transition={{ duration: 0.8, ease: "easeInOut" }}
-                            ></motion.div>
-                        </>
+                            <>
+                                <div 
+                                    className="absolute left-[27px] top-16 w-0.5 bg-gray-200 rounded-full z-0"
+                                    style={{ height: `${lineHeight}px` }}
+                                />
+                                <div 
+                                    className={`absolute left-[27px] top-16 w-0.5 rounded-full z-0 ${
+                                        order?.status === 'cancelled' ? 'bg-red-400' : 'bg-gray-400'
+                                    }`}
+                                    style={{ height: `${lineHeight * (currentStepIndex + 1) / visibleSteps.length}px` }}
+                                />
+                            </>
                         )}
                     </div>
 
-                    {/* Add Button */}
-                    {order?.status === 'ready' && (
-                        <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4 z-20">
-                            <motion.button
-                                type="button"
-                                className="w-full max-w-xs w-full px-10 py-3 rounded-2xl bg-gradient-to-r from-orange-400 to-red-500 
-                                    text-white text-lg font-semibold shadow-md"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                transition={{ hover: { duration: 0.3, ease: "easeOut" }}}
-                                onClick={handleCompleteOrder}
-                            >
-                                Complete Order
-                            </motion.button>
-                        </div>
-                    )}
-
-                        {order?.status === 'pending' && (
+                    {order?.status === 'pending' && (
+                        <div className="p-4 bg-white rounded-md -mt-2">
                             <CancelOrderForm 
                                 orderId={order._id} 
                                 token={token} 
                                 label={'Cancel Order'} 
                                 setOrder={setOrder} 
                                 />
-                        )}
+                        </div>
+                    )} 
                 </div>
+            </div>
+
+            {/* Fixed action buttons at bottom */}
+            <div className="sticky bottom-0 p-4 z-[100]">
+                {order?.status === 'ready' && (
+                    <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4">
+                        <motion.button
+                            type="button"
+                            className="w-full max-w-xs w-full px-10 py-3 rounded-2xl bg-gradient-to-r from-orange-400 to-red-500 
+                                text-white text-lg font-semibold shadow-md"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ hover: { duration: 0.3, ease: "easeOut" }}}
+                            onClick={handleCompleteOrder}
+                        >
+                            Complete Order
+                        </motion.button>
+                    </div>
+                )}
             </div>
         </div>
     );
+
 };
 
 export default ShowOrder;

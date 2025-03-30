@@ -88,7 +88,7 @@ const Loading = () => {
                 </p>
         
                 {/* Optional: Subtle Animation */}
-                <p className="mt-2 text-[10px] text-gray-500 animate-pulse z-10">
+                <p className="mt-2 text-[10px] text-gray-500 animate-pulse z-10 text-center">
                     Please wait while Campus Eats prepare everything for you
                 </p>
             </div>

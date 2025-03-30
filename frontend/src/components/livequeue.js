@@ -223,7 +223,7 @@ const LiveQueue = () => {
                     {showSellerPopup && (
                         <motion.div
                             ref={popupRef}
-                            className="absolute top-12 left-40 bg-white p-1 rounded-lg shadow-md w-96 z-50 max-h-[32rem] overflow-y-auto"
+                            className="absolute top-12 left-40 bg-white p-1 rounded-lg shadow-md w-96 z-50 max-h-[30rem] overflow-y-auto"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}

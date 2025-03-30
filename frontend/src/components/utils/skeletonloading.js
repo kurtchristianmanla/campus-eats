@@ -109,6 +109,41 @@ const SkeletonItemDetail = () => (
     </div>
 );
 
+const SkeletonOrderItem = () => (
+    <div className="p-4 bg-white rounded-xl w-full flex flex-col gap-2 animate-pulse">
+        {/* Store Name Row */}
+        <div className='flex flex-row justify-between items-center border-b pb-1 mb-2'>
+            <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gray-200 rounded-full"></div>
+                <div className="h-4 w-32 bg-gray-200 rounded"></div>
+            </div>
+            <div className="h-3 w-16 bg-gray-200 rounded"></div>
+        </div>
+        
+        {/* Order Content Row */}
+        <div className="flex items-start gap-3 w-full">
+            {/* Image Placeholder */}
+            <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-gray-200"></div>
+            
+            {/* Order Details */}
+            <div className="flex-grow min-w-0 space-y-2">
+                <div className="h-4 w-20 bg-gray-200 rounded"></div>
+                <div className="space-y-1">
+                    <div className="h-3 w-40 bg-gray-200 rounded"></div>
+                    <div className="h-3 w-32 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+            
+            {/* Right Side Status/Amount */}
+            <div className="flex flex-col items-end w-24 flex-shrink-0 gap-1">
+                <div className="h-6 w-20 bg-gray-200 rounded-md"></div>
+                <div className="h-4 w-16 bg-gray-200 rounded"></div>
+                <div className="h-3 w-12 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+    </div>
+);
+
 export { SkeletonCard, SkeletonItemCard, SkeletonMenuItem, SkeletonSellerCard, SkeletonMenuSection,
-    SkeletonItemDetail
+    SkeletonItemDetail, SkeletonOrderItem
 };

@@ -364,14 +364,14 @@ const CustomerPage = () => {
     // Disable scrolling when sidebar is open
     useEffect(() => {
         if (isSidebarOpen) {
-            document.body.classList.add('overflow-hidden');
+            document.body.style.overflow = 'hidden';
         } else {
-            document.body.classList.remove('overflow-hidden');
+            document.body.style.overflow = 'auto';
         }
-
-        // Cleanup function to remove the class when the component unmounts
+    
+        // Cleanup function
         return () => {
-            document.body.classList.remove('overflow-hidden');
+            document.body.style.overflow = 'auto';
         };
     }, [isSidebarOpen]);
 
@@ -508,7 +508,7 @@ const CustomerPage = () => {
             </AnimatePresence>
 
             {/* Logo */}
-            <motion.div
+            {/* <motion.div
                 className="absolute z-0 top-60 left-11  transform translate-x-[-50%]
                         translate-y-[-50%] md:translate-x-0 md:translate-y-0 md:top-4 md:left-4"
                 initial={{ opacity: 0 }}
@@ -520,7 +520,7 @@ const CustomerPage = () => {
                 alt="Campus Eats Logo"
                 className="w-128 h-128 md:w-48 md:h-48 object-contain opacity-20 blur-sm"
                 />
-            </motion.div>
+            </motion.div> */}
 
             {/* Main Content */}
             <div className="mt-12 relative overflow-visible lg:px-8">

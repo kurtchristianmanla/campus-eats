@@ -315,7 +315,7 @@ const Transactions = () => {
                 setActiveTab(tab.id);
                 setCurrentPage(1); // Reset to the first page when switching tabs
               }}
-              className={`px-4 py-2 text-sm font-medium ${
+              className={`px-4 py-2 text-xs font-medium ${
                 activeTab === tab.id
                   ? 'text-orange-600 border-b-2 border-orange-600'
                   : 'text-gray-500 hover:text-gray-700'

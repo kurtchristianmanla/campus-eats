@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { FaBook, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { FaBook, FaSignOutAlt, FaUser, FaUtensils, FaClipboardList, FaStar, FaHistory } from 'react-icons/fa';
 import { motion, AnimatePresence } from "framer-motion";
 // import { io } from 'socket.io-client';
 import useHandleLogout from '../api/logout';
@@ -68,7 +68,7 @@ const SellerHomepage = () => {
         document.title = "Campus Eats | Seller";
 
         // Disable scrolling and zooming
-        document.body.style.overflow = 'hidden';
+        // document.body.style.overflow = 'hidden';
         document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
 
         checkSellerAccess();
@@ -156,6 +156,18 @@ const SellerHomepage = () => {
         };
     }, [sellerId, showNotification, fetchOrders]);
 
+    useEffect(() => {
+        if (isSidebarOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+    
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+    }, [isSidebarOpen]);
+
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen); // Toggle the sidebar visibility
     };
@@ -167,65 +179,130 @@ const SellerHomepage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white to-gray-100 flex flex-col items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
             {/* Navigation Bar */}
             <motion.header
-                className="w-full flex justify-between items-center px-4 py-3 fixed top-0 z-20"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1, ease: "easeInOut" }}
+                className="w-full flex justify-between items-center px-6 py-4 fixed top-0 z-20 bg-white shadow-sm"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-                <h1 className="text-lg font-bold text-gray-800">
-                <span className="text-black">Campus </span>
-                <span className="text-orange-500">Eats</span>
+                <h1 className="text-xl font-bold text-gray-800">
+                    <span className="text-black">Campus </span>
+                    <span className="text-orange-500">Eats</span>
+                    <span className="text-sm ml-2 font-normal text-gray-500">Seller Panel</span>
                 </h1>
-                <button className="text-2xl text-gray-800" onClick={toggleSidebar}>
-                &#9776;
+                <button 
+                    className="text-2xl text-gray-800 hover:text-orange-500 transition-colors"
+                    onClick={toggleSidebar}
+                    aria-label="Toggle menu"
+                >
+                    &#9776;
                 </button>
             </motion.header>
 
             {/* Sidebar with Animation */}
             <AnimatePresence>
-                {isSidebarOpen && (
+            {isSidebarOpen && (
                 <motion.div
-                    className="fixed top-0 right-0 w-64 h-full bg-white text-black p-4 z-30"
-                    initial={{ x: "100%" }}
-                    animate={{ x: 0 }}
-                    exit={{ x: "100%" }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="fixed top-0 right-0 w-80 h-full bg-white text-black z-30 shadow-2xl flex flex-col"
+                initial={{ x: "100%" }}
+                animate={{ x: '5%' }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 >
-                    <button className="text-2xl text-gray-800" onClick={toggleSidebar}>
-                    &#9776;
+                {/* Sidebar Header */}
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-orange-50 to-white">
+                    <div className="flex items-center">
+                    <FaUser className="text-orange-500 mr-3 text-lg" />
+                    <div>
+                        <p className="text-sm text-gray-500">Logged in as</p>
+                        <h2 className="font-semibold text-gray-800">{userName || "Seller"}</h2>
+                    </div>
+                    </div>
+                    <button 
+                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    onClick={toggleSidebar}
+                    aria-label="Close menu"
+                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                     </button>
-                    <button
-                        onClick={() => navigate("/seller/profile")}
-                        className="relative justify-start items-center w-full mt-4 py-2 text-right bg-gradient-to-r from-white to-white font-semibold hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
+                </div>
+
+                {/* Navigation Links */}
+                <nav className="flex-1 overflow-y-auto py-4 px-2">
+                    <ul className="space-y-1">
+                    <motion.li whileTap={{ scale: 0.98 }}>
+                        <button
+                        onClick={() => {
+                            navigate("/seller/profile");
+                            toggleSidebar();
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-left rounded-lg hover:bg-orange-50 group transition-colors duration-200"
                         >
-                        <FaUser className="ml-2 text-xl mr-32" />
-                        Profile
-                    </button>
-                    <button
-                    onClick={() => navigate("/seller/use-policy")}
-                    className="relative justify-start items-center w-full mt-4 py-2 text-right bg-gradient-to-r from-white to-white font-semibold hover:from-orange-400 hover:to-red-500 hover:text-white rounded-md pr-4 border-b"
-                    >
-                        <FaBook className="ml-2 text-xl mr-32" />
-                        Use Policy
-                    </button>
-                    <button
+                        <span className="p-2 mr-3 rounded-lg bg-orange-100 text-orange-600 group-hover:bg-orange-200 transition-colors">
+                            <FaUser className="text-lg" />
+                        </span>
+                        <span className="font-medium text-gray-700 group-hover:text-orange-600">Profile</span>
+                        </button>
+                    </motion.li>
+
+                    <motion.li whileTap={{ scale: 0.98 }}>
+                        <button
+                        onClick={() => {
+                            navigate("/seller/use-policy");
+                            toggleSidebar();
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-left rounded-lg hover:bg-orange-50 group transition-colors duration-200"
+                        >
+                        <span className="p-2 mr-3 rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-colors">
+                            <FaBook className="text-lg" />
+                        </span>
+                        <span className="font-medium text-gray-700 group-hover:text-blue-600">Use Policy</span>
+                        </button>
+                    </motion.li>
+
+                    {/* Divider */}
+                    <div className="border-t border-gray-100 my-2"></div>
+
+                    <motion.li whileTap={{ scale: 0.98 }}>
+                        <button
                         onClick={handleLogoutClick}
-                        className={`relative justify-start items-center w-full mt-2 py-2 text-right font-semibold rounded-md pr-4 border-b 
-                            ${isLoggingOut 
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'  // Disabled state
-                                : 'bg-gradient-to-r from-white to-white hover:from-orange-400 hover:to-red-500 hover:text-white' // Normal state
-                            }`}
-                        disabled={isLoggingOut} // Disable button when logging out
-                    >
-                        <FaSignOutAlt className="ml-2 text-xl mr-32" />
-                        {isLoggingOut ? 'Logging Out...' : 'Logout'}
-                    </button>
+                        disabled={isLoggingOut}
+                        className={`flex items-center w-full px-4 py-3 text-left rounded-lg group transition-colors duration-200 ${
+                            isLoggingOut 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : 'hover:bg-red-50'
+                        }`}
+                        >
+                        <span className={`p-2 mr-3 rounded-lg ${
+                            isLoggingOut 
+                            ? 'bg-gray-200 text-gray-400' 
+                            : 'bg-red-100 text-red-600 group-hover:bg-red-200'
+                        }`}>
+                            <FaSignOutAlt className="text-lg" />
+                        </span>
+                        <span className={`font-medium ${
+                            isLoggingOut 
+                            ? 'text-gray-400' 
+                            : 'text-gray-700 group-hover:text-red-600'
+                        }`}>
+                            {isLoggingOut ? 'Logging Out...' : 'Logout'}
+                        </span>
+                        </button>
+                    </motion.li>
+                    </ul>
+                </nav>
+
+                {/* Sidebar Footer */}
+                <div className="p-4 border-t border-gray-100 text-center text-xs text-gray-500">
+                    Campus Eats Seller v2.0
+                </div>
                 </motion.div>
-                )}
+            )}
             </AnimatePresence>
 
             {/* Dark Overlay */}
@@ -242,111 +319,125 @@ const SellerHomepage = () => {
                 )}
             </AnimatePresence>
 
-            {/* Logo */}
-            <motion.div
-                className="absolute top-60 left-11 transform translate-x-[-50%] translate-y-[-50%] md:translate-x-0 md:translate-y-0 md:top-4 md:left-4 opacity-50"
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col items-center justify-center pt-20 pb-10 px-4">
+                {/* Welcome Section */}
+                <motion.div
+                    className="w-full max-w-md text-center mb-10"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                    <motion.h1
+                        className="text-4xl md:text-5xl font-bold text-gray-800 mb-2"
+                    >
+                        <span className="text-gray-700">Welcome, </span>
+                        <span className="bg-gradient-to-br from-orange-600 to-orange-400 bg-clip-text text-transparent">
+                            {userName}
+                        </span>
+                    </motion.h1>
+                    <p className="text-gray-500">Manage your food business</p>
+                </motion.div>
+
+                {/* Action Buttons Grid */}
+                <motion.div
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                    {/* MANAGE ORDERS Button */}
+                    <motion.button
+                        onClick={() => navigate("/seller/manage-orders")}
+                        className="flex items-center justify-center p-6 rounded-xl bg-white shadow-sm hover:shadow-md border border-gray-100 hover:border-orange-100 transition-all relative"
+                        whileHover={{ y: -5 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="text-center">
+                            <div className="flex justify-center mb-3">
+                                <div className="p-3 bg-orange-50 rounded-full text-orange-500">
+                                    <FaClipboardList className="text-2xl" />
+                                </div>
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-800">MANAGE ORDERS</h3>
+                            <p className="text-sm text-gray-500 mt-1">View and process orders</p>
+                            {orders.filter(order => order.status === 'pending').length > 0 && (
+                                <span className="absolute top-2 right-2 bg-purple-500 text-white text-xs 
+                                    font-semibold px-2 py-1 rounded-full shadow-md">
+                                    {orders.filter(order => order.status === 'pending').length} New
+                                </span>
+                            )}
+                        </div>
+                    </motion.button>
+
+                    {/* CUSTOMIZE MENU Button */}
+                    <motion.button
+                        onClick={() => navigate("/seller/menu")}
+                        className="flex items-center justify-center p-6 rounded-xl bg-white shadow-sm hover:shadow-md border border-gray-100 hover:border-orange-100 transition-all"
+                        whileHover={{ y: -5 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="text-center">
+                            <div className="flex justify-center mb-3">
+                                <div className="p-3 bg-orange-50 rounded-full text-orange-500">
+                                    <FaUtensils className="text-2xl" />
+                                </div>
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-800">CUSTOMIZE MENU</h3>
+                            <p className="text-sm text-gray-500 mt-1">Update your food menu</p>
+                        </div>
+                    </motion.button>
+
+                    {/* REVIEWS Button */}
+                    <motion.button
+                        onClick={() => navigate("/seller/reviews")}
+                        className="flex items-center justify-center p-6 rounded-xl bg-white shadow-sm hover:shadow-md border border-gray-100 hover:border-orange-100 transition-all"
+                        whileHover={{ y: -5 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="text-center">
+                            <div className="flex justify-center mb-3">
+                                <div className="p-3 bg-orange-50 rounded-full text-orange-500">
+                                    <FaStar className="text-2xl" />
+                                </div>
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-800">REVIEWS</h3>
+                            <p className="text-sm text-gray-500 mt-1">View customer feedback</p>
+                        </div>
+                    </motion.button>
+
+                    {/* HISTORY Button */}
+                    <motion.button
+                        onClick={() => navigate("/seller/history")}
+                        className="flex items-center justify-center p-6 rounded-xl bg-white shadow-sm hover:shadow-md border border-gray-100 hover:border-orange-100 transition-all"
+                        whileHover={{ y: -5 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="text-center">
+                            <div className="flex justify-center mb-3">
+                                <div className="p-3 bg-orange-50 rounded-full text-orange-500">
+                                    <FaHistory className="text-2xl" />
+                                </div>
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-800">HISTORY</h3>
+                            <p className="text-sm text-gray-500 mt-1">View past orders</p>
+                        </div>
+                    </motion.button>
+                </motion.div>
+            </div>
+
+            {/* Subtle Branding */}
+            <motion.div 
+                className="fixed bottom-4 right-4 opacity-20 z-0"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 0.5 }}
-                transition={{ duration: 1, ease: "easeInOut" }}
+                animate={{ opacity: 0.2 }}
+                transition={{ duration: 1, delay: 0.8 }}
             >
                 <img
-                src="/test/campus-eats-logo.png"
-                alt="Campus Eats Logo"
-                className="w-128 h-128 md:w-48 md:h-48 object-contain opacity-50 blur-sm"
+                    src="/test/campus-eats-logo.png"
+                    alt="Campus Eats Logo"
+                    className="w-32 h-32 object-contain"
                 />
-            </motion.div>
-
-            {/* Buttons Section */}
-            <motion.div
-                className="flex flex-col space-y-4 -mt-[3rem] items-center w-[20rem] z-10"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.5, ease: "easeInOut" }}
-            >
-                <motion.h1
-                    className="text-5xl font-bold text-gray-800 mb-4"
-                    initial={{ x: -30, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 1, ease: "easeInOut" }}
-                >
-                    <span className="text-black">Welcome, </span>
-                    <span className="bg-gradient-to-br from-orange-600 to-orange-400 bg-clip-text text-transparent transition duration-300">
-                        {userName}
-                    </span>
-                </motion.h1>
-
-                {/* TOGGLE ONLINE Button */}
-                <motion.button
-                    onClick={() => navigate("/seller/manage-orders")}
-                     className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 
-                        text-white text-lg font-semibold shadow-md flex items-center justify-center relative"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{
-                        animate: { duration: 0.4, ease: "easeInOut" },
-                        hover: { duration: 0.3, ease: "easeOut" },
-                    }}
-                >
-                    MANAGE ORDERS
-                    {/* Show pending order count */}
-                    {orders.filter(order => order.status === 'pending').length > 0 && (
-                        <span className="absolute -top-2 -right-4 bg-purple-500 text-white text-xs 
-                            font-semibold px-2 py-1 rounded-full shadow-md"
-                            style={{ transform: 'rotate(15deg)' }}>
-                            {orders.filter(order => order.status === 'pending').length} New
-                        </span>
-                    )}
-                </motion.button>
-
-                {/* MENU Button */}
-                <motion.button
-                    onClick={() => navigate("/seller/menu")}
-                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{
-                        animate: { duration: 0.4, ease: "easeInOut" },
-                        hover: { duration: 0.3, ease: "easeOut" },
-                    }}
-                >
-                    CUSTOMIZE MENU
-                </motion.button>
-
-                {/* HISTORY Button */}
-                <motion.button
-                    onClick={() => navigate("/seller/reviews")}
-                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{
-                        animate: { duration: 0.4, ease: "easeInOut" },
-                        hover: { duration: 0.3, ease: "easeOut" },
-                    }}
-                >
-                    REVIEWS
-                </motion.button>
-
-                {/* HISTORY Button */}
-                <motion.button
-                    onClick={() => navigate("/seller/history")}
-                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 text-white text-lg font-semibold shadow-md"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{
-                        animate: { duration: 0.4, ease: "easeInOut" },
-                        hover: { duration: 0.3, ease: "easeOut" },
-                    }}
-                >
-                    HISTORY
-                </motion.button>
             </motion.div>
         </div>
     );

@@ -1,17 +1,15 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import api from '../api/interceptor';
-import { getOrders, completeOrder } from '../api/orderService';
-import CancelOrderForm from '../utils/cancelorderform';
-import RateProduct from '../utils/rateproduct';
+import { getOrders } from '../api/orderService';
 import Header from '../utils/header';
 import ShowOrder from './showorder';
 import { FaStore } from 'react-icons/fa';
 import { useNotification } from '../utils/notification';
+import { SkeletonOrderItem } from '../utils/skeletonloading';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -26,6 +24,7 @@ const CustomerPurchases = () => {
     const [activeTab, setActiveTab] = useState('pending');
     const [orders, setOrders] = useState([]);
     const [socket, setSocket] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
     const [user, setUser] = useState(null);
@@ -80,6 +79,8 @@ const CustomerPurchases = () => {
         } catch (error) {
             console.error('Error fetching orders:', error);
             setOrders([]); // Optionally set to an empty array on error
+        } finally {
+            setIsLoading(false); // Set loading to false when done
         }
     }, [token]);
 
@@ -250,7 +251,21 @@ const CustomerPurchases = () => {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20  }}
                             transition={{ duration: 1, ease: "easeOut" }}
-                            className="text-3xl font-bold p-4">Orders: {orders.length}</motion.h1>
+                            className="text-3xl font-bold p-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-gray-700">
+                                        {activeTab === 'pending' ? 'Active' : 
+                                        activeTab === 'completed' ? 'Completed' : 
+                                        'Cancelled'}:
+                                    </span>
+                                    <span className="text-gray-700">
+                                        {orders.filter(order => {
+                                            if (activeTab === "pending") return ["pending", "pre-order", "preparing", "ready"].includes(order.status);
+                                            return order.status === activeTab;
+                                        }).length}
+                                    </span>
+                                </div>
+                            </motion.h1>
                     </div>
                     
                     <div className="relative w-full">
@@ -281,7 +296,24 @@ const CustomerPurchases = () => {
                     </div>
 
                     <div className="w-full fixed p-4 max-h-[800px] pb-52 overflow-y-auto">
-                        {/* Orders list */}
+                    {isLoading ? (
+                        <div className="flex flex-col gap-4">
+                            {[...Array(4)].map((_, index) => (
+                                <motion.div
+                                    key={`skeleton-${index}`}
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ 
+                                        delay: index * 0.1,
+                                        duration: 0.3,
+                                        ease: "easeOut"
+                                    }}
+                                >
+                                    <SkeletonOrderItem />
+                                </motion.div>
+                            ))}
+                        </div>
+                    ) : (
                         <div className="flex flex-col gap-4">
                             {orders
                                 .filter(order => {
@@ -289,91 +321,90 @@ const CustomerPurchases = () => {
                                     return order.status === activeTab;
                                 })
                                 .map((order) => (
-                                <motion.div 
+                                    <motion.div 
                                     key={order._id} 
                                     className="p-4 bg-white rounded-xl w-full flex flex-col gap-2"
-                                    onClick={() => {
-                                    //     if (item.isAvailable) {
-                                            handleOrderView(order);
-                                    //     }
-                                    }}
+                                    onClick={() => handleOrderView(order)}
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20  }}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    transition={{ hover: { duration: 0.3, ease: "easeOut" },
-                                                    x: { duration: 2, ease: "easeOut" }}}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    transition={{ 
+                                        hover: { duration: 0.2, ease: "easeOut" },
+                                        x: { duration: 0.5, ease: "easeOut" }
+                                    }}
                                 >
-                                    <div className='flex flex-row justify between border-b mb-1 gap-1'>
-                                        <h2 className="font-semibold flex flex-row items-center gap-1 text-gray-800 text-md">
-                                            <FaStore className="text-gray-600 font-normal text-sm" />
-                                            {sellers.find(s => s._id === order.sellerId)?.store_name || "Unknown Store"}
+                                    {/* Store Name Row */}
+                                    <div className='flex flex-row justify-between items-center border-b pb-1 mb-2'>
+                                        <h2 className="font-semibold flex items-center gap-2 text-gray-800 text-sm min-w-0 truncate">
+                                            <FaStore className="text-gray-600 text-sm flex-shrink-0" />
+                                            <span className="truncate">
+                                                {sellers.find(s => s._id === order.sellerId)?.store_name || "Unknown Store"}
+                                            </span>
                                         </h2>
-                                        {(order?.orderType === "pre-order") && (
-                                            <h4 className="font-light italic flex flex-row items-center gap-1 text-orange-500 text-xs">
+                                        {order?.orderType === "pre-order" && (
+                                            <span className="font-light italic text-orange-500 text-xs whitespace-nowrap">
                                                 ({order?.orderType})
-                                            </h4>
+                                            </span>
                                         )}
                                     </div>
                                     
-                                    <div className="flex flex-row items-center justify-start gap-4">
-                                        <div className="relative w-20 h-20 flex justify-start items-center text-center">
-                                            {order.items.length > 1 && ( <>
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md z-10">
-                                                    <p className="text-white text-xs">+{order.items.length - 1}</p>
+                                    {/* Order Content Row */}
+                                    <div className="flex items-start gap-3 w-full">
+                                        {/* Image Container - Fixed Size */}
+                                        <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
+                                            {order.items[0].imageUrl ? (
+                                                <img
+                                                    src={order.items[0].imageUrl}
+                                                    alt={order.orderNumber}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                                    <span className="text-gray-500 text-xs">No image</span>
                                                 </div>
-                                            </> )}
-                                            {order.items[0].imageUrl ? (<img
-                                                src={order.items[0].imageUrl}
-                                                alt={order.orderNumber}
-                                                className="w-20 h-20 object-cover rounded-md"
-                                            />) : (
-                                                <>
-                                                    <p className="absolute inset-0 flex items-center justify-center bg-gray-400 rounded-md text-white z-10 text-xs">
-                                                        No image uploaded
-                                                    </p>
-                                                </>
+                                            )}
+                                            {order.items.length > 1 && (
+                                                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                                                    <span className="text-white text-xs">+{order.items.length - 1}</span>
+                                                </div>
                                             )}
                                         </div>
-
-                                        <div className="flex flex-row flex-grow">
-                                            <div>
-                                                <h3 className="font-bold text-sm">Order #{order.orderNumber || "N/A"}</h3>
-                                                {/* <p className="text-gray-600">
-                                                    {new Date(order.updatedAt).toLocaleString()}
-                                                </p> */}
-                                                <div className="text-xs">
-                                                    {order.items.map((item, index) => (
+                                
+                                        {/* Order Details - Flexible Width */}
+                                        <div className="flex-grow min-w-0">
+                                            <h3 className="font-bold text-sm mb-1 truncate">Order #{order.orderNumber || "N/A"}</h3>
+                                            <div className="text-xs space-y-1">
+                                                {order.items.slice(0, 2).map((item, index) => (
                                                     <div key={index} className="flex justify-between">
-                                                        <span>{item.quantity}x {item.name}</span>
+                                                        <span className="truncate">{item.quantity}x {item.name}</span>
                                                     </div>
-                                                    ))}
-                                                </div>
+                                                ))}
+                                                {order.items.length > 2 && (
+                                                    <div className="text-gray-500">+{order.items.length - 2} more items</div>
+                                                )}
                                             </div>
                                         </div>
-
-                                        <div className="flex flex-col items-end">
-                                            <span
-                                                className={`px-3 py-1.5 rounded-md text-xs font-semibold
-                                                    ${order.status === 'ready' ? 'bg-orange-100 text-orange-800' :
-                                                    order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                                    order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                                                    'bg-yellow-100 text-yellow-800'}`}
+                                
+                                        {/* Right Side Status/Amount - Fixed Width */}
+                                        <div className="flex flex-col items-end w-24 flex-shrink-0 gap-1">
+                                            <span className={`px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap
+                                                ${order.status === 'ready' ? 'bg-orange-100 text-orange-800' :
+                                                  order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                                  order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                                  'bg-yellow-100 text-yellow-800'}`}
                                             >
                                                 {order.status}
                                             </span>
                                             
-                                            <div className="pt-2 text-xs">
-                                                <div className="flex justify-between gap-1 font-semibold">
-                                                    {/* <span>Amount</span> */}
-                                                    <span>UC {order.totalAmount}</span>
-                                                </div>
+                                            <div className="text-xs font-semibold text-right">
+                                                UC {order.totalAmount}
                                             </div>
-
+                                
                                             {order.queueNumber && (
-                                                <div className="pt-1 text-xs font-bold text-gray-700">
-                                                    <div className="flex justify-between gap-1">
+                                                <div className="text-xs font-bold text-gray-700">
+                                                    <div className="flex items-center gap-1">
                                                         <span>Queue:</span>
                                                         <span>{order.queueNumber}</span>
                                                     </div>
@@ -384,6 +415,7 @@ const CustomerPurchases = () => {
                                 </motion.div>
                             ))}
                         </div>
+                    )}
                     </div>
                 </div>
         </div>

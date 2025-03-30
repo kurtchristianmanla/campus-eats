@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/outline';
 import Header from '../utils/header';
 import api from '../api/interceptor';
 
@@ -18,17 +19,13 @@ const Topup = () => {
   const [searchedUserId, setSearchedUserId] = useState('');
   const [searchedUsername, setSearchedUsername] = useState('');
   const [searchedEmail, setSearchedEmail] = useState('');
+  const [searchedPicture, setSearchedPicture] = useState(null);
   const [userBalance, setUserBalance] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "Campus Eats | Top Up";
-
-    // Disable scrolling and zooming
-    document.body.style.overflow = 'hidden';
     document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-
-    // Clean up the styles on component unmount
     return () => {
       document.body.style.overflow = 'auto';
       document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0');
@@ -40,41 +37,42 @@ const Topup = () => {
     setSuccessMessage('');
     setLoadingSearch(true);
 
-    const query = searchInput;
     const token = localStorage.getItem('token');
-
     try {
       const response = await api.get('/admin/search-user', {
-          params: { query },  // Automatically encodes the query parameter
-          headers: {
-              'Content-Type': 'application/json',
-              "Authorization": `Bearer ${token}`,
-          },
+        params: { query: searchInput },
+        headers: {
+          'Content-Type': 'application/json',
+          "Authorization": `Bearer ${token}`,
+        },
       });
-  
+
       if (response.status === 200) {
-          const data = response.data;
-          setUserBalance(data.balance);
-          setSearchedUserId(data.id);
-          setSearchedUsername(data.username);
-          setSearchedEmail(data.email);
+        setUserBalance(response.data.balance);
+        setSearchedUserId(response.data.id);
+        setSearchedUsername(response.data.username);
+        setSearchedEmail(response.data.email);
+        setSearchedPicture(response.data.profile_picture);
       } else {
-          setSuccessMessage("");
-          setErrorMessage(response.data.message || 'User not found.');
-          setUserBalance(null);
-          setTopUpAmount('');
-          
-          setSearchedUserId('');
-          setSearchedUsername('');
-          setSearchedEmail('');
+        setErrorMessage(response.data.message || 'User not found.');
+        resetUserState();
       }
     } catch (error) {
-        console.error('Error searching user:', error);
-        setSuccessMessage("");
-        setErrorMessage( error.response.data.message || 'An error occurred while searching for the user. Please try again.');
+      console.error('Error searching user:', error);
+      setErrorMessage(error.response?.data?.message || 'An error occurred while searching for the user.');
+      resetUserState();
     } finally {
-        setLoadingSearch(false);
+      setLoadingSearch(false);
     }
+  };
+
+  const resetUserState = () => {
+    setUserBalance(null);
+    setTopUpAmount('');
+    setSearchedUserId('');
+    setSearchedUsername('');
+    setSearchedEmail('');
+    setSearchedPicture(null);
   };
 
   const handleTopUp = async () => {
@@ -84,188 +82,225 @@ const Topup = () => {
 
     if (!/^\d+(\.\d{1,2})?$/.test(topUpAmount)) {
       setErrorMessage("Please enter a valid amount with up to 2 decimal places");
+      setLoadingTopUp(false);
       return;
     }
 
     const token = localStorage.getItem('token');
     try {
       const response = await api.post('/admin/top-up', {
-          query: searchedUserId,
-          amount: parseFloat(topUpAmount),
+        query: searchedUserId,
+        amount: parseFloat(topUpAmount),
       }, {
-          headers: {
-              'Content-Type': 'application/json',
-              "Authorization": `Bearer ${token}`,
-          },
+        headers: {
+          'Content-Type': 'application/json',
+          "Authorization": `Bearer ${token}`,
+        },
       });
-  
+
       if (response.status === 200) {
-          setErrorMessage("");
-          setSuccessMessage('Top-up successful!');
-          setUserBalance((prevBalance) => prevBalance + parseFloat(topUpAmount));
-          setAmountCredited(parseFloat(topUpAmount));
-          setTopUpAmount('');
-          setSuccessWindow(true);
+        setSuccessMessage('Top-up successful!');
+        setUserBalance(prev => prev + parseFloat(topUpAmount));
+        setAmountCredited(parseFloat(topUpAmount));
+        setTopUpAmount('');
+        setSuccessWindow(true);
       } else {
-          setSuccessMessage("");
-          setErrorMessage(response.data.message || 'Top-up failed.');
+        setErrorMessage(response.data.message || 'Top-up failed.');
       }
     } catch (error) {
-        console.error('Error during top-up:', error);
-        setSuccessMessage("");
-        setErrorMessage( error.response.data.message || 'An error occurred during the top-up process. Please try again.');
+      console.error('Error during top-up:', error);
+      setErrorMessage(error.response?.data?.message || 'An error occurred during the top-up process.');
     } finally {
-        setLoadingTopUp(false);
-        setIsConfirming(false);
+      setLoadingTopUp(false);
+      setIsConfirming(false);
     }
   };
 
-  const handleCancel = () => {
-    setIsConfirming(false); // Reset to show the "Top Up" button again
-  };
-
-  const handleSuccessWindow = () => {
-    setSuccessWindow(false);
-    setAmountCredited(0);
-  };
+  const handleCancel = () => setIsConfirming(false);
+  const handleSuccessWindow = () => setSuccessWindow(false);
 
   return (
-    <div className="min-h-screen bg-[#f8f9fd] flex flex-col items-center p-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
+      {/* Header */}
       <Header
-                headerName={'Top-up'}
-                navigateTo={'/admin'}
-            />
+        headerName={'Top Up'}
+        navigateTo={'/admin'}
+      />
 
+      {/* Success Modal */}
       {successWindow && (
-            <div className="min-h-screen mt-[6rem] bg-[#f8f9fd] flex flex-col items-center p-4">
-                {/* Success Content */}
-                <div className="w-full max-w-sm bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-                    <div className="w-20 h-20 flex items-center justify-center bg-green-100 rounded-full mb-6">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="w-12 h-12 text-green-600"
-                    >
-                        <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.5 12.75l6 6 9-13.5"
-                        />
-                    </svg>
-                    </div>
-
-                    <h2 className="text-xl font-bold text-gray-800 text-center mb-4">Credit is successfully loaded</h2>
-                    <p className="text-sm text-gray-600 text-center mb-1">
-                    Recipient: <span className="font-semibold">{searchedUsername}</span>
-                    </p>
-                    <p className="text-sm text-gray-600 text-center mb-6">
-                    Amount: <span className="font-semibold">UC {amountCredited.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
-                    </p>
-
-                    <button
-                    onClick={() => navigate('/admin')}
-                    className="w-full mb-2 py-3 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
-                    >
-                    Go back to dashboard
-                    </button>
-                    <button
-                    onClick={handleSuccessWindow}
-                    className="w-full py-3 bg-gray-400 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
-                    >
-                    Top More
-                    </button>
-                </div>
-            </div>
-      )}
-            
-      <div className="flex-1 mt-[3rem] space-y-4 w-full h-auto max-h-[470px] 
-                        max-w-sm bg-white p-6 rounded-lg shadow-md">
-
-        <div className="mb-4">
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700">Username or Email</label>
-          <input
-            type="text"
-            id="search"
-            placeholder="Enter username or email"
-            className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 leading-tight placeholder-orange-300"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-          <button
-            onClick={handleSearch}
-            className={`p-3 mt-4 w-full bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${loadingSearch ? 'cursor-not-allowed' : ''}`}
-            disabled={loadingSearch}
-          >
-            {loadingSearch ? 'Searching...' : 'Search'}
-          </button>
-        </div>
-
-        {userBalance !== null && (
-          <>
-            <div className="mb-4 bg-gray-100 rounded-lg shadow-inner p-3">
-              <p className="text-sm font-medium text-gray-700">Username: <span className="font-bold">{searchedUsername}</span></p>
-              <p className="text-sm font-medium text-gray-700">Email: <span className="font-bold">{searchedEmail}</span></p>
-              <p className="text-sm font-medium text-gray-700">Current Balance: <span className="font-bold">UC {userBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span></p>
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="topup" className="block text-sm font-medium text-gray-700">Top-Up Amount</label>
-              <input
-                type="number"
-                id="topup"
-                placeholder="Enter amount"
-                className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 leading-tight placeholder-orange-300"
-                value={topUpAmount}
-                onChange={(e) => {
-                  // Allow only numbers with up to 2 decimal places
-                  const value = e.target.value;
-                  if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-                    setTopUpAmount(value);
-                  }
-                }}
-              />
-              {!isConfirming ? (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <CheckCircleIcon className="h-16 w-16 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">Top Up Successful</h2>
+              <p className="text-gray-600 mb-4">
+                UC {amountCredited.toLocaleString("en-US", { minimumFractionDigits: 2 })} added to
+              </p>
+              <div className="bg-gray-50 rounded-lg p-3 w-full mb-6">
+                <p className="font-medium text-gray-800">{searchedUsername}</p>
+                <p className="text-sm text-gray-500">{searchedEmail}</p>
+              </div>
+              <div className="flex flex-col w-full space-y-3">
                 <button
-                  onClick={() => {
-                    if (topUpAmount) {
-                      setIsConfirming(true);
-                      setErrorMessage("");
-                      setSuccessMessage("");
-                    } else {
-                      setErrorMessage("Please specify the amount.");
-                      setSuccessMessage('');
-                    }
-                  }} // Show confirm/cancel buttons
-                  className={`p-3 mt-4 w-full bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50`}
+                  onClick={() => navigate('/admin')}
+                  className="w-full py-2.5 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors"
                 >
-                  {loadingTopUp ? 'Processing...' : 'Top Up'}
+                  Back to Dashboard
                 </button>
-              ) : (
-                <div className="flex gap-4 mt-4">
+                <button
+                  onClick={handleSuccessWindow}
+                  className="w-full py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                >
+                  New Top Up
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="flex-1 p-4 max-w-md mx-auto w-full mt-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          {/* Search Section */}
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Find User</h2>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                  Username or Email
+                </label>
+                <div className="w-full space-y-2">
+                  <input
+                    type="text"
+                    id="search"
+                    placeholder="Enter username or email"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                  />
                   <button
-                    onClick={handleTopUp}
-                    className={`p-3 w-2/3 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${loadingTopUp ? 'cursor-not-allowed' : ''}`}
-                    disabled={loadingTopUp || !topUpAmount}
+                    onClick={handleSearch}
+                    disabled={loadingSearch || !searchInput}
+                    className={`w-full py-2.5 px-4 bg-gradient-to-r from-orange-600 to-orange-400 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center ${
+                      (loadingSearch || !searchInput) ? 'opacity-70 cursor-not-allowed' : ''
+                    }`}
                   >
-                    {loadingTopUp ? 'Processing...' : 'Confirm'}
+                    {loadingSearch ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Searching...
+                      </>
+                    ) : (
+                      'Search User'
+                    )}
                   </button>
-                  <button
-                    onClick={handleCancel}
-                    className="p-3 w-1/3 bg-gray-400 text-white rounded-md hover:scale-105 transform transition duration-300 font-semibold shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
-                  >
-                    Cancel
-                  </button>
+                </div>
+              </div>
+
+              {/* User Info */}
+              {userBalance !== null && (
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center overflow-hidden">
+                      {searchedPicture ? (
+                        <img src={searchedPicture} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-orange-600 font-medium">
+                          {searchedUsername.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-[15px] text-gray-800">{searchedUsername}</h3>
+                      <p className="text-[10px] text-gray-500">{searchedEmail}</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Current Balance:</span>
+                    <span className="font-semibold">
+                      UC {userBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
-          </>
-        )}
+          </div>
 
-        {errorMessage && <p className="text-red-500 text-left text-xs mb-4">{errorMessage}</p>}
-        {successMessage && <p className="text-green-500 text-left text-xs mb-4">{successMessage}</p>}
+          {/* Top Up Form */}
+          {userBalance !== null && (
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">Top Up</h2>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+                    Amount
+                  </label>
+                  <input
+                    type="number"
+                    id="amount"
+                    placeholder="0.00"
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    value={topUpAmount}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                        setTopUpAmount(value);
+                      }
+                    }}
+                  />
+                </div>
+
+                {errorMessage && (
+                  <div className="flex items-center text-red-600 text-sm">
+                    <XCircleIcon className="h-5 w-5 mr-1" />
+                    {errorMessage}
+                  </div>
+                )}
+
+                {!isConfirming ? (
+                  <button
+                    onClick={() => {
+                      if (topUpAmount) {
+                        setIsConfirming(true);
+                        setErrorMessage("");
+                      } else {
+                        setErrorMessage("Please enter an amount");
+                      }
+                    }}
+                    className="w-full py-2.5 bg-gradient-to-r from-orange-600 to-orange-400 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors"
+                  >
+                    Top Up
+                  </button>
+                ) : (
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={handleTopUp}
+                      disabled={loadingTopUp}
+                      className={`flex-1 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors ${
+                        loadingTopUp ? 'opacity-70 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      {loadingTopUp ? 'Processing...' : 'Confirm'}
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      className="flex-1 py-2.5 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

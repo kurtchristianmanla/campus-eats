@@ -24,11 +24,11 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture,
         <AnimatePresence>
             {isSidebarOpen && (
                 <motion.div
-                    className="fixed top-0 right-0 w-80 h-full bg-white text-black p-4 z-[100]"
+                    className="fixed top-0 right-0 w-80 h-full bg-white text-black p-4 z-[100] overflow-hidden"
                     initial={{ x: "100%" }}
-                    animate={{ x: 0 }}
+                    animate={{ x: '5%' }}
                     exit={{ x: "100%" }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 >
                     <button className="text-4xl text-gray-800" onClick={toggleSidebar}>
                         &times;
@@ -89,7 +89,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture,
                         My Orders {countOrder ? `(${countOrder})` : ''}
                     </motion.button>
 
-                    <div className="absolute bottom-0 left-0 right-0 flex justify-center p-4 z-20">
+                    <div className="absolute bottom-0 left-0 right-5 flex justify-center p-4 z-20">
                         <motion.button
                             onClick={handleLogoutClick}
                             disabled={isLoggingOut} // Disable button while logging out
@@ -116,6 +116,19 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, user, username, profilePicture,
                         <FaBook className="ml-2 text-xl mr-4" />
                         Use Policy
                     </motion.button>
+
+                    <motion.div
+                        className="absolute z-[-1] -top-12 -right-24"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.5 }}
+                        transition={{ duration: 1, ease: "easeInOut" }}
+                    >
+                        <img
+                            src="/test/campus-eats-logo.png"
+                            alt="Campus Eats Logo"
+                            className="w-72 h-72 object-contain opacity-20 blur-sm"
+                        />
+                    </motion.div>
                 </motion.div>
             )}
         </AnimatePresence>
