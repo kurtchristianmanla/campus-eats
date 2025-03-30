@@ -161,6 +161,7 @@ router.get('/search-user', isRightRole(['admin']), async (req, res) => {
             username: user.username,
             email: user.email,
             balance: user.balance,
+            profile_picture: user.profile_picture,
         });
     } catch (error) {
         console.error('Error fetching user:', error);
