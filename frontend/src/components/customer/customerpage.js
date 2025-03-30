@@ -11,6 +11,7 @@ import Sidebar from './sidebar';
 import { getOrders } from '../api/orderService';
 import { useNotification } from '../utils/notification';
 import { toast } from 'react-toastify';
+import { SkeletonCard, SkeletonItemCard, SkeletonMenuItem, SkeletonMenuSection, SkeletonSellerCard } from '../utils/skeletonloading';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -31,7 +32,10 @@ const CustomerPage = () => {
     const [balance, setBalance] = useState(0);
     const [profilePicture, setProfilePicture] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
-    const [loading, setLoading] = useState(true);
+    const [loadingRecommendations, setLoadingRecommendations] = useState(true);
+    const [loadingSellers, setLoadingSellers] = useState(true);
+    const [loadingRatedItems, setLoadingRatedItems] = useState(true);
+    const [loadingMenu, setLoadingMenu] = useState(false);
     const [socket, setSocket] = useState(null); // Track the socket connection
 
     const [sellers, setSellers] = useState([]);
@@ -91,11 +95,10 @@ const CustomerPage = () => {
                 },
             });
             setSellers(response.data); // Update state with user data
-            // console.log(sellers);
-            setLoading(false); // Set loading to false
         } catch (error) {
             console.error('Error fetching users:', error);
-            setLoading(false);
+        } finally {
+            setLoadingSellers(false); // Set loading to false
         }
     }, []);
     
@@ -112,15 +115,15 @@ const CustomerPage = () => {
             });
             setRatedItems(response.data.highRatedItems);
             setMostOrderedItems(response.data.mostOrderedItems);
-            // console.log(sellers);
-            setLoading(false); // Set loading to false
         } catch (error) {
             console.error('Error fetching items:', error);
-            setLoading(false);
+        } finally {
+            setLoadingRatedItems(false); // Set loading to false
         }
     }, []);
 
     const fetchMenu = useCallback((sellerId) => {
+        setLoadingMenu(true); // Start loading
         // Fetch menu items
         api.get(`/menu/seller/${sellerId}`)
             .then((response) => {
@@ -128,6 +131,9 @@ const CustomerPage = () => {
             })
             .catch((error) => {
                 console.error('Error fetching menu items:', error);
+            })
+            .finally(() => {
+                setLoadingMenu(false); // Stop loading whether successful or not
             });
     }, []);
 
@@ -144,11 +150,10 @@ const CustomerPage = () => {
             console.log(response.data);
             setRecommendation(response.data.recommendedItems); // Update state with user data
             setLastOrder(response.data.lastOrder);
-            // console.log(sellers);
-            setLoading(false); // Set loading to false
         } catch (error) {
             console.error('Error fetching items:', error);
-            setLoading(false);
+        } finally {
+            setLoadingRecommendations(false); // Set loading to false
         }
     }, []);
 
@@ -527,7 +532,21 @@ const CustomerPage = () => {
                     className="text-3xl font-bold p-4">Enjoy Delicious Food</motion.h1>
                 
                 {/* Recommendations */}
-                {(lastOrder !== null && viewState === 'selectStores') && (
+                {(loadingRecommendations && viewState !== 'allStores') ? (
+                <>
+                    <div className="flex justify-between items-center mt-2 px-4">
+                    <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
+                    <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
+                        {[...Array(3)].map((_, index) => (
+                        <SkeletonItemCard key={`rec-skel-${index}`} />
+                        ))}
+                    </div>
+                    </div>
+                </>
+                ) : (
+                (lastOrder !== null && viewState === 'selectStores') && (
                     <>
                         <motion.div 
                             initial={{ opacity: 0, x: -10 }}
@@ -594,7 +613,7 @@ const CustomerPage = () => {
                             </div>
                         </div>
                     </>
-                )}
+                ))} 
 
                 {/* Popular Restaurants Header */}
                 <motion.div
@@ -640,7 +659,10 @@ const CustomerPage = () => {
                 {viewState === 'showMenu' && (
                     // Menu Items List
                     <>
-                        {menuItems.length === 0 ? (
+                        {loadingMenu ? (
+                            <SkeletonMenuSection />
+                        ) : (
+                        menuItems.length === 0 ? (
                             <div className="px-4 mt-4 overflow-x-auto w-full overflow-hidden">
                                 <span className="text-center text-xl text-gray-500">This store currently has no products available.</span>
                             </div>
@@ -690,7 +712,7 @@ const CustomerPage = () => {
                                     </motion.div>
                                 ))}
                             </div>
-                        )}
+                        ))}
                     </>
                 )}
 
@@ -757,7 +779,12 @@ const CustomerPage = () => {
                 {viewState === 'selectStores' && (
                     <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
                         <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
-                        {(sellersWithRatings
+                        {loadingSellers ? (
+                            [...Array(4)].map((_, index) => (
+                                <SkeletonSellerCard key={`seller-skel-${index}`} />
+                            ))
+                        ) : (
+                        (sellersWithRatings
                             .filter((store) => store.sellerRating >= 4 && store.sellerRating <= 5)
                             .sort((a, b) => b.sellerRating - a.sellerRating)).length === 0 ? (
                             <div className="text-center text-xl text-gray-500 mb-4">No popular stores available</div>
@@ -818,7 +845,7 @@ const CustomerPage = () => {
                                     </div>
                                 </div>
                             </motion.div>
-                        )))}
+                        ))))}
                         </div>
                     </div>
                 )}
@@ -838,7 +865,12 @@ const CustomerPage = () => {
                 {viewState === 'selectStores' && (
                     <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
                         <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
-                        {mostOrderedItems.length === 0 ? (
+                        {loadingRatedItems ? (
+                                [...Array(3)].map((_, index) => (
+                                  <SkeletonItemCard key={`most-ordered-skel-${index}`} />
+                                ))
+                        ) : (
+                        mostOrderedItems.length === 0 ? (
                             <div className="text-center text-xl text-gray-500 mb-4">No popular foods available</div>
                         ) : (
                             mostOrderedItems
@@ -899,7 +931,7 @@ const CustomerPage = () => {
                                     </div>
                                 </div>
                             </motion.div>
-                        )))}
+                        ))))}
                         </div>
                     </div>
                 )}
@@ -919,7 +951,12 @@ const CustomerPage = () => {
                 {viewState === 'selectStores' && (
                     <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
                         <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
-                        {ratedItems.length === 0 ? (
+                        {loadingRatedItems ? (
+                                [...Array(3)].map((_, index) => (
+                                  <SkeletonItemCard key={`most-ordered-skel-${index}`} />
+                                ))
+                        ) : (
+                        ratedItems.length === 0 ? (
                             <div className="text-center text-xl text-gray-500 mb-4">No popular foods available</div>
                         ) : (
                             ratedItems
@@ -980,7 +1017,7 @@ const CustomerPage = () => {
                                     </div>
                                 </div>
                             </motion.div>
-                        )))}
+                        ))))}
                         </div>
                     </div>
                 )}
@@ -1000,7 +1037,12 @@ const CustomerPage = () => {
                 {viewState === 'selectStores' && (
                     <div className="px-4 overflow-x-auto scrollbar-hide scroll-smooth w-full overflow-hidden">
                         <div className="flex my-2 flex-nowrap gap-4 pb-4 min-w-max lg:grid lg:grid-cols-5 overflow-visible">
-                        {(sellersWithRatings
+                        {loadingSellers ? (
+                            [...Array(4)].map((_, index) => (
+                                <SkeletonSellerCard key={`seller-skel-${index}`} />
+                            ))
+                        ) : (
+                        (sellersWithRatings
                             .filter((store) => store.is_selling).length === 0) ? (
                             <div className="text-center text-xl text-gray-500 mb-4">No online stores available</div>
                         ) : (
@@ -1057,7 +1099,7 @@ const CustomerPage = () => {
                                     </div>
                                 </div>
                             </motion.div>
-                        )))}
+                        ))))}
                         </div>
                     </div>
                 )}

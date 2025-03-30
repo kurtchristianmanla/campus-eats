@@ -5,6 +5,7 @@ import { FaMinus, FaPlus } from 'react-icons/fa';
 import api from '../api/interceptor';
 import { addToCart } from '../utils/cart';
 import Popup from "../utils/popup";
+import { SkeletonItemDetail } from '../utils/skeletonloading';
 
 // const protocol = process.env.REACT_APP_PROTOCOL || "http";
 // const host_ip = process.env.REACT_APP_HOST_IP || "localhost";
@@ -28,11 +29,13 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
     const [showAdded, setShowAdded] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [limitExceeded, setLimitExceeded] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     // Fetch data for editing a menu item if menuItemId is provided
     useEffect(() => {
         if (menuItemId) {
             console.log('Menu Item ID:', menuItemId);
+            setLoading(true);
             api.get(`/menu/item/${menuItemId}`)
                 .then((response) => {
                     const menuItem = response.data.menuItem;
@@ -48,6 +51,9 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
                 })
                 .catch((error) => {
                     console.error('Error fetching menu item:', error);
+                })
+                .finally(() => {
+                    setLoading(false); // Set loading to false when done
                 });
         } else {
             // If no menuItemId, reset form fields for adding new item
@@ -81,6 +87,10 @@ const ShowItem = ({ userId, menuItemId, fetchMenu, item, setViewItem}) => {
                 setIsAdding(false);
             });
     };
+
+    if (loading) {
+        return <SkeletonItemDetail />;
+    }
 
     return (
         <div className="mt-24 flex flex-col w-full">
