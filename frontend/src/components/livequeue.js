@@ -288,7 +288,7 @@ const LiveQueue = () => {
                                                     damping: 30,
                                                     delay: (colIndex * 6 + rowIndex) * 0.05
                                                 }}
-                                                className={`h-8 flex items-center justify-center rounded-lg
+                                                className={`h-14 flex items-center justify-center rounded-lg
                                                     ${order ? 'bg-orange-100 border-2 border-orange-300' : 'bg-gray-50'}`}
                                             >
                                                 {order && (
@@ -326,7 +326,7 @@ const LiveQueue = () => {
                                                     damping: 30,
                                                     delay: (colIndex * 6 + rowIndex) * 0.05
                                                 }}
-                                                className={`h-8 flex items-center justify-center rounded-lg
+                                                className={`h-14 flex items-center justify-center rounded-lg
                                                     ${order ? 'bg-green-100 border-2 border-green-300 animate-pulse' : 'bg-gray-50'}`}
                                             >
                                                 {order && (
