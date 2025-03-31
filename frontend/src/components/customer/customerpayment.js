@@ -359,7 +359,7 @@ const CustomerPayment = () => {
 
                 <AnimatePresence>
                 {successWindow && (
-                    <motion.div className="lg:mt-[4rem] md:mt-[5rem] mt-[6rem] bg-gradient-to-b from-[#f5f5f7] via-[#f5f5f7] flex flex-col items-center p-4"
+                    <motion.div className="lg:mt-[4rem] md:mt-[5rem] mt-[10rem] bg-gradient-to-b from-[#f5f5f7] via-[#f5f5f7] flex flex-col items-center p-4"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

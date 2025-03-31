@@ -202,7 +202,7 @@ const ShowOrder = ({ orderSelected, seller }) => {
                     )}
                 </div>
 
-                <div className='overflow-y-auto flex-1 max-h-[24rem]'>
+                <div className='overflow-y-auto flex-1 max-h-[32rem]'>
                     <div className="space-y-2 mb-2">
                         {order?.items.map((item, index) => (
                             <div key={index} className="flex items-center bg-white rounded-lg p-3 shadow-sm">
@@ -263,8 +263,8 @@ const ShowOrder = ({ orderSelected, seller }) => {
 
                     {/* Ready for pickup notice */}
                     {order?.status === "ready" && (
-                        <div className="mb-2 p-3 bg-orange-50 rounded-lg text-sm text-orange-800">
-                            <strong>Reminder:</strong> Your order is ready for pickup. Please claim within 1 day.
+                        <div className="mb-2 p-3 bg-orange-50 rounded-lg text-[10px] text-orange-800">
+                            <strong>Reminder:</strong> Your order is available for pickup and must be claimed within 1 day. For perishable items, please claim as soon as possible. For non-perishable goods, check with the seller if next-day pickup is allowed. Unclaimed orders may no longer be available. Thank you!
                         </div>
                     )}
 
