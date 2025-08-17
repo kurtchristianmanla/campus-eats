@@ -3,6 +3,7 @@ Campus Eats: Consolidated System for Food Ordering, Queueing, and Payment Manage
 A progressive web-based system for efficient food ordering, queuing, and payment management
 
 🚀 Live Demo
+
 [Campus Eats – Hosted App](campus-eats-iota.vercel.app)
 
 ⚠️ Project Notice
