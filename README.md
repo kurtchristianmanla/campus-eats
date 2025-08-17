@@ -13,6 +13,11 @@ The Redis instance previously used for caching and queue management has expired,
 
 However, the project can still be run if a new Redis database is set up and properly configured.
 
+📱 Mobile-First PWA
+
+This system is built as a Progressive Web App (PWA) with a mobile-first UI design for an optimized experience on smartphones.  
+The desktop version is functional but not yet fully refined.
+
 📌 Features
 
  User registration and login
