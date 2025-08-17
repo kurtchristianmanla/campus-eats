@@ -26,6 +26,12 @@ The desktop version is functional but not yet fully refined.
  Queue management with real-time updates  
  Seller POS interface  
  Admin dashboard for monitoring  
+ Food Recommendation System (Hybrid: Content-Based + Collaborative Filtering)
+
+🤖 AI Integration
+
+This project integrates **Groq's Llama 3.1 8B Instant** model via the Chat Completions API.  
+It is used for generating food tags dynamically from menu items.
 
 🛠️ Tech Stack
 
@@ -34,7 +40,6 @@ Backend: Node.js + Express, hosted on Render
 Database: MongoDB Atlas  
 Cache/Queue: Redis (required for full functionality)  
 Storage: Cloudinary (for images)  
-AI Integration: Groq AI (for food tag generation)  
 
 📂 Repository Structure
 
