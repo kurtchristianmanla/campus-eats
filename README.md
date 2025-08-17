@@ -4,7 +4,7 @@ A progressive web-based system for efficient food ordering, queuing, and payment
 
 🚀 Live Demo
 
-[Campus Eats – Hosted App](https://campus-eats-iota.vercel.app)
+[Campus Eats – Hosted App](https://campus-eats-iota.vercel.app/login)
 
 ⚠️ Project Notice
 
