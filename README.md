@@ -46,6 +46,7 @@ Storage: Cloudinary (for images)
 
 /frontend      → UI files  
 /backend       → Server and API logic  
+/docs          → Screenshots of live demo
 
 👨‍💻 Author
 
