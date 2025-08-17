@@ -34,7 +34,7 @@ Backend: Node.js + Express, hosted on Render
 Database: MongoDB Atlas  
 Cache/Queue: Redis (required for full functionality)  
 Storage: Cloudinary (for images)  
-AI Integration: GROQ AI (for food tag generation)  
+AI Integration: Groq AI (for food tag generation)  
 
 📂 Repository Structure
 
